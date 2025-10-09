@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Data.Models
+﻿namespace Data.Models
 {
-    public class User
+    public class User : IEntity
     {
         public int Id { get; set; }
 
@@ -16,10 +10,12 @@ namespace Data.Models
 
         public DateTime CreatedAt { get; set; }
 
+        private User() { }
         public User(string email, string passwordHash)
         {
             Email = email;
             PasswordHash = passwordHash;
+            CreatedAt = DateTime.Now;
         }
     }
 }
