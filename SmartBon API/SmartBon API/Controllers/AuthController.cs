@@ -29,5 +29,11 @@ namespace SmartBon_API.Controllers
             await authService.RegisterAsync(request);
             return Ok("User successfully registered!");
         }
+
+        [HttpPost("test")]
+        public async Task<ActionResult<string>> Test()
+        {
+            return Ok("TEst!");
+        }
     }
 }
