@@ -1,5 +1,6 @@
 ﻿using Data.Interfaces;
 using Data.Repositories;
+using Services.Expenses;
 using Services.Interfaces;
 using Services.UserServices;
 namespace FeelBack.Api.Extentions
@@ -10,6 +11,9 @@ namespace FeelBack.Api.Extentions
         {
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<IExpenseRepository, ExpenseRepository>();
+            services.AddScoped<IExpenseService, ExpenseService>();
+            
             return services;
         }
     }
