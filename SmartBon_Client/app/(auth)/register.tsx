@@ -1,57 +1,54 @@
-import { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { router } from 'expo-router';
+import { useAuth } from '../hooks/useAuth';
+import { colors } from '../theme/colors';
 
 export default function RegisterScreen() {
+  const { signUp, status, processing, authError } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (status === 'authenticated') {
+      router.replace('/home');
+    }
+  }, [status]);
 
   const handleRegister = async () => {
-    setError('');
+    setError(null);
 
     if (!email || !password || !confirmPassword) {
-      setError('Please fill out all fields!');
-      return;
-    }
-    if (password !== confirmPassword) {
-      setError('Passwords do not match!');
+      setError('Please fill out all fields');
       return;
     }
 
-    setLoading(true);
+    if (password !== confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
 
     try {
-      const response = await fetch('http://192.168.1.17:5107/api/Auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
-      });
-
-      if (!response.ok) {
-        const msg = await response.text();
-        throw new Error(msg || 'An error occured while trying to register!');
-      }
-
-      // успешна регистрация
-      router.replace('/');
+      await signUp({ email, password });
     } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
+      setError(err?.message || 'Unable to register');
     }
   };
 
+  const displayedError = error || authError;
+
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Register</Text>
+      <Text style={styles.title}>Create an account</Text>
+      <Text style={styles.subtitle}>Register to start tracking your expenses.</Text>
 
       <TextInput
         style={styles.input}
         placeholder="Email"
         autoCapitalize="none"
+        keyboardType="email-address"
         value={email}
         onChangeText={setEmail}
       />
@@ -72,10 +69,10 @@ export default function RegisterScreen() {
         onChangeText={setConfirmPassword}
       />
 
-      {error ? <Text style={styles.error}>{error}</Text> : null}
+      {displayedError ? <Text style={styles.error}>{displayedError}</Text> : null}
 
-      <TouchableOpacity style={styles.button} onPress={handleRegister} disabled={loading}>
-        {loading ? (
+      <TouchableOpacity style={styles.button} onPress={handleRegister} disabled={processing}>
+        {processing ? (
           <ActivityIndicator color="#fff" />
         ) : (
           <Text style={styles.buttonText}>Register</Text>
@@ -94,42 +91,49 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     padding: 24,
-    backgroundColor: '#fff'
+    backgroundColor: colors.background
   },
   title: {
     fontSize: 26,
     fontWeight: '700',
-    marginBottom: 20,
-    textAlign: 'center'
+    marginBottom: 8,
+    textAlign: 'center',
+    color: colors.text
+  },
+  subtitle: {
+    textAlign: 'center',
+    marginBottom: 24,
+    color: colors.muted
   },
   input: {
     width: '100%',
     padding: 12,
     marginVertical: 8,
     borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8
+    borderColor: colors.border,
+    borderRadius: 10,
+    backgroundColor: colors.card
   },
   button: {
-    backgroundColor: '#007bff',
+    backgroundColor: colors.primary,
     padding: 14,
-    borderRadius: 8,
+    borderRadius: 10,
     alignItems: 'center',
     marginTop: 10
   },
   buttonText: {
     color: 'white',
     fontSize: 16,
-    fontWeight: '600'
+    fontWeight: '700'
   },
   error: {
-    color: 'red',
+    color: colors.danger,
     marginTop: 5,
     textAlign: 'center'
   },
   link: {
     marginTop: 16,
-    color: '#007bff',
+    color: colors.primary,
     textAlign: 'center',
     fontSize: 15
   }

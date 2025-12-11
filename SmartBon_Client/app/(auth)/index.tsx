@@ -1,53 +1,42 @@
-// app/index.tsx
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
-import * as SecureStore from 'expo-secure-store';
+import React, { useEffect, useState } from 'react';
+import { ActivityIndicator, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { router } from 'expo-router';
-
+import { useAuth } from '../hooks/useAuth';
+import { colors } from '../theme/colors';
 
 export default function LoginScreen() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const { signIn, status, processing, authError } = useAuth();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState<string | null>(null);
 
-  async function handleLogin() {
-    setError("");
-    setLoading(true);
+  useEffect(() => {
+    if (status === 'authenticated') {
+      router.replace('/home');
+    }
+  }, [status]);
+
+  const handleLogin = async () => {
+    setError(null);
+
+    if (!email || !password) {
+      setError('Email and password are required');
+      return;
+    }
 
     try {
-      const response = await fetch("http://172.20.10.2:5107/api/Auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ email, password })
-      });
-
-      if (!response.ok) {
-        const text = await response.text();
-        throw new Error(text || "Login failed");
-      }
-
-      const token = await response.json();
-      console.log(token);
-      // data.token → твоят JWT токен
-      await SecureStore.setItemAsync("token", token.value);
-
-      setLoading(false);
-
-      router.replace("/landing");
-
+      await signIn({ email, password });
     } catch (err: any) {
-      setLoading(false);
-      setError(err.message || "Error");
-      console.log(err.message);
+      setError(err?.message || 'Unable to sign in');
     }
-  }
+  };
+
+  const displayedError = error || authError;
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Welcome</Text>
+      <Text style={styles.subtitle}>Sign in to keep tracking your expenses.</Text>
 
       <TextInput
         style={styles.input}
@@ -55,6 +44,7 @@ export default function LoginScreen() {
         value={email}
         autoCapitalize="none"
         onChangeText={setEmail}
+        keyboardType="email-address"
       />
 
       <TextInput
@@ -65,15 +55,15 @@ export default function LoginScreen() {
         onChangeText={setPassword}
       />
 
-      {error ? <Text style={styles.error}>{error}</Text> : null}
+      {displayedError ? <Text style={styles.error}>{displayedError}</Text> : null}
 
-      <TouchableOpacity style={styles.button} onPress={handleLogin} disabled={loading}>
-        {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Login</Text>}
+      <TouchableOpacity style={styles.button} onPress={handleLogin} disabled={processing}>
+        {processing ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Login</Text>}
       </TouchableOpacity>
 
-<TouchableOpacity onPress={() => router.replace('/register')}>
-  <Text style={styles.link}>Don't have an account? Register</Text>
-</TouchableOpacity>
+      <TouchableOpacity onPress={() => router.replace('/register')}>
+        <Text style={styles.link}>Don't have an account? Register</Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -81,43 +71,52 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
+    justifyContent: 'center',
     padding: 24,
+    backgroundColor: colors.background
   },
   title: {
     fontSize: 32,
-    fontWeight: "700",
-    marginBottom: 40,
-    textAlign: "center",
+    fontWeight: '700',
+    marginBottom: 6,
+    textAlign: 'center',
+    color: colors.text
+  },
+  subtitle: {
+    textAlign: 'center',
+    marginBottom: 28,
+    color: colors.muted
   },
   input: {
-    backgroundColor: "#eee",
+    backgroundColor: colors.card,
     padding: 14,
-    borderRadius: 8,
-    marginBottom: 14,
+    borderRadius: 10,
+    marginBottom: 12,
     fontSize: 16,
+    borderWidth: 1,
+    borderColor: colors.border
   },
   button: {
-    backgroundColor: "#007AFF",
+    backgroundColor: colors.primary,
     padding: 14,
-    borderRadius: 8,
-    alignItems: "center",
-    marginTop: 10,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginTop: 10
   },
   buttonText: {
-    color: "#fff",
+    color: '#fff',
     fontSize: 18,
-    fontWeight: "600",
+    fontWeight: '700'
   },
   link: {
     marginTop: 20,
-    textAlign: "center",
-    color: "#007AFF",
-    fontSize: 16,
+    textAlign: 'center',
+    color: colors.primary,
+    fontSize: 16
   },
   error: {
-    color: "red",
-    textAlign: "center",
-    marginBottom: 10,
+    color: colors.danger,
+    textAlign: 'center',
+    marginBottom: 10
   }
 });

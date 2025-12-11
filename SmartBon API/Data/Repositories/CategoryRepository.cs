@@ -25,7 +25,9 @@ namespace Data.Repositories
         {
             IQueryable<Category> query = _dbSet.AsQueryable();
 
-            query = query.Where(f => f.UserId == userId || f.IsPredefined == true);
+            query = query
+                .Include(c => c.Subcategories)
+                .Where(f => f.UserId == userId || f.IsPredefined == true);
 
             if (!await query.AnyAsync())
                 throw new Exception("No categories were found for the provided category.");

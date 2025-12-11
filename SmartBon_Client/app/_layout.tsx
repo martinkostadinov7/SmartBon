@@ -1,12 +1,14 @@
-// app/_layout.tsx
 import { Stack } from 'expo-router';
+import { AuthProvider } from './providers/AuthProvider';
 
 export default function Layout() {
   return (
-    <Stack
-      screenOptions={{
-        headerShown: false
-      }}
-    />
+    <AuthProvider>
+      <Stack
+        screenOptions={{
+          headerShown: false
+        }}
+      />
+    </AuthProvider>
   );
 }
