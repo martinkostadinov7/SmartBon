@@ -1,6 +1,9 @@
 ﻿using Data.Interfaces;
 using Data.Repositories;
+using Services.Categories;
+using Services.Expenses;
 using Services.Interfaces;
+using Services.Subcategories;
 using Services.UserServices;
 namespace FeelBack.Api.Extentions
 {
@@ -10,6 +13,28 @@ namespace FeelBack.Api.Extentions
         {
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IUserRepository, UserRepository>();
+
+            services.AddScoped<IExpenseRepository, ExpenseRepository>();
+            services.AddScoped<IExpenseService, ExpenseService>();
+            
+            services.AddScoped<ICategoryRepository, CategoryRepository>();
+            services.AddScoped<ICategoryService, CategoryService>();
+
+            services.AddScoped<ISubcategoryService, SubcategoryService>();
+
+            services.AddScoped<ISubcategoryRepository, SubcategoryRepository>();
+            return services;
+        }
+
+        public static IServiceCollection AddApplicationAutoMapper(this IServiceCollection services)
+        {
+            services.AddAutoMapper(cfg =>
+            {
+                cfg.AddMaps(typeof(UserProfile));
+                cfg.AddMaps(typeof(ExpenseProfile));
+                cfg.AddMaps(typeof(CategoryProfile));
+            });
+
             return services;
         }
     }

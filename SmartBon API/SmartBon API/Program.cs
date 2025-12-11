@@ -1,18 +1,26 @@
 ﻿using Data;
 using FeelBack.Api.Extentions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using Services.Interfaces;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddSwaggerGen();
-
+    
 builder.Services.AddApplicationServices();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<IUserAccessor, HttpContextUserAccessor>();
+
+builder.Services.AddApplicationAutoMapper();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
     options.UseSqlServer(builder.Configuration.GetConnectionString("SmartBonDb"));
 });
+
 
 var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
@@ -27,6 +35,24 @@ builder.Services.AddCors(options =>
         });
 });
 
+builder.Services.AddAuthentication("Bearer")
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+
+            ValidIssuer = builder.Configuration["AppSettings:Issuer"],
+            ValidAudience = builder.Configuration["AppSettings:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(builder.Configuration["AppSettings:Token"]!)
+            )
+        };
+    });
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -39,6 +65,15 @@ if (app.Environment.IsDevelopment())
     });
 }
 
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    var db = services.GetRequiredService<AppDbContext>();
+
+    db.Database.Migrate();
+
+    SeedData.SeedAll(db);
+}
 //app.UseHttpsRedirection();
 
 app.UseCors(MyAllowSpecificOrigins);

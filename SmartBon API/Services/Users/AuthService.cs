@@ -1,6 +1,5 @@
 ﻿using Data.Interfaces;
 using Data.Models;
-using Data.Repositories;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
@@ -12,10 +11,10 @@ using System.Security.Claims;
 using System.Text;
 
 namespace Services.UserServices
-{
+{       
     public class AuthService(IUserRepository userRepo, IConfiguration configuration) : IAuthService
     {
-        public async Task<JsonWebToken> LoginAsync(UserLoginDto userToLogin)
+        public JsonWebToken Login(UserLoginDto userToLogin)
         {
             User user = userRepo.GetByEmail(userToLogin.Email) ?? throw new NullReferenceException("User with this email doesnt exist!");
 

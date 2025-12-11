@@ -1,6 +1,7 @@
 ﻿using Data.Interfaces;
 using Data.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 namespace Data.Repositories
 {
     public class EFRepository<T> : IRepository<T> where T : class, IEntity
@@ -15,14 +16,36 @@ namespace Data.Repositories
         }
         public virtual async Task<T?> GetById(int id)
         {
-            var query = this._dbSet.AsQueryable();
+            var query = _dbSet.AsQueryable();
 
-            return await query.SingleOrDefaultAsync(x => x.Id == id);
+            return await query.SingleOrDefaultAsync(x => EF.Property<int>(x, "Id") == id);
         }
 
-        public virtual async Task<IEnumerable<T>> GetAll()
+        public virtual async Task<T?> GetById(int id, Expression<Func<T, object>>[]? includeProperties)
         {
-            return await _dbSet.ToListAsync();
+            var query = _dbSet.AsQueryable();
+
+            if (includeProperties != null)
+            {
+                foreach (var includeProperty in includeProperties)
+                {
+                    query = query.Include(includeProperty);
+                }
+            }
+
+            return await query.SingleOrDefaultAsync(x => EF.Property<int>(x, "Id") == id);
+        }
+
+        public async Task<List<T>> GetAll()
+        {
+            IQueryable<T> query = _dbSet.AsQueryable();
+
+            if (!await query.AnyAsync())
+                throw new Exception("No entities were found.");
+
+            var entities = query.ToList();
+
+            return entities;
         }
 
         public virtual async Task<T> Add(T entity)
