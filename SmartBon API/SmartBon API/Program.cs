@@ -2,19 +2,25 @@
 using FeelBack.Api.Extentions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Services.Interfaces;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddSwaggerGen();
-
+    
 builder.Services.AddApplicationServices();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<IUserAccessor, HttpContextUserAccessor>();
+
+builder.Services.AddApplicationAutoMapper();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
     options.UseSqlServer(builder.Configuration.GetConnectionString("SmartBonDb"));
 });
+
 
 var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
@@ -59,7 +65,15 @@ if (app.Environment.IsDevelopment())
     });
 }
 
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    var db = services.GetRequiredService<AppDbContext>();
 
+    db.Database.Migrate();
+
+    SeedData.SeedAll(db);
+}
 //app.UseHttpsRedirection();
 
 app.UseCors(MyAllowSpecificOrigins);

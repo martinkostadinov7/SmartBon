@@ -1,4 +1,5 @@
-﻿using Shared.Enums;
+﻿using Shared.DTOs.CategoryDTOs;
+using Shared.Enums;
 
 namespace Shared.DTOs.ExpenseDTOs
 {
@@ -11,6 +12,10 @@ namespace Shared.DTOs.ExpenseDTOs
         public string? Description { get; set; }
 
         public decimal Cost { get; set; }
+
+        public CategoryReadDto Category { get; set; }
+
+        public SubcategoryReadDto Subcategory { get; set; }
 
         public DateTime ExpenseDate { get; set; }
 

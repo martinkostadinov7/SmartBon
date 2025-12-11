@@ -1,5 +1,4 @@
 ﻿using Shared.Enums;
-
 namespace Shared.DTOs.ExpenseDTOs
 {
     public class ExpenseCreateDto
@@ -10,10 +9,13 @@ namespace Shared.DTOs.ExpenseDTOs
 
         public decimal Cost { get; set; }
 
+        public int CategoryId { get; set; }
+
+        public int? SubcategoryId { get; set; }
+
         public DateTime ExpenseDate { get; set; }
 
         public PaymentType PaymentType { get; set; }
 
-        public int UserId { get; set; }
     }
 }

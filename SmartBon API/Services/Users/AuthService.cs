@@ -14,7 +14,7 @@ namespace Services.UserServices
 {       
     public class AuthService(IUserRepository userRepo, IConfiguration configuration) : IAuthService
     {
-        public JsonWebToken LoginAsync(UserLoginDto userToLogin)
+        public JsonWebToken Login(UserLoginDto userToLogin)
         {
             User user = userRepo.GetByEmail(userToLogin.Email) ?? throw new NullReferenceException("User with this email doesnt exist!");
 

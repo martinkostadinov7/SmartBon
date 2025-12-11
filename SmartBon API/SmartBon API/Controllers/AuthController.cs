@@ -19,7 +19,8 @@ namespace SmartBon_API.Controllers
         [HttpPost("login")]
         public ActionResult<JsonWebToken> Login(UserLoginDto request)
         {
-            var token = authService.LoginAsync(request);
+            var token = authService.Login(request);
+
             return Ok(token);
         }
 

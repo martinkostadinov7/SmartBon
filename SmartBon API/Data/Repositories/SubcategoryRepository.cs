@@ -1,0 +1,33 @@
+﻿using Data.Interfaces;
+using Data.Models;
+using Microsoft.EntityFrameworkCore;
+
+namespace Data.Repositories
+{
+    public class SubcategoryRepository(AppDbContext context) : EFRepository<Subcategory>(context), ISubcategoryRepository
+    {
+        public override async Task Delete(Subcategory subcategory)
+        {
+            var expenses = context.Expenses.Where(e => e.SubcategoryId == subcategory.Id);
+            context.Expenses.RemoveRange(expenses);
+
+            context.Subcategories.Remove(subcategory);
+
+            await context.SaveChangesAsync();
+        }
+
+        public async Task<List<Subcategory>> GetAll(int userId, int categoryId)
+        {
+            IQueryable<Subcategory> query = _dbSet.AsQueryable();
+
+            query = query.Where(f => f.CategoryId == categoryId && f.UserId == userId);
+
+            if (!await query.AnyAsync())
+                throw new Exception("No subcategories were found for the provided category.");
+
+            var subcategories = query.ToList();
+
+            return subcategories;
+        }
+    }
+}

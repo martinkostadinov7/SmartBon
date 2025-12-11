@@ -1,66 +1,55 @@
-﻿using Data.Interfaces;
+﻿using AutoMapper;
+using Data.Interfaces;
 using Data.Models;
 using Services.Interfaces;
+using Shared.DTOs.CategoryDTOs;
 using Shared.DTOs.ExpenseDTOs;
-using Shared.Enums;
 
 namespace Services.Expenses
 {
-    public class ExpenseService(IExpenseRepository expenseRepository) : IExpenseService
+    public class ExpenseService(IUserAccessor user, IExpenseRepository expenseRepository, IMapper mapper) : IExpenseService
     {
         async public Task<ExpenseReadDto> CreateExpense(ExpenseCreateDto dto)
         {
-            string title = dto.Title; //todo data validator
-            string? description = dto.Description; 
-            DateTime expenseDate = dto.ExpenseDate;
-            decimal cost = dto.Cost;
-            int userId = dto.UserId;
-            PaymentType paymentType = dto.PaymentType;
-
-            Expense expense = new Expense(title, description, cost, expenseDate, paymentType, userId); //todo configue mapper
+            Expense expense = mapper.Map<Expense>(dto);
+            expense.Id = user.Id;
             await expenseRepository.Add(expense);
+            
+            return mapper.Map<ExpenseReadDto>(expense);
+        }
 
-            ExpenseReadDto readDto = new ExpenseReadDto 
-            {
-                Id = expense.Id,
-                Title = title,
-                Description = description,
-                Cost = cost,
-                ExpenseDate = expenseDate,
-                PaymentType = paymentType 
-            };
-            return readDto;
+        async public Task<List<ExpenseReadDto>> GetExpenses()
+        {
+            List<Expense> expensesFromDb = await expenseRepository.GetAll(user.Id) ?? throw new Exception("Not found"); //todo customised apiexeptons 
+
+            return mapper.Map<List<ExpenseReadDto>>(expensesFromDb);
         }
 
         async public Task<ExpenseReadDto> GetExpenseById(int id)
         {
-            Expense expenseFromDb = await expenseRepository.GetById(id) ?? throw new Exception("Not found"); //todo customised apiexeptons 
-            
-            ExpenseReadDto readDto = new ExpenseReadDto
+            Expense expenseFromDb = await expenseRepository.GetById(id, [ x => x.Category, x => x.Subcategory ]) ?? throw new Exception("Not found"); //todo customised apiexeptons 
+            if (expenseFromDb.UserId != user.Id)
             {
-                Id = expenseFromDb.Id,
-                Title = expenseFromDb.Title,
-                Description = expenseFromDb.Description,
-                Cost = expenseFromDb.Cost,
-                ExpenseDate = expenseFromDb.ExpenseDate,
-                PaymentType = expenseFromDb.PaymentType
-            };
+                throw new Exception("User has no access to this content!");
+            }
+            CategoryReadDto category = mapper.Map<CategoryReadDto>(expenseFromDb.Category);
+            SubcategoryReadDto subcategory = mapper.Map<SubcategoryReadDto>(expenseFromDb.Subcategory);
+            ExpenseReadDto readDto = mapper.Map<ExpenseReadDto>(expenseFromDb);
             return readDto;
         }
+
+
         async public Task<ExpenseReadDto> DeleteExpense(int id)
         {
-            Expense expenseFromDb = await expenseRepository.GetById(id) ?? throw new Exception("Not found"); 
+            Expense expenseFromDb = await expenseRepository.GetById(id) ?? throw new Exception("Not found");
+
+            if (expenseFromDb.UserId != user.Id)
+            {
+                throw new Exception("User has no access to this content!");
+            }
             await expenseRepository.Delete(expenseFromDb);
 
-            ExpenseReadDto readDto = new ExpenseReadDto
-            {
-                Id = expenseFromDb.Id,
-                Title = expenseFromDb.Title,
-                Description = expenseFromDb.Description,
-                Cost = expenseFromDb.Cost,
-                ExpenseDate = expenseFromDb.ExpenseDate,
-                PaymentType = expenseFromDb.PaymentType
-            };
+            ExpenseReadDto readDto = mapper.Map<ExpenseReadDto>(expenseFromDb);
             return readDto;
         }
     }
