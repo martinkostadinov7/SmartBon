@@ -15,6 +15,25 @@ export type AuthResponse = {
   token?: string;
 };
 
+export type PaymentType = 'Cash' | 'DebitCard' | 'CreditCard' | 'Bank_Transfer';
+
+export type IconType = 'Url' | 'Emoji';
+
+export type Subcategory = {
+  id: number;
+  name: string;
+  iconType: IconType;
+  iconValue: string;
+};
+
+export type Category = {
+  id: number;
+  name: string;
+  iconType: IconType;
+  iconValue: string;
+  subcategories?: Subcategory[];
+};
+
 export type AuthContextValue = {
   token: string | null;
   status: AuthStatus;
@@ -25,13 +44,35 @@ export type AuthContextValue = {
   signOut: () => Promise<void>;
 };
 
+export type CategoriesState = {
+  items: Category[];
+  loading: boolean;
+  error: string | null;
+};
+
+export type CategoriesContextValue = CategoriesState & {
+  refresh: () => Promise<void>;
+};
+
 export type Expense = {
   id: string;
   title: string;
-  amount: number;
-  category: string;
+  description?: string;
+  cost: number;
+  categoryId: number;
+  categoryName?: string;
+  subcategoryId?: number | null;
+  subcategoryName?: string | null;
   date: string;
-  notes?: string;
+  paymentType: PaymentType;
 };
 
-export type NewExpenseInput = Omit<Expense, 'id'>;
+export type ExpenseCreateInput = {
+  title: string;
+  description?: string;
+  cost: number;
+  categoryId: number;
+  subcategoryId?: number | null;
+  expenseDate: string;
+  paymentType: PaymentType;
+};

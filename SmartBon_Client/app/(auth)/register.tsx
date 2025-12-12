@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, Text, TextInput, TouchableOpacity } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { useAuth } from '../hooks/useAuth';
 import { colors } from '../theme/colors';
@@ -40,7 +41,7 @@ export default function RegisterScreen() {
   const displayedError = error || authError;
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       <Text style={styles.title}>Create an account</Text>
       <Text style={styles.subtitle}>Register to start tracking your expenses.</Text>
 
@@ -82,7 +83,7 @@ export default function RegisterScreen() {
       <TouchableOpacity onPress={() => router.replace('/')}>
         <Text style={styles.link}>Already have an account? Login</Text>
       </TouchableOpacity>
-    </View>
+    </SafeAreaView>
   );
 }
 

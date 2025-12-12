@@ -12,7 +12,7 @@ namespace Services.Expenses
         async public Task<ExpenseReadDto> CreateExpense(ExpenseCreateDto dto)
         {
             Expense expense = mapper.Map<Expense>(dto);
-            expense.Id = user.Id;
+            expense.UserId = user.Id;
             await expenseRepository.Add(expense);
             
             return mapper.Map<ExpenseReadDto>(expense);

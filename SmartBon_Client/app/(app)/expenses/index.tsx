@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, FlatList, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { fetchExpenses } from '../../services/expensesService';
 import { Expense } from '../../types';
 import { colors } from '../../theme/colors';
+import { router } from 'expo-router';
 
 export default function ExpensesScreen() {
   const [loading, setLoading] = useState(true);
@@ -41,22 +43,29 @@ export default function ExpensesScreen() {
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.header}>Recent expenses</Text>
+    <SafeAreaView style={styles.container} edges={['top']}>
+      <View style={styles.headerRow}>
+        <Text style={styles.header}>Recent expenses</Text>
+        <TouchableOpacity style={styles.addButton} onPress={() => router.push('/expenses/add')}>
+          <Text style={styles.addButtonText}>+ Add</Text>
+        </TouchableOpacity>
+      </View>
       <FlatList
         data={items}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <View style={styles.card}>
             <Text style={styles.title}>{item.title}</Text>
-            <Text style={styles.amount}>${item.amount.toFixed(2)}</Text>
-            <Text style={styles.meta}>{item.category} • {new Date(item.date).toLocaleDateString()}</Text>
+            <Text style={styles.amount}>${item.cost.toFixed(2)}</Text>
+            <Text style={styles.meta}>
+              {item.categoryName ?? 'Category'} • {new Date(item.date).toLocaleDateString()}
+            </Text>
           </View>
         )}
         ItemSeparatorComponent={() => <View style={styles.separator} />}
         ListEmptyComponent={<Text style={styles.muted}>No expenses yet</Text>}
       />
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -69,8 +78,23 @@ const styles = StyleSheet.create({
   header: {
     fontSize: 22,
     fontWeight: '700',
-    marginBottom: 12,
     color: colors.text
+  },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12
+  },
+  addButton: {
+    backgroundColor: colors.primary,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8
+  },
+  addButtonText: {
+    color: '#fff',
+    fontWeight: '700'
   },
   card: {
     backgroundColor: colors.card,

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, Text, TextInput, TouchableOpacity } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { useAuth } from '../hooks/useAuth';
 import { colors } from '../theme/colors';
@@ -34,7 +35,7 @@ export default function LoginScreen() {
   const displayedError = error || authError;
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       <Text style={styles.title}>Welcome</Text>
       <Text style={styles.subtitle}>Sign in to keep tracking your expenses.</Text>
 
@@ -64,7 +65,7 @@ export default function LoginScreen() {
       <TouchableOpacity onPress={() => router.replace('/register')}>
         <Text style={styles.link}>Don't have an account? Register</Text>
       </TouchableOpacity>
-    </View>
+    </SafeAreaView>
   );
 }
 
