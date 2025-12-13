@@ -1,38 +1,67 @@
-import { useEffect } from 'react';
-import { ActivityIndicator, View, StyleSheet } from 'react-native';
-import { Stack, router } from 'expo-router';
-import { useAuth } from '../hooks/useAuth';
+import { Tabs } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { colors } from '../theme/colors';
 
-export default function AppLayout() {
-  const { status, processing } = useAuth();
-
-  useEffect(() => {
-    if (status === 'unauthenticated' && !processing) {
-      router.replace('/');
-    }
-  }, [status, processing]);
-
-  if (status === 'checking') {
-    return (
-      <View style={styles.loader}>
-        <ActivityIndicator size="large" />
-      </View>
-    );
-  }
-
+export default function AppTabsLayout() {
   return (
-    <Stack
+    <Tabs
       screenOptions={{
-        headerShown: false
+        headerShown: false,
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: colors.muted,
+        tabBarStyle: {
+          backgroundColor: colors.card,
+          borderTopColor: colors.border,
+          borderTopWidth: 1,
+          paddingVertical: 6,
+          height: 68
+        },
+        tabBarLabelStyle: {
+          fontSize: 12,
+          marginBottom: 4
+        }
       }}
-    />
+    >
+      <Tabs.Screen
+        name="home"
+        options={{
+          title: 'Home',
+          tabBarIcon: ({ color, size }) => <Ionicons name="home" color={color} size={size} />
+        }}
+      />
+      <Tabs.Screen
+        name="expenses/index"
+        options={{
+          title: 'Expenses',
+          tabBarIcon: ({ color, size }) => <Ionicons name="receipt-outline" color={color} size={size} />
+        }}
+      />
+      <Tabs.Screen
+        name="expenses/add"
+        options={{
+          href: null,
+          tabBarStyle: { display: 'none' }
+        }}
+      />
+      <Tabs.Screen
+        name="expenses/[id]"
+        options={{
+          href: null,
+          tabBarStyle: { display: 'none' }
+        }}
+      />
+      <Tabs.Screen
+        name="categories/add"
+        options={{
+          href: null
+        }}
+      />
+      <Tabs.Screen
+        name="subcategories/add"
+        options={{
+          href: null
+        }}
+      />
+    </Tabs>
   );
 }
-
-const styles = StyleSheet.create({
-  loader: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center'
-  }
-});

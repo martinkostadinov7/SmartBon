@@ -2,21 +2,30 @@ import { useEffect, useMemo, useState } from 'react';
 import {
   Alert,
   ActivityIndicator,
-  Image,
+  LayoutAnimation,
+  Platform,
   Modal,
-  Pressable,
   ScrollView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  View
+  View,
+  UIManager
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 import { createExpense } from '../../services/expensesService';
 import { colors } from '../../theme/colors';
 import { useCategories } from '../../hooks/useCategories';
 import { Category, PaymentType, Subcategory } from '../../types';
+import { IconBadge } from '../../components/IconBadge';
+import { createCategory, createSubcategory } from '../../services/categoryService';
+
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 
 export default function AddExpenseScreen() {
   const {
@@ -32,16 +41,66 @@ export default function AddExpenseScreen() {
   const [selectedSubcategory, setSelectedSubcategory] = useState<Subcategory | null>(null);
   const [paymentType, setPaymentType] = useState<PaymentType>('Cash');
   const [saving, setSaving] = useState(false);
-  const [categoryModalVisible, setCategoryModalVisible] = useState(false);
-  const [subcategoryModalVisible, setSubcategoryModalVisible] = useState(false);
+  const [categorySheetVisible, setCategorySheetVisible] = useState(false);
+  const [subcategorySheetVisible, setSubcategorySheetVisible] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [newCategoryIcon, setNewCategoryIcon] = useState('🍔');
+  const [creatingCategory, setCreatingCategory] = useState(false);
+  const [newSubName, setNewSubName] = useState('');
+  const [newSubIcon, setNewSubIcon] = useState('🧾');
+  const [creatingSub, setCreatingSub] = useState(false);
 
   const selectedSubcategories = useMemo(() => selectedCategory?.subcategories ?? [], [selectedCategory]);
 
   useEffect(() => {
-    if (categoryModalVisible && categories.length === 0 && !categoriesLoading && !categoriesError) {
+    if (categories.length === 0 && !categoriesLoading && !categoriesError) {
       refreshCategories();
     }
-  }, [categoryModalVisible, categories.length, categoriesLoading, categoriesError, refreshCategories]);
+  }, [categories.length, categoriesLoading, categoriesError, refreshCategories]);
+
+  const emojiChoices = ['🍔', '💳', '🧾', '🛒', '🚗', '📚', '🏠', '☕'];
+
+  const handleCreateCategory = async () => {
+    if (!newCategoryName.trim()) return;
+    setCreatingCategory(true);
+    try {
+      const created = await createCategory({
+        name: newCategoryName.trim(),
+        iconType: 'Emoji',
+        iconValue: newCategoryIcon
+      });
+      await refreshCategories();
+      setSelectedCategory(created);
+      setSelectedSubcategory(null);
+      setCategorySheetVisible(false);
+      setNewCategoryName('');
+      setNewCategoryIcon('🍔');
+    } catch (err: any) {
+      Alert.alert('Error', err?.message || 'Could not create category');
+    } finally {
+      setCreatingCategory(false);
+    }
+  };
+
+  const handleCreateSubcategory = async () => {
+    if (!selectedCategory || !newSubName.trim()) return;
+    setCreatingSub(true);
+    try {
+      await createSubcategory(selectedCategory.id, {
+        name: newSubName.trim(),
+        iconType: 'Emoji',
+        iconValue: newSubIcon
+      });
+      await refreshCategories();
+      setSubcategorySheetVisible(false);
+      setNewSubName('');
+      setNewSubIcon('🧾');
+    } catch (err: any) {
+      Alert.alert('Error', err?.message || 'Could not create subcategory');
+    } finally {
+      setCreatingSub(false);
+    }
+  };
 
   const handleSave = async () => {
     const normalizedAmount = Number((amount || '').replace(',', '.'));
@@ -80,8 +139,15 @@ export default function AddExpenseScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <Text style={styles.header}>Add expense</Text>
+      <View style={styles.headerRow}>
+        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+          <Ionicons name="arrow-back" size={22} color={colors.text} />
+        </TouchableOpacity>
+        <Text style={styles.header}>Add expense</Text>
+        <View style={{ width: 36 }} />
+      </View>
 
+      <Text style={styles.fieldLabel}>Title</Text>
       <TextInput
         style={styles.input}
         placeholder="Title"
@@ -89,6 +155,7 @@ export default function AddExpenseScreen() {
         onChangeText={setTitle}
       />
 
+      <Text style={styles.fieldLabel}>Description</Text>
       <TextInput
         style={styles.input}
         placeholder="Description (optional)"
@@ -96,6 +163,7 @@ export default function AddExpenseScreen() {
         onChangeText={setDescription}
       />
 
+      <Text style={styles.fieldLabel}>Amount</Text>
       <TextInput
         style={styles.input}
         placeholder="Amount"
@@ -104,24 +172,109 @@ export default function AddExpenseScreen() {
         onChangeText={setAmount}
       />
 
-      <Pressable style={styles.selector} onPress={() => setCategoryModalVisible(true)}>
-        <Text style={styles.selectorLabel}>Category</Text>
-        <Text style={styles.selectorValue}>
-          {selectedCategory ? selectedCategory.name : 'Select a category'}
-        </Text>
-      </Pressable>
+      <Text style={styles.selectorLabel}>Category</Text>
+      <View style={styles.listContainer}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.horizontalList}
+        >
+          {categoriesLoading ? (
+            <View style={styles.centerRow}>
+              <ActivityIndicator />
+            </View>
+          ) : categoriesError ? (
+            <TouchableOpacity style={styles.retryCard} onPress={refreshCategories}>
+              <Text style={styles.errorText}>{categoriesError}</Text>
+              <Text style={styles.retryText}>Tap to retry</Text>
+            </TouchableOpacity>
+          ) : categories.length === 0 ? (
+            <TouchableOpacity style={styles.retryCard} onPress={refreshCategories}>
+              <Text style={styles.errorText}>No categories</Text>
+              <Text style={styles.retryText}>Refresh</Text>
+            </TouchableOpacity>
+          ) : (
+            <>
+              {categories.map((cat) => (
+                <TouchableOpacity
+                  key={cat.id}
+                  style={[
+                    styles.categoryChip,
+                    selectedCategory?.id === cat.id && styles.categoryChipActive
+                  ]}
+                  onPress={() => {
+                    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+                    setSelectedCategory(cat);
+                    setSelectedSubcategory(null);
+                  }}
+                >
+                  <IconBadge
+                    iconType={cat.iconType}
+                    iconValue={cat.iconValue}
+                    size={48}
+                    style={{ marginBottom: 6 }}
+                  />
+                  <Text style={styles.categoryLabel}>{cat.name}</Text>
+                </TouchableOpacity>
+              ))}
+              <TouchableOpacity
+                style={[styles.categoryChip, styles.addChip]}
+                onPress={() => setCategorySheetVisible(true)}
+              >
+                <Ionicons name="add" size={24} color={colors.text} />
+                <Text style={styles.addLabel}>Add</Text>
+              </TouchableOpacity>
+            </>
+          )}
+        </ScrollView>
+      </View>
 
       {selectedSubcategories.length > 0 ? (
-        <Pressable
-          style={styles.selector}
-          onPress={() => setSubcategoryModalVisible(true)}
-          disabled={!selectedCategory}
-        >
-          <Text style={styles.selectorLabel}>Subcategory</Text>
-          <Text style={styles.selectorValue}>
-            {selectedSubcategory ? selectedSubcategory.name : 'Optional'}
-          </Text>
-        </Pressable>
+        <>
+          <Text style={[styles.selectorLabel, { marginTop: 8 }]}>Subcategory</Text>
+          <View style={styles.listContainer}>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.horizontalList}
+          >
+            {selectedSubcategories.map((sub) => (
+              <TouchableOpacity
+                key={sub.id}
+                style={[
+                  styles.subcategoryChip,
+                  selectedSubcategory?.id === sub.id && styles.categoryChipActive
+                ]}
+                onPress={() => {
+                  LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+                  setSelectedSubcategory(sub);
+                }}
+              >
+                <IconBadge
+                  iconType={sub.iconType}
+                  iconValue={sub.iconValue}
+                  size={36}
+                  style={{ marginBottom: 4 }}
+                />
+                <Text style={styles.subcategoryLabel}>{sub.name}</Text>
+              </TouchableOpacity>
+            ))}
+            <TouchableOpacity
+              style={[styles.subcategoryChip, styles.addChip]}
+              onPress={() => {
+                if (!selectedCategory) {
+                  Alert.alert('Pick a category first');
+                  return;
+                }
+                setSubcategorySheetVisible(true);
+              }}
+            >
+              <Ionicons name="add" size={20} color={colors.text} />
+              <Text style={styles.addLabel}>Add</Text>
+            </TouchableOpacity>
+          </ScrollView>
+        </View>
+      </>
       ) : null}
 
       <View style={styles.paymentRow}>
@@ -147,122 +300,98 @@ export default function AddExpenseScreen() {
         <Text style={styles.buttonText}>{saving ? 'Saving...' : 'Save'}</Text>
       </TouchableOpacity>
 
-      <Modal visible={categoryModalVisible} animationType="slide">
-        <SafeAreaView style={styles.modalContainer} edges={['top']}>
-          <Text style={styles.modalTitle}>Choose a category</Text>
-          {categoriesLoading ? (
-            <View style={styles.center}>
-              <ActivityIndicator />
-            </View>
-          ) : categoriesError ? (
-            <View style={styles.center}>
-              <Text style={styles.errorText}>{categoriesError}</Text>
-              <TouchableOpacity style={styles.modalClose} onPress={refreshCategories}>
-                <Text style={styles.modalCloseText}>Retry</Text>
+      <Modal
+        visible={categorySheetVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setCategorySheetVisible(false)}
+      >
+        <View style={styles.sheetOverlay}>
+          <View style={styles.sheet}>
+            <View style={styles.sheetHeader}>
+              <Text style={styles.sheetTitle}>New category</Text>
+              <TouchableOpacity onPress={() => setCategorySheetVisible(false)}>
+                <Ionicons name="close" size={22} color={colors.text} />
               </TouchableOpacity>
             </View>
-          ) : categories.length === 0 ? (
-            <View style={styles.center}>
-              <Text style={styles.errorText}>No categories available</Text>
-              <TouchableOpacity style={styles.modalClose} onPress={refreshCategories}>
-                <Text style={styles.modalCloseText}>Refresh</Text>
-              </TouchableOpacity>
-            </View>
-          ) : (
-            <ScrollView contentContainerStyle={styles.categoriesGrid}>
-              {categories.map((cat) => (
-                <Pressable
-                  key={cat.id}
+            <Text style={styles.fieldLabel}>Name</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Category name"
+              value={newCategoryName}
+              onChangeText={setNewCategoryName}
+            />
+            <Text style={styles.fieldLabel}>Icon (emoji)</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalList}>
+              {emojiChoices.map((emoji) => (
+                <TouchableOpacity
+                  key={emoji}
                   style={[
-                    styles.categoryCard,
-                    selectedCategory?.id === cat.id && styles.categoryCardActive
+                    styles.emojiOption,
+                    newCategoryIcon === emoji && styles.emojiOptionActive
                   ]}
-                  onPress={() => {
-                    setSelectedCategory(cat);
-                    setSelectedSubcategory(null);
-                    setCategoryModalVisible(false);
-
-                    if (cat.subcategories && cat.subcategories.length > 0) {
-                      Alert.alert(
-                        'Subcategory',
-                        'Do you want to pick a subcategory?',
-                        [
-                          { text: 'No', style: 'cancel' },
-                          {
-                            text: 'Yes',
-                            onPress: () => setSubcategoryModalVisible(true)
-                          }
-                        ]
-                      );
-                    }
-                  }}
+                  onPress={() => setNewCategoryIcon(emoji)}
                 >
-                  <View style={styles.iconCircle}>
-                    {cat.iconType === 'Emoji' ? (
-                      <Text style={styles.iconText}>{cat.iconValue || '🙂'}</Text>
-                    ) : cat.iconValue ? (
-                      <Image
-                        source={{ uri: cat.iconValue }}
-                        style={styles.iconImage}
-                        resizeMode="contain"
-                      />
-                    ) : (
-                      <Text style={styles.iconText}>🔗</Text>
-                    )}
-                  </View>
-                  <Text style={styles.categoryName}>{cat.name}</Text>
-                </Pressable>
+                  <Text style={styles.emojiText}>{emoji}</Text>
+                </TouchableOpacity>
               ))}
             </ScrollView>
-          )}
-
-          <TouchableOpacity style={styles.modalClose} onPress={() => setCategoryModalVisible(false)}>
-            <Text style={styles.modalCloseText}>Close</Text>
-          </TouchableOpacity>
-        </SafeAreaView>
+            <TouchableOpacity
+              style={[styles.button, { marginTop: 8 }]}
+              onPress={handleCreateCategory}
+              disabled={creatingCategory}
+            >
+              <Text style={styles.buttonText}>{creatingCategory ? 'Saving...' : 'Save'}</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
       </Modal>
 
-      <Modal visible={subcategoryModalVisible} animationType="slide">
-        <SafeAreaView style={styles.modalContainer} edges={['top']}>
-          <Text style={styles.modalTitle}>Choose a subcategory</Text>
-          <ScrollView contentContainerStyle={styles.categoriesGrid}>
-            {selectedSubcategories.map((sub) => (
-              <Pressable
-                key={sub.id}
-                style={[
-                  styles.categoryCard,
-                  selectedSubcategory?.id === sub.id && styles.categoryCardActive
-                ]}
-                onPress={() => {
-                  setSelectedSubcategory(sub);
-                  setSubcategoryModalVisible(false);
-                }}
-              >
-                <View style={styles.iconCircle}>
-                  {sub.iconType === 'Emoji' ? (
-                    <Text style={styles.iconText}>{sub.iconValue || '🙂'}</Text>
-                  ) : sub.iconValue ? (
-                    <Image
-                      source={{ uri: sub.iconValue }}
-                      style={styles.iconImage}
-                      resizeMode="contain"
-                    />
-                  ) : (
-                    <Text style={styles.iconText}>🔗</Text>
-                  )}
-                </View>
-                <Text style={styles.categoryName}>{sub.name}</Text>
-              </Pressable>
-            ))}
-          </ScrollView>
-
-          <TouchableOpacity style={styles.modalClose} onPress={() => {
-            setSelectedSubcategory(null);
-            setSubcategoryModalVisible(false);
-          }}>
-            <Text style={styles.modalCloseText}>Skip</Text>
-          </TouchableOpacity>
-        </SafeAreaView>
+      <Modal
+        visible={subcategorySheetVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setSubcategorySheetVisible(false)}
+      >
+        <View style={styles.sheetOverlay}>
+          <View style={styles.sheet}>
+            <View style={styles.sheetHeader}>
+              <Text style={styles.sheetTitle}>New subcategory</Text>
+              <TouchableOpacity onPress={() => setSubcategorySheetVisible(false)}>
+                <Ionicons name="close" size={22} color={colors.text} />
+              </TouchableOpacity>
+            </View>
+            <Text style={styles.fieldLabel}>Name</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Subcategory name"
+              value={newSubName}
+              onChangeText={setNewSubName}
+            />
+            <Text style={styles.fieldLabel}>Icon (emoji)</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalList}>
+              {emojiChoices.map((emoji) => (
+                <TouchableOpacity
+                  key={emoji}
+                  style={[
+                    styles.emojiOption,
+                    newSubIcon === emoji && styles.emojiOptionActive
+                  ]}
+                  onPress={() => setNewSubIcon(emoji)}
+                >
+                  <Text style={styles.emojiText}>{emoji}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+            <TouchableOpacity
+              style={[styles.button, { marginTop: 8 }]}
+              onPress={handleCreateSubcategory}
+              disabled={creatingSub}
+            >
+              <Text style={styles.buttonText}>{creatingSub ? 'Saving...' : 'Save'}</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
       </Modal>
     </SafeAreaView>
   );
@@ -284,6 +413,23 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     marginBottom: 16,
     color: colors.text
+  },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+    gap: 12,
+    justifyContent: 'space-between'
+  },
+  backButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: colors.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.card
   },
   input: {
     backgroundColor: colors.card,
@@ -313,11 +459,14 @@ const styles = StyleSheet.create({
   },
   selectorLabel: {
     color: colors.muted,
-    fontSize: 12
+    fontSize: 12,
+    marginBottom: 8
   },
-  selectorValue: {
-    marginTop: 6,
-    color: colors.text,
+  fieldLabel: {
+    color: colors.muted,
+    fontSize: 13,
+    marginTop: 8,
+    marginBottom: 4,
     fontWeight: '600'
   },
   paymentRow: {
@@ -343,69 +492,128 @@ const styles = StyleSheet.create({
   paymentPillTextActive: {
     color: '#fff'
   },
-  modalContainer: {
-    flex: 1,
-    padding: 20,
-    backgroundColor: colors.background
+  errorText: {
+    color: colors.danger,
+    textAlign: 'center'
   },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    marginBottom: 16,
-    color: colors.text
+  horizontalList: {
+    gap: 12,
+    marginBottom: 12
   },
-  categoriesGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12
+  listContainer: {
+    marginBottom: 0
   },
-  categoryCard: {
-    width: '47%',
+  categoryChip: {
+    width: 110,
+    height: 110,
     backgroundColor: colors.card,
     borderColor: colors.border,
     borderWidth: 1,
     borderRadius: 12,
-    padding: 12,
-    alignItems: 'center'
-  },
-  categoryCardActive: {
-    borderColor: colors.primary
-  },
-  iconCircle: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    padding: 10,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#f1f5f9',
-    marginBottom: 8
+    marginTop: 4
   },
-  iconText: {
-    fontSize: 24
+  subcategoryChip: {
+    width: 90,
+    height: 90,
+    backgroundColor: colors.card,
+    borderColor: colors.border,
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 4
   },
-  iconImage: {
-    width: 28,
-    height: 28
+  categoryChipActive: {
+    borderColor: colors.primary
   },
-  categoryName: {
+  categoryLabel: {
     textAlign: 'center',
     color: colors.text,
+    fontWeight: '600',
+    fontSize: 14
+  },
+  subcategoryLabel: {
+    textAlign: 'center',
+    color: colors.text,
+    fontWeight: '600',
+    fontSize: 13
+  },
+  retryCard: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 10,
+    borderColor: colors.border,
+    borderWidth: 1,
+    backgroundColor: colors.card,
+    justifyContent: 'center'
+  },
+  retryText: {
+    color: colors.primary,
+    marginTop: 4,
+    textAlign: 'center',
     fontWeight: '600'
   },
-  modalClose: {
-    marginTop: 20,
-    alignSelf: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    backgroundColor: colors.primary,
-    borderRadius: 10
+  centerRow: {
+    justifyContent: 'center',
+    alignItems: 'center'
   },
-  modalCloseText: {
-    color: '#fff',
-    fontWeight: '700'
+  addChip: {
+    borderStyle: 'dashed'
   },
-  errorText: {
-    color: colors.danger,
-    textAlign: 'center'
+  addLabel: {
+    marginTop: 6,
+    fontWeight: '700',
+    color: colors.text
+  },
+  sheetOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.25)',
+    justifyContent: 'flex-end'
+  },
+  sheet: {
+    backgroundColor: colors.card,
+    padding: 16,
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    minHeight: '45%'
+  },
+  sheetHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12
+  },
+  sheetTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: colors.text
+  },
+  emojiOption: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  emojiOptionActive: {
+    borderColor: colors.primary,
+    backgroundColor: '#EFF6FF'
+  },
+  emojiText: {
+    fontSize: 20
   }
 });
+  const [categorySheetVisible, setCategorySheetVisible] = useState(false);
+  const [subcategorySheetVisible, setSubcategorySheetVisible] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [newCategoryIcon, setNewCategoryIcon] = useState('🍔');
+  const [creatingCategory, setCreatingCategory] = useState(false);
+  const [newSubName, setNewSubName] = useState('');
+  const [newSubIcon, setNewSubIcon] = useState('🧾');
+  const [creatingSub, setCreatingSub] = useState(false);
