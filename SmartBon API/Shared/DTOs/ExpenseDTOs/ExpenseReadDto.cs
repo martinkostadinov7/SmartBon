@@ -13,9 +13,9 @@ namespace Shared.DTOs.ExpenseDTOs
 
         public decimal Cost { get; set; }
 
-        public CategoryReadDto Category { get; set; }
+        public int CategoryId { get; set; }
 
-        public SubcategoryReadDto Subcategory { get; set; }
+        public int? SubcategoryId { get; set; }
 
         public DateTime ExpenseDate { get; set; }
 

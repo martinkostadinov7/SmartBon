@@ -6,7 +6,7 @@ namespace Data.Repositories
 {
     public class SubcategoryRepository(AppDbContext context) : EFRepository<Subcategory>(context), ISubcategoryRepository
     {
-        public override async Task Delete(Subcategory subcategory)
+        public override async Task DeleteAsync(Subcategory subcategory)
         {
             var expenses = context.Expenses.Where(e => e.SubcategoryId == subcategory.Id);
             context.Expenses.RemoveRange(expenses);

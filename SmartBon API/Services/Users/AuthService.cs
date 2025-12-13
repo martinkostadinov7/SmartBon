@@ -40,7 +40,7 @@ namespace Services.UserServices
             string hashedPassword = new PasswordHasher<User>().HashPassword(user, userToRegister.Password);
             user.PasswordHash = hashedPassword;
             //to do email legit checker + password checker
-            await userRepo.Add(user);
+            await userRepo.AddAsync(user);
         }
 
         private JsonWebToken CreateToken(User user)

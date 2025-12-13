@@ -17,7 +17,7 @@ export type AuthResponse = {
 
 export type PaymentType = 'Cash' | 'DebitCard' | 'CreditCard' | 'Bank_Transfer';
 
-export type IconType = 'Url' | 'Emoji';
+export type IconType = 'Url' | 'Emoji' | 'FontAwesome';
 
 export type Subcategory = {
   id: number;
@@ -55,7 +55,7 @@ export type CategoriesContextValue = CategoriesState & {
 };
 
 export type Expense = {
-  id: string;
+  id: number;
   title: string;
   description?: string;
   cost: number;
@@ -63,7 +63,7 @@ export type Expense = {
   categoryName?: string;
   subcategoryId?: number | null;
   subcategoryName?: string | null;
-  date: string;
+  expenseDate: string;
   paymentType: PaymentType;
 };
 

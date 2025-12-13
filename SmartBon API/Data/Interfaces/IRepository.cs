@@ -4,16 +4,18 @@ namespace Data.Interfaces
 {
     public interface IRepository<T> 
     {
-        Task<T?> GetById(int id);
+        Task<T?> GetByIdAsync(int id);
 
-        Task<T?> GetById(int id, Expression<Func<T, object>>[] includeProperties);
+        Task<T?> GetByIdAsync(int id, Expression<Func<T, object>>[] includeProperties);
 
-        Task<List<T>> GetAll();
+        Task<List<T>> GetAllAsync();
         
-        Task<T> Add(T entity);
+        Task<T> AddAsync(T entity);
         
-        Task<T> Update(T entity);
+        Task<T> UpdateAsync(T entity);
         
-        Task Delete(T entity);
+        Task DeleteAsync(T entity);
+
+        List<T> Find(Expression<Func<T, bool>> where, Expression<Func<T, object>>[] includeProperties = null, Func<IQueryable<T>, IOrderedQueryable<T>> OrderByDescending = null);
     }
 }

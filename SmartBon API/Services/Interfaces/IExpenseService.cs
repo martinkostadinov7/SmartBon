@@ -3,9 +3,11 @@ namespace Services.Interfaces
 {
     public interface IExpenseService
     {
-        Task<ExpenseReadDto> CreateExpense(ExpenseCreateDto dto);
-        Task<ExpenseReadDto> GetExpenseById(int id);
-        Task<List<ExpenseReadDto>> GetExpenses();
-        Task<ExpenseReadDto> DeleteExpense(int id);
+        Task<ExpenseReadDto> CreateExpenseAsync(ExpenseCreateDto dto);
+        Task<ExpenseReadDto> GetExpenseByIdAsync(int id);
+        Task<List<ExpenseReadDto>> GetExpensesAsync();
+        Task<ExpenseReadDto> DeleteExpenseAsync(int id);
+        Task<List<ExpenseReadDto>> GetRecentExpensesAsync(int count);
+
     }
 }

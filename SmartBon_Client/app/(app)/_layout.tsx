@@ -37,6 +37,20 @@ export default function AppTabsLayout() {
         }}
       />
       <Tabs.Screen
+        name="statistics"
+        options={{
+          title: 'Statistics',
+          tabBarIcon: ({ color, size }) => <Ionicons name="stats-chart" color={color} size={size} />
+        }}
+      />
+      <Tabs.Screen
+        name="settings"
+        options={{
+          title: 'Settings',
+          tabBarIcon: ({ color, size }) => <Ionicons name="settings-outline" color={color} size={size} />
+        }}
+      />
+      <Tabs.Screen
         name="expenses/add"
         options={{
           href: null,
@@ -48,18 +62,6 @@ export default function AppTabsLayout() {
         options={{
           href: null,
           tabBarStyle: { display: 'none' }
-        }}
-      />
-      <Tabs.Screen
-        name="categories/add"
-        options={{
-          href: null
-        }}
-      />
-      <Tabs.Screen
-        name="subcategories/add"
-        options={{
-          href: null
         }}
       />
     </Tabs>

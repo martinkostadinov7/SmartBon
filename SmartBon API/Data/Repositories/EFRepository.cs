@@ -1,6 +1,7 @@
 ﻿using Data.Interfaces;
 using Data.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Globalization;
 using System.Linq.Expressions;
 namespace Data.Repositories
 {
@@ -14,16 +15,16 @@ namespace Data.Repositories
             _context = context;
             _dbSet = _context.Set<T>();
         }
-        public virtual async Task<T?> GetById(int id)
+        public virtual async Task<T?> GetByIdAsync(int id)
         {
             var query = _dbSet.AsQueryable();
 
             return await query.SingleOrDefaultAsync(x => EF.Property<int>(x, "Id") == id);
         }
 
-        public virtual async Task<T?> GetById(int id, Expression<Func<T, object>>[]? includeProperties)
+        public virtual async Task<T?> GetByIdAsync(int id, Expression<Func<T, object>>[]? includeProperties)
         {
-            var query = _dbSet.AsQueryable();
+            var query = _dbSet.AsQueryable();   
 
             if (includeProperties != null)
             {
@@ -36,7 +37,7 @@ namespace Data.Repositories
             return await query.SingleOrDefaultAsync(x => EF.Property<int>(x, "Id") == id);
         }
 
-        public async Task<List<T>> GetAll()
+        public async Task<List<T>> GetAllAsync()
         {
             IQueryable<T> query = _dbSet.AsQueryable();
 
@@ -48,24 +49,47 @@ namespace Data.Repositories
             return entities;
         }
 
-        public virtual async Task<T> Add(T entity)
+        public virtual async Task<T> AddAsync(T entity)
         {
             await _dbSet.AddAsync(entity);
             await _context.SaveChangesAsync();
             return entity;
         }
 
-        public virtual async Task<T> Update(T entity)
+        public virtual async Task<T> UpdateAsync(T entity)
         {
             _context.Entry(entity).State = EntityState.Modified;
             await _context.SaveChangesAsync();
             return entity;
         }
 
-        public virtual async Task Delete(T entity)
+        public virtual async Task DeleteAsync(T entity)
         {
             _dbSet.Remove(entity);
             await _context.SaveChangesAsync();
         }
+
+        public List<T> Find(Expression<Func<T, bool>> where, Expression<Func<T, object>>[] includeProperties = null, Func<IQueryable<T>, IOrderedQueryable<T>> orderByDescending = null)
+        {
+            var query = _dbSet.AsQueryable();
+            
+            query = query.Where(where);
+
+            if (includeProperties != null)
+            {
+                foreach (var include in includeProperties)
+                {
+                    query = query.Include(include);
+                }
+            }
+
+            if (orderByDescending != null)
+            {
+                query = orderByDescending(query);
+            }
+
+            return query.ToList();
+        }
+
     }
 }

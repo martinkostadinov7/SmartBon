@@ -19,8 +19,11 @@ export function CategoriesProvider({ children }: Props) {
     error: null
   });
 
-  const normalizeIconType = (iconType: any): 'Url' | 'Emoji' =>
-    iconType === 'Emoji' || iconType === 1 ? 'Emoji' : 'Url';
+  const normalizeIconType = (iconType: any): 'Url' | 'Emoji' | 'FontAwesome' => {
+    if (iconType === 'Emoji' || iconType === 1) return 'Emoji';
+    if (iconType === 'FontAwesome' || iconType === 2) return 'FontAwesome';
+    return 'Url';
+  };
 
   const normalizeCategories = (items: any[]): Category[] =>
     (items || []).map((cat) => ({

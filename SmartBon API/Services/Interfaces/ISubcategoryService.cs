@@ -4,9 +4,9 @@ namespace Services.Interfaces
 {
     public interface ISubcategoryService
     {
-        Task<SubcategoryReadDto> CreateSubcategory(int categoryId, SubcategoryCreateDto SubcategoryCreateDto);
-        Task<List<SubcategoryReadDto>> GetSubcategories(int categoryId);
-        Task<SubcategoryReadDto> GetSubcategoryById(int categoryId, int id);
-        Task<SubcategoryReadDto> DeleteSubcategory(int id);
+        Task<SubcategoryReadDto> CreateSubcategoryAsync(int categoryId, SubcategoryCreateDto SubcategoryCreateDto);
+        Task<List<SubcategoryReadDto>> GetSubcategoriesAsync(int categoryId);
+        Task<SubcategoryReadDto> GetSubcategoryByIdAsync(int categoryId, int id);
+        Task<SubcategoryReadDto> DeleteSubcategoryAsync(int id);
     }
 }

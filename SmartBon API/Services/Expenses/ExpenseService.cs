@@ -9,48 +9,55 @@ namespace Services.Expenses
 {
     public class ExpenseService(IUserAccessor user, IExpenseRepository expenseRepository, IMapper mapper) : IExpenseService
     {
-        async public Task<ExpenseReadDto> CreateExpense(ExpenseCreateDto dto)
+        public async Task<ExpenseReadDto> CreateExpenseAsync(ExpenseCreateDto dto)
         {
             Expense expense = mapper.Map<Expense>(dto);
+            expense.CreatedAt = DateTime.Now;
             expense.UserId = user.Id;
-            await expenseRepository.Add(expense);
+            await expenseRepository.AddAsync(expense);
             
             return mapper.Map<ExpenseReadDto>(expense);
         }
 
-        async public Task<List<ExpenseReadDto>> GetExpenses()
+        public async Task<List<ExpenseReadDto>> GetExpensesAsync()
         {
-            List<Expense> expensesFromDb = await expenseRepository.GetAll(user.Id) ?? throw new Exception("Not found"); //todo customised apiexeptons 
+            List<Expense> expensesFromDb = await expenseRepository.GetAllAsync(user.Id) ?? throw new Exception("Not found"); //todo customised apiexeptons 
 
             return mapper.Map<List<ExpenseReadDto>>(expensesFromDb);
         }
 
-        async public Task<ExpenseReadDto> GetExpenseById(int id)
+        public async Task<ExpenseReadDto> GetExpenseByIdAsync(int id)
         {
-            Expense expenseFromDb = await expenseRepository.GetById(id, [ x => x.Category, x => x.Subcategory ]) ?? throw new Exception("Not found"); //todo customised apiexeptons 
+            Expense expenseFromDb = await expenseRepository.GetByIdAsync(id) ?? throw new Exception("Not found"); //todo customised apiexeptons 
             if (expenseFromDb.UserId != user.Id)
             {
                 throw new Exception("User has no access to this content!");
             }
-            CategoryReadDto category = mapper.Map<CategoryReadDto>(expenseFromDb.Category);
-            SubcategoryReadDto subcategory = mapper.Map<SubcategoryReadDto>(expenseFromDb.Subcategory);
             ExpenseReadDto readDto = mapper.Map<ExpenseReadDto>(expenseFromDb);
             return readDto;
         }
 
 
-        async public Task<ExpenseReadDto> DeleteExpense(int id)
+        public async Task<ExpenseReadDto> DeleteExpenseAsync(int id)
         {
-            Expense expenseFromDb = await expenseRepository.GetById(id) ?? throw new Exception("Not found");
+            Expense expenseFromDb = await expenseRepository.GetByIdAsync(id) ?? throw new Exception("Not found");
 
             if (expenseFromDb.UserId != user.Id)
             {
                 throw new Exception("User has no access to this content!");
             }
-            await expenseRepository.Delete(expenseFromDb);
+            await expenseRepository.DeleteAsync(expenseFromDb);
 
             ExpenseReadDto readDto = mapper.Map<ExpenseReadDto>(expenseFromDb);
             return readDto;
         }
+
+        public async Task<List<ExpenseReadDto>> GetRecentExpensesAsync(int count)
+        {
+            List<Expense> expensesFromDb = await expenseRepository.GetRecentExpensesAsync(user.Id, count) ?? throw new Exception("Not found"); //todo customised apiexeptons 
+
+            return mapper.Map<List<ExpenseReadDto>>(expensesFromDb);
+        }
+
     }
 }

@@ -13,7 +13,7 @@ namespace SmartBon_API.Controllers
         [HttpPost]
         public async Task<ActionResult<string>> CreateCategory(CategoryCreateDto request)
         {
-            CategoryReadDto result = await categoryService.CreateCategory(request);
+            CategoryReadDto result = await categoryService.CreateCategoryAsync(request);
             return CreatedAtAction(nameof(GetCategoryById), new { id = result.Id }, result);
         }
 
@@ -21,7 +21,7 @@ namespace SmartBon_API.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<string>> GetCategoryById(int id)
         {
-            CategoryReadDto result = await categoryService.GetCategoryById(id);
+            CategoryReadDto result = await categoryService.GetCategoryByIdAsync(id);
             return Ok(result);
         }
 
@@ -29,7 +29,7 @@ namespace SmartBon_API.Controllers
         [HttpGet]
         public async Task<ActionResult<string>> GetCategories() // todo imeplemtn parameters for filtering and searching
         {
-            List<CategoryReadDto> result = await categoryService.GetCategories();
+            List<CategoryReadDto> result = await categoryService.GetCategoriesAsync();
             return Ok(result);
         }
 
@@ -37,7 +37,7 @@ namespace SmartBon_API.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult<string>> DeleteCategory(int id)
         {
-            CategoryReadDto result = await categoryService.DeleteCategory(id);
+            CategoryReadDto result = await categoryService.DeleteCategoryAsync(id);
             return Ok(result);
         }
 
@@ -45,7 +45,7 @@ namespace SmartBon_API.Controllers
         [HttpPost("{categoryId}/subcategories")]
         public async Task<ActionResult<string>> CreateSubcategory(int categoryId, SubcategoryCreateDto request)
         {
-            await subcategoryService.CreateSubcategory(categoryId, request);
+            await subcategoryService.CreateSubcategoryAsync(categoryId, request);
             return Created();
         }
 
@@ -53,7 +53,7 @@ namespace SmartBon_API.Controllers
         [HttpGet("{categoryId}/subcategories/{id}")]
         public async Task<ActionResult<string>> GetSubcategoryById(int categoryId, int id)
         {
-            SubcategoryReadDto result = await subcategoryService.GetSubcategoryById(categoryId, id);
+            SubcategoryReadDto result = await subcategoryService.GetSubcategoryByIdAsync(categoryId, id);
             return Ok(result);
         }
 
@@ -61,7 +61,7 @@ namespace SmartBon_API.Controllers
         [HttpGet("{categoryId}/subcategories")]
         public async Task<ActionResult<string>> GetSubcategories(int categoryId) // todo imeplemtn parameters for filtering and searching
         {
-            List<SubcategoryReadDto> result = await subcategoryService.GetSubcategories(categoryId);
+            List<SubcategoryReadDto> result = await subcategoryService.GetSubcategoriesAsync(categoryId);
             return Ok(result);
         }
 
@@ -69,7 +69,7 @@ namespace SmartBon_API.Controllers
         [HttpDelete("{categoryId}/subcategories/{id}")]
         public async Task<ActionResult<string>> DeleteSubcategory(int id)
         {
-            SubcategoryReadDto result = await subcategoryService.DeleteSubcategory(id);
+            SubcategoryReadDto result = await subcategoryService.DeleteSubcategoryAsync(id);
             return Ok(result);
         }
 

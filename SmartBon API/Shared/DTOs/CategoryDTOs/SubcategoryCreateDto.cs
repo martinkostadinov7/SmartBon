@@ -8,7 +8,5 @@ namespace Shared.DTOs.CategoryDTOs
         public IconType IconType { get; set; }
 
         public string IconValue { get; set; }
-
-        public int UserId { get; set; }
     }
 }

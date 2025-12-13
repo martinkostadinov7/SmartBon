@@ -6,7 +6,7 @@ namespace Data.Repositories
 {
     public class CategoryRepository(AppDbContext context) : EFRepository<Category>(context), ICategoryRepository
     {
-        public override async Task Delete(Category category)
+        public override async Task DeleteAsync(Category category)
         {
             if (category.IsPredefined)
             {
