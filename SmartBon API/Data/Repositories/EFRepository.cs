@@ -41,10 +41,7 @@ namespace Data.Repositories
         {
             IQueryable<T> query = _dbSet.AsQueryable();
 
-            if (!await query.AnyAsync())
-                throw new Exception("No entities were found.");
-
-            var entities = query.ToList();
+            var entities = await query.ToListAsync();
 
             return entities;
         }

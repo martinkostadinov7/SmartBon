@@ -1,4 +1,5 @@
 ﻿using Services.Interfaces;
+using Shared.ApiExceptions;
 using System.Security.Claims;
 
 public class HttpContextUserAccessor : IUserAccessor
@@ -19,7 +20,7 @@ public class HttpContextUserAccessor : IUserAccessor
             var idStr = _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (!int.TryParse(idStr, out var id))
             {
-                throw new Exception("invalid token!");
+                throw new BadRequestException("Invalid token!");
             }
             
              return id;

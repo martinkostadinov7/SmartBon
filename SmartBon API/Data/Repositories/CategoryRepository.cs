@@ -1,6 +1,7 @@
 ﻿using Data.Interfaces;
 using Data.Models;
 using Microsoft.EntityFrameworkCore;
+using Shared.ApiExceptions;
 
 namespace Data.Repositories
 {
@@ -10,7 +11,7 @@ namespace Data.Repositories
         {
             if (category.IsPredefined)
             {
-                throw new Exception("Cannot delete predefined categories!");
+                throw new BadRequestException("Cannot delete predefined categories!");
             }
             var subs = context.Subcategories.Where(s => s.CategoryId == category.Id);
             var expenses = context.Expenses.Where(e => subs.Any(s => s.Id == e.SubcategoryId));
@@ -28,9 +29,6 @@ namespace Data.Repositories
             query = query
                 .Include(c => c.Subcategories)
                 .Where(f => f.UserId == userId || f.IsPredefined == true);
-
-            if (!await query.AnyAsync())
-                throw new Exception("No categories were found for the provided category.");
 
             var categories = query.ToList();
 

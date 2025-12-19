@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using Services.Interfaces;
 using Shared;
+using Shared.ApiExceptions;
 using Shared.DTOs.UserDTOs;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -16,31 +17,31 @@ namespace Services.UserServices
     {
         public JsonWebToken Login(UserLoginDto userToLogin)
         {
-            User user = userRepo.GetByEmail(userToLogin.Email) ?? throw new NullReferenceException("User with this email doesnt exist!");
+            User? user = userRepo.GetByEmail(userToLogin.Email);
 
             if (user == null || new PasswordHasher<User>().VerifyHashedPassword(user, user.PasswordHash, userToLogin.Password) == PasswordVerificationResult.Failed)
             {
-                throw new UnauthorizedAccessException("Invlid credentials!");
+                throw new UnauthorizedException("Invlid credentials!");
             }
 
             return CreateToken(user);
         }
 
-        public async Task RegisterAsync(UserRegisterDto userToRegister)
+        public async Task<JsonWebToken> RegisterAsync(UserRegisterDto userToRegister)
         {
             User? userFromDb = userRepo.GetByEmail(userToRegister.Email);
             
             if (userFromDb != null)
-            {
-                throw new ArgumentException("User with this email already has an account!");
-            }
-
+                throw new BadRequestException("User already exists");
+            
             User user = new User(userToRegister.Email, "temp");
 
             string hashedPassword = new PasswordHasher<User>().HashPassword(user, userToRegister.Password);
             user.PasswordHash = hashedPassword;
             //to do email legit checker + password checker
             await userRepo.AddAsync(user);
+
+            return CreateToken(user);
         }
 
         private JsonWebToken CreateToken(User user)

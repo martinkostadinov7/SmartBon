@@ -2,6 +2,7 @@
 using Data.Interfaces;
 using Data.Models;
 using Services.Interfaces;
+using Shared.ApiExceptions;
 using Shared.DTOs.CategoryDTOs;
 using Shared.DTOs.ExpenseDTOs;
 
@@ -21,17 +22,17 @@ namespace Services.Expenses
 
         public async Task<List<ExpenseReadDto>> GetExpensesAsync()
         {
-            List<Expense> expensesFromDb = await expenseRepository.GetAllAsync(user.Id) ?? throw new Exception("Not found"); //todo customised apiexeptons 
+            List<Expense> expensesFromDb = await expenseRepository.GetAllAsync(user.Id);
 
             return mapper.Map<List<ExpenseReadDto>>(expensesFromDb);
         }
 
         public async Task<ExpenseReadDto> GetExpenseByIdAsync(int id)
         {
-            Expense expenseFromDb = await expenseRepository.GetByIdAsync(id) ?? throw new Exception("Not found"); //todo customised apiexeptons 
+            Expense expenseFromDb = await expenseRepository.GetByIdAsync(id) ?? throw new NotFoundException($"Expense with id {id} was not found");  
             if (expenseFromDb.UserId != user.Id)
             {
-                throw new Exception("User has no access to this content!");
+                throw new UnauthorizedException("User has no access to this content!");
             }
             ExpenseReadDto readDto = mapper.Map<ExpenseReadDto>(expenseFromDb);
             return readDto;
@@ -40,11 +41,11 @@ namespace Services.Expenses
 
         public async Task<ExpenseReadDto> DeleteExpenseAsync(int id)
         {
-            Expense expenseFromDb = await expenseRepository.GetByIdAsync(id) ?? throw new Exception("Not found");
+            Expense expenseFromDb = await expenseRepository.GetByIdAsync(id) ?? throw new NotFoundException($"Expense with id {id} was not found");
 
             if (expenseFromDb.UserId != user.Id)
             {
-                throw new Exception("User has no access to this content!");
+                throw new UnauthorizedException("User has no access to this content!");
             }
             await expenseRepository.DeleteAsync(expenseFromDb);
 
@@ -54,7 +55,7 @@ namespace Services.Expenses
 
         public async Task<List<ExpenseReadDto>> GetRecentExpensesAsync(int count)
         {
-            List<Expense> expensesFromDb = await expenseRepository.GetRecentExpensesAsync(user.Id, count) ?? throw new Exception("Not found"); //todo customised apiexeptons 
+            List<Expense> expensesFromDb = await expenseRepository.GetRecentExpensesAsync(user.Id, count);
 
             return mapper.Map<List<ExpenseReadDto>>(expensesFromDb);
         }

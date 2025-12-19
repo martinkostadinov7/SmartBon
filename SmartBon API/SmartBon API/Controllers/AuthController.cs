@@ -25,10 +25,10 @@ namespace SmartBon_API.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<ActionResult<string>> Register(UserRegisterDto request)
+        public async Task<ActionResult<JsonWebToken>> Register(UserRegisterDto request)
         {
-            await authService.RegisterAsync(request);
-            return Ok("User successfully registered!");
+            var token = await authService.RegisterAsync(request);
+            return Ok(token);
         }
     }
 }

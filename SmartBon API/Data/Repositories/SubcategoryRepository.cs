@@ -22,9 +22,6 @@ namespace Data.Repositories
 
             query = query.Where(f => f.CategoryId == categoryId && f.UserId == userId);
 
-            if (!await query.AnyAsync())
-                throw new Exception("No subcategories were found for the provided category.");
-
             var subcategories = query.ToList();
 
             return subcategories;

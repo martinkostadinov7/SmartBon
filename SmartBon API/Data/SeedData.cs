@@ -1,8 +1,6 @@
 ﻿using Data.Models;
-using Microsoft.AspNet.Identity;
 using Microsoft.AspNetCore.Identity;
 using Shared.Enums;
-using System.Collections.Generic;
 
 namespace Data
 {

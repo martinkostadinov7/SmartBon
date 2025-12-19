@@ -2,6 +2,7 @@
 using Data.Interfaces;
 using Data.Models;
 using Services.Interfaces;
+using Shared.ApiExceptions;
 using Shared.DTOs.CategoryDTOs;
 
 namespace Services.Subcategories
@@ -27,21 +28,21 @@ namespace Services.Subcategories
 
         public async Task<SubcategoryReadDto> GetSubcategoryByIdAsync(int categoryId, int id)
         {
-            Category category = await categoryRepository.GetByIdAsync(categoryId, [x => x.Subcategories]) ?? throw new Exception("Category Not found"); //todo customised apiexeptons ;
-            Subcategory subcategoryFromDb = category.Subcategories.SingleOrDefault(s => s.Id == id) ?? throw new Exception("subcategory Not found"); //todo customised apiexeptons ; //todo customised apiexeptons 
+            Category category = await categoryRepository.GetByIdAsync(categoryId, [x => x.Subcategories]) ?? throw new NotFoundException($"Category with id {id} was not found");
+            Subcategory subcategoryFromDb = category.Subcategories.SingleOrDefault(s => s.Id == id) ?? throw new NotFoundException($"Subcategory with id {id} was not found");
             if (user.Id != subcategoryFromDb.UserId)
             {
-                throw new Exception("User has no access to this content!");
+                throw new UnauthorizedException("User has no access to this content!");
             }
             return mapper.Map<SubcategoryReadDto>(subcategoryFromDb);
         }
 
         public async Task<SubcategoryReadDto> DeleteSubcategoryAsync(int id)
         {
-            Subcategory? subcategoryFromDb = await subcategoryRepository.GetByIdAsync(id) ?? throw new Exception("Not found");
+            Subcategory? subcategoryFromDb = await subcategoryRepository.GetByIdAsync(id) ?? throw new NotFoundException($"Subcategory with id {id} was not found");
             if (user.Id != subcategoryFromDb.UserId)
             {
-                throw new Exception("User has no access to this content!");
+                throw new UnauthorizedException("User has no access to this content!");
             }
             await subcategoryRepository.DeleteAsync(subcategoryFromDb);
 

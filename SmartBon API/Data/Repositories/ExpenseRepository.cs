@@ -2,6 +2,7 @@
 using Data.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
+using Shared.ApiExceptions;
 using System.Linq;
 using System.Linq.Expressions;
 
@@ -17,9 +18,6 @@ namespace Data.Repositories
                 .Where(e => e.UserId == userId)
                 .OrderByDescending(e => e.ExpenseDate);
 
-            if (!await query.AnyAsync())
-                throw new Exception("No entities were found for this user.");
-
             var expenses = query.ToList();
 
             return expenses;
@@ -32,15 +30,11 @@ namespace Data.Repositories
                 .Where(e => e.UserId == userId)
                 .OrderByDescending(e => e.ExpenseDate)
                 .Take(count);
-            if (!await query.AnyAsync())
-                throw new Exception("No entities were found for this user.");
 
             var expenses = query.ToList();
 
             return expenses;
 
         }
-
-
     }
 }
