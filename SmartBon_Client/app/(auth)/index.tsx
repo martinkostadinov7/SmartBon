@@ -1,5 +1,5 @@
 import { Link} from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { View, Text, TextInput, StyleSheet, Alert, Pressable} from "react-native";
 import * as SecureStore from "expo-secure-store";
 import { router } from "expo-router";
@@ -11,43 +11,56 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const { reloadCategories } = useCategories();
-  const handleLogin = async () => {
-    setError("");
-    if(!email || !password){
-      Alert.alert(
-        "Input error",
-        "Fill out email and password fields!",
-        [{ text: "OK" }]
-      );
-    }
-    else{
-    const loginInfo = {
-      "Email": email,
-      "Password": password
-    }
-    try{
-      const response = await apiFetch("/Auth/login", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify(loginInfo)
-        });
-        const data = await response.json();
-        console.log(data);
-              
-        if (!response.ok) {
-          throw new Error(data.message || "Login failed");
-        }
-        const token = data.value;
-        SecureStore.setItem("token", token);
+  useEffect(() => {
+    async function checkToken() {
+      const token = await SecureStore.getItemAsync("token");
+
+      if (token) {
         await reloadCategories();
         router.replace("/(app)/home");
+      }
     }
-    catch(ex: any){
-      console.error(ex)
-      setError(ex.message || "Error")
-    }
+
+    checkToken();
+  }, []);
+  const handleLogin = async () => {
+
+  setError("");
+  if(!email || !password){
+    Alert.alert(
+      "Input error",
+      "Fill out email and password fields!",
+      [{ text: "OK" }]
+    );
+  }
+  else{
+  const loginInfo = {
+    "Email": email,
+    "Password": password
+  }
+  try{
+    const response = await apiFetch("/Auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(loginInfo)
+      });
+      const data = await response.json();
+      console.log(data);
+            
+      if (!response.ok) {
+        throw new Error(data.message || "Login failed");
+      }
+      const token = data.value;
+      SecureStore.setItem("token", token);
+      await reloadCategories();
+      router.replace("/(app)/home");
+  }
+  catch(ex: any){
+    console.error(ex)
+    setError(ex.message || "Error")
+  }
   }
 }
 

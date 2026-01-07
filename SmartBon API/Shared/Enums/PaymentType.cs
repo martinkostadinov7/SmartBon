@@ -3,8 +3,7 @@
     public enum PaymentType
     {
         Cash,
-        DebitCard,
-        CreditCard,
+        Card,
         Bank_Transfer
     }
 }

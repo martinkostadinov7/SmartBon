@@ -45,7 +45,6 @@ namespace Data
                 .HasForeignKey(s => s.CategoryId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-
         }
     }
 }

@@ -7,9 +7,7 @@
 
             public string Name { get; set; }
 
-            public IconType IconType { get; set; }
-
-            public string IconValue { get; set; }
+            public string Icon { get; set; }
 
             public int CategoryId { get; set; }
 
@@ -19,11 +17,10 @@
             public User User { get; set; }
 
             private Subcategory() { }
-            public Subcategory(string name, IconType iconType, string iconValue, int userId, int categoryId)
+            public Subcategory(string name, string icon, int userId, int categoryId)
             {
                 Name = name;
-                IconType = iconType;
-                IconValue = iconValue;
+                Icon = icon;
                 UserId = userId;
                 CategoryId = categoryId;
             }

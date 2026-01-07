@@ -9,8 +9,11 @@
     "web": "expo start --web"
   },
   "dependencies": {
+    "@expo/vector-icons": "^15.0.3",
+    "@react-native-community/datetimepicker": "8.4.4",
     "expo": "~54.0.25",
     "expo-constants": "~18.0.10",
+    "expo-emoji-picker": "^1.0.0",
     "expo-linking": "~8.0.9",
     "expo-router": "~6.0.15",
     "expo-secure-store": "~15.0.8",

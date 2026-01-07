@@ -47,15 +47,15 @@ namespace Data
         {
             List<Category> categories = new()
             {
-                new Category("Food", IconType.Emoji, "🍔", true, null),
-                new Category("Drinks", IconType.Emoji, "🍺", true, null),
-                new Category("Groceries", IconType.Emoji, "🛒", true, null),
-                new Category("Shopping", IconType.Emoji, "🛍", true, null),
-                new Category("Transport", IconType.Emoji, "🚗", true, null),
-                new Category("Bills", IconType.Emoji, "💵", true, null),
-                new Category("Travel", IconType.Emoji, "🧳", true, null),
-                new Category("Beauty", IconType.Emoji, "🌸", true, null),
-                new Category("Gifts", IconType.Emoji, "🎁", true, null),
+                new Category("Food", "🍔", true, null),
+                new Category("Drinks", "🍺", true, null),
+                new Category("Groceries", "🛒", true, null),
+                new Category("Shopping", "🛍", true, null),
+                new Category("Transport", "🚗", true, null),
+                new Category("Bills", "💵", true, null),
+                new Category("Travel", "🧳", true, null),
+                new Category("Beauty", "🌸", true, null),
+                new Category("Gifts", "🎁", true, null),
             };
             db.Categories.AddRange(categories);
             db.SaveChanges();
@@ -66,14 +66,14 @@ namespace Data
         {
             List<Subcategory> subcategories = new()
             {
-                new Subcategory("Restaurants", IconType.Emoji, "🍽️", 1, 1),
-                new Subcategory("Fast Food", IconType.Emoji, "🍔", 1, 1),
-                new Subcategory("Alcohol", IconType.Emoji, "🍺", 1, 2),
-                new Subcategory("Soft Drinks", IconType.Emoji, "🥤", 1, 2),
-                new Subcategory("Coffee & Tea", IconType.Emoji, "☕", 1, 2),
-                new Subcategory("Fuel", IconType.Emoji, "⛽", 1, 5),
-                new Subcategory("Taxi", IconType.Emoji, "🚕", 1, 5),
-                new Subcategory("Public Transport", IconType.Emoji, "🚌", 1, 5)
+                new Subcategory("Restaurants", "🍽️", 1, 1),
+                new Subcategory("Fast Food", "🍔", 1, 1),
+                new Subcategory("Alcohol", "🍺", 1, 2),
+                new Subcategory("Soft Drinks", "🥤", 1, 2),
+                new Subcategory("Coffee & Tea", "☕", 1, 2),
+                new Subcategory("Fuel", "⛽", 1, 5),
+                new Subcategory("Taxi", "🚕", 1, 5),
+                new Subcategory("Public Transport", "🚌", 1, 5)
             };
             db.Subcategories.AddRange(subcategories);
             db.SaveChanges();
@@ -221,7 +221,7 @@ namespace Data
                         categoryId: categoryId,
                         subCategoryId: subCategoryId,
                         expenseDate: RandomDate(random, startDate, endDate),
-                        paymentType: (PaymentType)random.Next(0, 4),
+                        paymentType: (PaymentType)random.Next(0, 3),
                         userId: userId
                     );
 

@@ -44,7 +44,7 @@ namespace Services.UserServices
             return CreateToken(user);
         }
 
-        private JsonWebToken CreateToken(User user)
+        private JsonWebToken CreateToken(User user) //todo refresh token
         {
             var claims = new List<Claim>
             {

@@ -7,9 +7,7 @@ namespace Data.Models
 
         public string Name { get; set; }
 
-        public IconType IconType { get; set; }
-
-        public string IconValue { get; set; }
+        public string Icon { get; set; }
 
         public bool IsPredefined { get; set; }
 
@@ -20,11 +18,10 @@ namespace Data.Models
         public List<Subcategory> Subcategories { get; set; } = new List<Subcategory>();
 
         private Category() { }
-        public Category(string name, IconType iconType, string iconValue, bool isPredefined, int? userId)
+        public Category(string name, string icon, bool isPredefined, int? userId)
         {
             Name = name;
-            IconType = iconType;
-            IconValue = iconValue;
+            Icon = icon;
             IsPredefined = isPredefined;
             UserId = userId;
         }
