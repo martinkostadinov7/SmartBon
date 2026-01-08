@@ -9,6 +9,8 @@ namespace Shared.DTOs.CategoryDTOs
 
         public string Icon { get; set; }
 
+        public string ColorHex { get; set; }
+
         public List<SubcategoryReadDto>? Subcategories { get; set; }
     }
 }

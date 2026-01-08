@@ -3,12 +3,13 @@ import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 export function CategoryBox({
   name,
   icon,
+  color,
   selected,
   onPress
 }: categoryBoxProps) {
 
   return (
-    <TouchableOpacity onPress={onPress} style={selected ? styles.selected : styles.box}>
+    <TouchableOpacity onPress={onPress} style={[selected ? styles.selected : styles.box, {backgroundColor: color}]}>
         <Text style={styles.icon}>{icon}</Text>
         <Text numberOfLines={2} ellipsizeMode="tail" style={styles.name}>{name}</Text>
     </TouchableOpacity>
@@ -18,6 +19,7 @@ export function CategoryBox({
 type categoryBoxProps = {
   name: string;
   icon: string;
+  color: string;
   selected: boolean;
   onPress: () => void
 };
@@ -29,7 +31,7 @@ selected:{
     width: 100,
     height: 100,
     borderColor: "darkGray",
-    borderWidth: 1.5,
+    borderWidth: 3,
     borderRadius: 10,
     justifyContent: "center",
     alignItems: "center",
@@ -43,7 +45,7 @@ box:{
     borderRadius: 10,
     justifyContent: "center",
     alignItems: "center",
-    margin: 2
+    margin: 2,
 },
 icon:{
     fontSize: 35,

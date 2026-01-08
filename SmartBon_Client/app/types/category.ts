@@ -4,5 +4,6 @@ export interface Category {
   id: number;
   name: string;
   icon: string;
+  colorHex: string;
   subcategories: Subcategory[];
 }

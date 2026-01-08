@@ -38,8 +38,10 @@ export default function HomeScreen() {
             date={String(expense.expenseDate)}
             categoryName= {category?.name ?? "Unknown"}
             categoryEmoji={category?.icon ?? "❌"}
+            categoryColor={category?.colorHex ?? "#FFFFFF"}
             subcategoryEmoji={subcategory?.icon}
             subcategoryText={subcategory?.name}
+            subcategoryColor={subcategory?.colorHex ?? "#FFFFFF"}
           />
         );
       })}
@@ -66,6 +68,7 @@ const styles = StyleSheet.create({
   },
   container: {
     padding: 16,
+    backgroundColor: "#e1ebffff"
   },
   card: {
     backgroundColor: "#fff",

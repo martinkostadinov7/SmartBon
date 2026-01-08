@@ -39,8 +39,10 @@ export default function ExpensesScreen() {
             date={String(expense.expenseDate)}
             categoryName= {category?.name ?? "Unknown"}
             categoryEmoji={category?.icon ?? "❌"}
+            categoryColor={category?.colorHex ?? "#FFFFFF"}
             subcategoryEmoji={subcategory?.icon}
             subcategoryText={subcategory?.name}
+            subcategoryColor={subcategory?.colorHex ?? "#FFFFFF"}
           />
         );
       })}

@@ -1,5 +1,4 @@
-﻿using Shared.Enums;
-namespace Data.Models
+﻿namespace Data.Models
 {
     public class Category : IEntity
     {
@@ -8,6 +7,8 @@ namespace Data.Models
         public string Name { get; set; }
 
         public string Icon { get; set; }
+
+        public string ColorHex { get; set; }
 
         public bool IsPredefined { get; set; }
 
@@ -18,10 +19,11 @@ namespace Data.Models
         public List<Subcategory> Subcategories { get; set; } = new List<Subcategory>();
 
         private Category() { }
-        public Category(string name, string icon, bool isPredefined, int? userId)
+        public Category(string name, string icon,string colorHex ,bool isPredefined, int? userId)
         {
             Name = name;
             Icon = icon;
+            ColorHex = colorHex;
             IsPredefined = isPredefined;
             UserId = userId;
         }

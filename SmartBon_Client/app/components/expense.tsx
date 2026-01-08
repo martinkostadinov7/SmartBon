@@ -6,12 +6,14 @@ export function ExpenseCard({
   date,
   categoryName,
   categoryEmoji,
+  categoryColor,
   subcategoryEmoji,
   subcategoryText,
+  subcategoryColor
 }: ExpenseCardProps) {
   return (
     <TouchableOpacity style={styles.card}>
-      <View style={styles.iconContainer}>
+      <View style={[styles.iconContainer, {backgroundColor: categoryColor}]}>
         <Text style={styles.categoryEmoji}>{categoryEmoji}</Text>
       </View>
 
@@ -22,7 +24,7 @@ export function ExpenseCard({
           <Text style={styles.categoryText}>{categoryName}</Text>
 
           {subcategoryEmoji && (
-            <View style={styles.subcategoryBadge}>
+            <View style={[styles.subcategoryBadge, {backgroundColor: subcategoryColor}]}>
               <Text style={styles.subcategoryEmoji}>
                 {subcategoryEmoji}
               </Text>
@@ -53,8 +55,10 @@ type ExpenseCardProps = {
   date: string; 
   categoryName: string;
   categoryEmoji: string;   
+  categoryColor: string;
   subcategoryEmoji?: string; 
-  subcategoryText?: string; 
+  subcategoryText?: string;
+  subcategoryColor?: string; 
 };
 
 
@@ -86,6 +90,10 @@ const styles = StyleSheet.create({
     padding: 14,
     marginBottom: 12,
     backgroundColor: "white",
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 3,
   },
 
   iconContainer: {
@@ -96,7 +104,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginRight: 12,
-    borderColor: "gray"
+    borderColor: "#d7d7d7ff"
   },
 
   categoryEmoji: {

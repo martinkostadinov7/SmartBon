@@ -9,17 +9,41 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
+  ScrollView,
 } from "react-native";
 import { router } from "expo-router";
 import EmojiPickerModal from "../../components/emojiPicker";
 import { apiFetch } from "../../services/api";
 import { useCategories } from "../../context/CategoriesContext";
+import { CategoryBox } from "../../components/categoryBox";
 
 export default function AddCategoryModal() {
-  const [name, setName] = useState("");
+  const [name, setName] = useState("Category");
   const [icon, setIcon] = useState("📌");
   const [isEmojiOpen, setIsEmojiOpen] = useState(false);
   const { reloadCategories } = useCategories();
+  const colors = [
+    "#EF9A9A", // Soft Red
+    "#FFAB91", // Soft Deep Orange
+    "#FFCC80", // Soft Orange
+    "#FFE082", // Soft Amber
+    "#FFF59D", // Soft Yellow
+    "#E6EE9C", // Soft Lime
+    "#C5E1A5", // Soft Light Green
+    "#A5D6A7", // Soft Green
+    "#80CBC4", // Soft Teal
+    "#80DEEA", // Soft Cyan
+    "#81D4FA", // Soft Light Blue
+    "#90CAF9", // Soft Blue
+    "#9FA8DA", // Soft Indigo
+    "#B39DDB", // Soft Deep Purple
+    "#CE93D8", // Soft Purple
+    "#F48FB1", // Soft Pink
+    "#BCAAA4", // Soft Brown
+    "#B0BEC5", // Soft Blue Grey
+    "#E0E0E0", // Soft Grey
+  ]
+  const [selectedColor, setSelectedColor] = useState(colors[0]);
 
   async function handleAddCategory(){
 
@@ -33,7 +57,8 @@ export default function AddCategoryModal() {
 
     const category = {
         Name: name,
-        Icon: icon
+        Icon: icon,
+        ColorHex: selectedColor
     }
 
     try {
@@ -80,13 +105,25 @@ export default function AddCategoryModal() {
             </View>
 
 
-            <Text style={styles.label}>Icon</Text>
-            <TouchableOpacity
-              style={styles.iconButton}
-              onPress={() => setIsEmojiOpen(true)}
-            >
-              <Text style={styles.iconText}>{icon}</Text>
-            </TouchableOpacity>
+            <View style={styles.row}>
+                <View style={{marginBottom: 0}}>
+                    <Text style={styles.label}>Icon</Text>
+                        <TouchableOpacity
+                            style={styles.iconButton}
+                            onPress={() => setIsEmojiOpen(true)}
+                            >
+                        <Text style={styles.iconText}>{icon}</Text>
+                    </TouchableOpacity>
+                </View>
+                <View>
+                    <CategoryBox 
+                        name={name} 
+                        icon={icon} 
+                        color={selectedColor} 
+                        selected={false} 
+                        onPress={function (): void {}}/>
+                </View>
+            </View>
 
             <Text style={styles.label}>Name</Text>
             <TextInput
@@ -96,6 +133,20 @@ export default function AddCategoryModal() {
               placeholder="e.g. Food"
               autoFocus
             />
+
+            <Text style={styles.label}>Color</Text>
+            <ScrollView  horizontal style={{ flexDirection: 'row', height: 30 }}
+            showsHorizontalScrollIndicator={false}
+            >
+            {colors.map(color => {
+                    return (
+                      <TouchableOpacity 
+                        style={[styles.colorBox, {backgroundColor: color}, selectedColor == color ? {borderWidth: 2.2} : {borderWidth: 0}]}
+                        onPress={() => setSelectedColor(color)}
+                      />
+                    );
+                  })}
+            </ScrollView>
           </Pressable>
         </KeyboardAvoidingView>
       </Pressable>
@@ -111,6 +162,17 @@ export default function AddCategoryModal() {
 
 
 const styles = StyleSheet.create({
+    row: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  colorBox:{
+    height: 50,
+    width: 50,
+    margin: 5,
+    borderRadius: 25
+  },  
   overlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.4)",
@@ -122,7 +184,7 @@ const styles = StyleSheet.create({
     padding: 20,
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16,
-    height: 300,
+    height: 360,
   },
   header: {
     flexDirection: "row",
@@ -145,12 +207,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#ccc",
     borderRadius: 10,
-    width: 52,
-    height: 44,
+    width: 60,
+    height: 60,
     alignItems: "center",
     justifyContent: "center",
   },
-  iconText: { fontSize: 22 },
+  iconText: { fontSize: 33 },
 
   modalOverlay: {
     flex: 1,

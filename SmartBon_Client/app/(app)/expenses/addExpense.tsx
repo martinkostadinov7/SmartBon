@@ -160,6 +160,7 @@ export default function AddExpense() {
                 key={category.id}
                 name={category.name}
                 icon={category.icon}
+                color={category.colorHex}
                 selected={selectedCategoryId === category.id}
                 onPress={() => {
                   setSelectedCategoryId(category.id);
@@ -171,6 +172,7 @@ export default function AddExpense() {
                 key={-2}
                 name="Add"
                 icon="+"
+                color={"#FFFFFF"}
                 selected={false}
                 onPress={handleCategoryAdd}
               />
@@ -188,19 +190,21 @@ export default function AddExpense() {
                 >
                 {subcategories.map(subcategory => (
                     <CategoryBox
-                    key={subcategory.id}
-                    name={subcategory.name}
-                    icon={subcategory.icon}
-                    selected={selectedSubcategoryId === subcategory.id}
-                    onPress={() => setSelectedSubcategoryId(subcategory.id)}
+                        key={subcategory.id}
+                        name={subcategory.name}
+                        icon={subcategory.icon}
+                        color={subcategory.colorHex}
+                        selected={selectedSubcategoryId === subcategory.id}
+                        onPress={() => setSelectedSubcategoryId(subcategory.id)}
                     />
                 ))}
                 <CategoryBox
-                key={-2}
-                name="Add"
-                icon="+"
-                selected={false}
-                onPress={handleSubcategoryAdd}
+                    key={-2}
+                    name="Add"
+                    icon="+"
+                    color={"#FFFFFF"}
+                    selected={false}
+                    onPress={handleSubcategoryAdd}
                 />
                 </ScrollView>
             </View>

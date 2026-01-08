@@ -1,12 +1,38 @@
 ﻿using Data.Models;
 using Microsoft.AspNetCore.Identity;
 using Shared.Enums;
+using System;
 
 namespace Data
 {
     public static class SeedData
     {
         private static AppDbContext db;
+
+        public static readonly string[] Colors =
+        {
+            "#EF9A9A", // Soft Red
+            "#F48FB1", // Soft Pink
+            "#CE93D8", // Soft Purple
+            "#B39DDB", // Soft Deep Purple
+            "#9FA8DA", // Soft Indigo
+            "#90CAF9", // Soft Blue
+            "#81D4FA", // Soft Light Blue
+            "#80DEEA", // Soft Cyan
+            "#80CBC4", // Soft Teal
+            "#A5D6A7", // Soft Green
+            "#C5E1A5", // Soft Light Green
+            "#E6EE9C", // Soft Lime
+            "#FFF59D", // Soft Yellow
+            "#FFE082", // Soft Amber
+            "#FFCC80", // Soft Orange
+            "#FFAB91", // Soft Deep Orange
+            "#BCAAA4", // Soft Brown
+            "#E0E0E0", // Soft Grey
+            "#B0BEC5", // Soft Blue Grey
+            "#424242", // Dark Neutral (за контрастни card-и)
+        };
+
         public static void SeedAll(AppDbContext dbContext)
         {
             db = dbContext;
@@ -45,36 +71,41 @@ namespace Data
 
         private static void SeedCategories()
         {
+            var colorPicker = new ColorPicker(Colors);
+
             List<Category> categories = new()
             {
-                new Category("Food", "🍔", true, null),
-                new Category("Drinks", "🍺", true, null),
-                new Category("Groceries", "🛒", true, null),
-                new Category("Shopping", "🛍", true, null),
-                new Category("Transport", "🚗", true, null),
-                new Category("Bills", "💵", true, null),
-                new Category("Travel", "🧳", true, null),
-                new Category("Beauty", "🌸", true, null),
-                new Category("Gifts", "🎁", true, null),
+                new Category("Food", "🍔", colorPicker.GetNext(), true, null),
+                new Category("Drinks", "🍺", colorPicker.GetNext(), true, null),
+                new Category("Groceries", "🛒", colorPicker.GetNext(), true, null),
+                new Category("Shopping", "🛍", colorPicker.GetNext(), true, null),
+                new Category("Transport", "🚗", colorPicker.GetNext(), true, null),
+                new Category("Bills", "💵", colorPicker.GetNext(), true, null),
+                new Category("Travel", "🧳", colorPicker.GetNext(), true, null),
+                new Category("Beauty", "🌸", colorPicker.GetNext(), true, null),
+                new Category("Gifts", "🎁", colorPicker.GetNext(), true, null),
             };
+
             db.Categories.AddRange(categories);
             db.SaveChanges();
-
         }
 
         private static void SeedSubcategories()
         {
+            var colorPicker = new ColorPicker(Colors);
+
             List<Subcategory> subcategories = new()
             {
-                new Subcategory("Restaurants", "🍽️", 1, 1),
-                new Subcategory("Fast Food", "🍔", 1, 1),
-                new Subcategory("Alcohol", "🍺", 1, 2),
-                new Subcategory("Soft Drinks", "🥤", 1, 2),
-                new Subcategory("Coffee & Tea", "☕", 1, 2),
-                new Subcategory("Fuel", "⛽", 1, 5),
-                new Subcategory("Taxi", "🚕", 1, 5),
-                new Subcategory("Public Transport", "🚌", 1, 5)
+                new Subcategory("Restaurants", "🍽️", colorPicker.GetNext(), 1, 1),
+                new Subcategory("Fast Food", "🍔", colorPicker.GetNext(), 1, 1),
+                new Subcategory("Alcohol", "🍺", colorPicker.GetNext(), 1, 2),
+                new Subcategory("Soft Drinks", "🥤", colorPicker.GetNext(), 1, 2),
+                new Subcategory("Coffee & Tea", "☕", colorPicker.GetNext(), 1, 2),
+                new Subcategory("Fuel", "⛽", colorPicker.GetNext(), 1, 5),
+                new Subcategory("Taxi", "🚕", colorPicker.GetNext(), 1, 5),
+                new Subcategory("Public Transport","🚌", colorPicker.GetNext(), 1, 5),
             };
+
             db.Subcategories.AddRange(subcategories);
             db.SaveChanges();
         }
@@ -230,6 +261,28 @@ namespace Data
 
                 return expenses;
             }
+        }
+    }
+    public class ColorPicker
+    {
+        private readonly List<string> _availableColors;
+        private readonly Random _random = new();
+
+        public ColorPicker(IEnumerable<string> colors)
+        {
+            _availableColors = colors.ToList();
+        }
+
+        public string GetNext()
+        {
+            if (_availableColors.Count == 0)
+                throw new InvalidOperationException("No more available colors.");
+
+            int index = _random.Next(_availableColors.Count);
+            string color = _availableColors[index];
+            _availableColors.RemoveAt(index);
+
+            return color;
         }
     }
 }
