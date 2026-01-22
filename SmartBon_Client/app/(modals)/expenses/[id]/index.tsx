@@ -126,7 +126,32 @@ export default function ExpenseViewScreen() {
     function handleCloseScreen(){
       router.back();
     }
+    
+    async function handleDeleteExpense(){
+      try {
+                  const response = await apiFetch(`/Expenses/${id}`, {
+                  method: "DELETE",
+                  headers: {
+                      "Content-Type": "application/json",
+                  }
+                  });
+                  if (!response.ok) return;
+      
+                  console.log("Expense deleted successfully ✅");
+                  
+                  setIsEditing(false);
 
+                  handleCloseScreen();
+              } catch (e: any) {
+
+                Alert.alert(
+                  "Error",
+                  "An error occured while trying to save the expense!",
+                  [{ text: "OK" }]
+                  );
+                  console.log("Network/API error:", e?.message ?? e);
+              }
+    }
   return (
     <>
         <Pressable style={styles.overlay} onPress={handleCloseScreen}>
@@ -270,6 +295,9 @@ export default function ExpenseViewScreen() {
                 </View>
               )}
             </View>
+            <TouchableOpacity style={styles.button} onPress={handleDeleteExpense}>
+            <Text style={{ color: "white", fontSize: 25 }}>Delete</Text>
+          </TouchableOpacity>
             </Pressable>
         </KeyboardAvoidingView>
         </Pressable>
@@ -278,6 +306,16 @@ export default function ExpenseViewScreen() {
 }
 
 const styles = StyleSheet.create({
+  button: {
+    backgroundColor: "rgba(228, 67, 67, 0.85)",
+    height: 40,
+    width: 150,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 30,
+    alignSelf: "center",
+    margin: 10
+  },
     overlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.4)",
@@ -289,7 +327,7 @@ const styles = StyleSheet.create({
     padding: 20,
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16,
-    height: 560,
+    height: 600,
   },
   header: {
     flexDirection: "row",
