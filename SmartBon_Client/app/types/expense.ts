@@ -1,3 +1,5 @@
+export type PaymentType = "Cash" | "Card" | "Transfer";
+
 export interface Expense {
   id: number;
   title: string;
@@ -6,4 +8,5 @@ export interface Expense {
   categoryId: number;
   subcategoryId: number;
   expenseDate: Date;
+  paymentType: number
 }

@@ -41,6 +41,14 @@ namespace SmartBon_API.Controllers
         }
 
         [Authorize]
+        [HttpPut("{id}")]
+        public async Task<ActionResult<string>> UpdateExpense(int id, [FromBody] ExpenseUpdateDto request)
+        {
+            ExpenseReadDto result = await expenseService.UpdateExpenseAsync(id, request);
+            return Ok(result);
+        }
+
+        [Authorize]
         [HttpGet("recent/{count}")]
         public async Task<ActionResult<string>> GetRecentExpenses(int count) // todo imeplemtn parameters for filtering and searching
         {

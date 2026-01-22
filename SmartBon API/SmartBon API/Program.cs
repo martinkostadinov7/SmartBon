@@ -23,11 +23,11 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 });
 
 
-Log.Logger = new LoggerConfiguration()
-    .ReadFrom.Configuration(builder.Configuration)
-    .CreateLogger();
+//Log.Logger = new LoggerConfiguration()
+//    .ReadFrom.Configuration(builder.Configuration)
+//    .CreateLogger();
 
-builder.Host.UseSerilog();
+//builder.Host.UseSerilog();
 
 var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 

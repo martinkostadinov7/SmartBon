@@ -11,17 +11,16 @@ import {
   Alert,
   ScrollView,
 } from "react-native";
-import { router, useLocalSearchParams } from "expo-router";
+import { router } from "expo-router";
 import EmojiPickerModal from "../../components/emojiPicker";
 import { apiFetch } from "../../services/api";
 import { useCategories } from "../../context/CategoriesContext";
 import { CategoryBox } from "../../components/categoryBox";
 
 export default function AddCategoryModal() {
-  const [name, setName] = useState("Subcategory");
+  const [name, setName] = useState("Category");
   const [icon, setIcon] = useState("📌");
   const [isEmojiOpen, setIsEmojiOpen] = useState(false);
-  const { categoryId } = useLocalSearchParams<{ categoryId?: string }>();
   const { reloadCategories } = useCategories();
   const colors = [
     "#EF9A9A", // Soft Red
@@ -45,8 +44,8 @@ export default function AddCategoryModal() {
     "#E0E0E0", // Soft Grey
   ]
   const [selectedColor, setSelectedColor] = useState(colors[0]);
-  
-  async function handleAddSubcategory(){
+
+  async function handleAddCategory(){
 
     if(!name || !icon){
         Alert.alert(
@@ -56,36 +55,34 @@ export default function AddCategoryModal() {
         );
     }
 
-    const subcategory = {
-      categoryId: categoryId,
-      Name: name,
-      Icon: icon,
-      ColorHex: selectedColor
+    const category = {
+        Name: name,
+        Icon: icon,
+        ColorHex: selectedColor
     }
 
     try {
-        const response = await apiFetch(`/Categories/${categoryId}/subcategories`, {
+        const response = await apiFetch("/Categories", {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
         },
-        body: JSON.stringify(subcategory),
+        body: JSON.stringify(category),
         });
 
-        console.log("REQUEST BODY:", subcategory);
+        console.log("REQUEST BODY:", category);
         console.log("STATUS:", response.status);
         console.log("BODY:", await response.text());
 
         if (!response.ok) return;
 
-        console.log("Subcategory added successfully ✅");
+        console.log("Category added successfully ✅");
         reloadCategories()
         router.back();
         } catch (e: any) {
             console.log("Network/API error:", e?.message ?? e);
         }
   }
-
 
   return (
     <>
@@ -100,12 +97,13 @@ export default function AddCategoryModal() {
                 <Text style={styles.headerBtn}>Cancel</Text>
               </TouchableOpacity>
 
-              <Text style={styles.title}>Add Subcategory</Text>
+              <Text style={styles.title}>Add Category</Text>
 
-              <TouchableOpacity onPress={handleAddSubcategory}>
+              <TouchableOpacity onPress={handleAddCategory}>
                 <Text style={styles.headerBtn}>Save</Text>
               </TouchableOpacity>
             </View>
+
 
             <View style={styles.row}>
                 <View style={{marginBottom: 0}}>
@@ -133,16 +131,16 @@ export default function AddCategoryModal() {
               value={name}
               onChangeText={setName}
               placeholder="e.g. Food"
-              autoFocus
             />
 
             <Text style={styles.label}>Color</Text>
-            <ScrollView horizontal style={{ flexDirection: 'row', height: 30}}
+            <ScrollView  horizontal style={{ flexDirection: 'row', height: 30 }}
             showsHorizontalScrollIndicator={false}
             >
-            {colors.map(color => {
+            {colors.map((color) => {
                     return (
                       <TouchableOpacity 
+                        key={color}
                         style={[styles.colorBox, {backgroundColor: color}, selectedColor == color ? {borderWidth: 2.2} : {borderWidth: 0}]}
                         onPress={() => setSelectedColor(color)}
                       />
@@ -164,7 +162,7 @@ export default function AddCategoryModal() {
 
 
 const styles = StyleSheet.create({
-   row: {
+    row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -174,7 +172,7 @@ const styles = StyleSheet.create({
     width: 50,
     margin: 5,
     borderRadius: 25
-  }, 
+  },  
   overlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.4)",
@@ -186,7 +184,7 @@ const styles = StyleSheet.create({
     padding: 20,
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16,
-    height: 360,
+    height: 380,
   },
   header: {
     flexDirection: "row",
@@ -209,12 +207,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#ccc",
     borderRadius: 10,
-    width: 52,
-    height: 44,
+    width: 60,
+    height: 60,
     alignItems: "center",
     justifyContent: "center",
   },
-  iconText: { fontSize: 22 },
+  iconText: { fontSize: 33 },
 
   modalOverlay: {
     flex: 1,

@@ -24,6 +24,10 @@ export default function ExpensesScreen() {
     router.push("expenses/addExpense");
   }
 
+  function handleExpenseView(id: number) {
+    router.push(`(app)/expenses/${id}`);
+  }
+  
   return (<>
     <ScrollView style={styles.container}>
       {recentExpenses.map(expense => {
@@ -43,6 +47,7 @@ export default function ExpensesScreen() {
             subcategoryEmoji={subcategory?.icon}
             subcategoryText={subcategory?.name}
             subcategoryColor={subcategory?.colorHex ?? "#FFFFFF"}
+            onPress={() => handleExpenseView(expense.id)}
           />
         );
       })}

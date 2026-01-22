@@ -11,13 +11,8 @@ export default function RootLayout() {
             {/* Tabs group */}
             <Stack.Screen name="(app)" options={{ headerShown: false }} />
 
-            {/* Modal screens */}
             <Stack.Screen
-              name="(app)/categories/addCategory"
-              options={{ presentation: "transparentModal", headerShown: false }}
-            />
-            <Stack.Screen
-              name="(app)/categories/addSubcategory"
+              name="(modals)"
               options={{ presentation: "transparentModal", headerShown: false }}
             />
           </Stack>

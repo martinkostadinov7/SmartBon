@@ -1,5 +1,4 @@
 ﻿using Data.Models;
-using System.Linq.Expressions;
 namespace Data.Interfaces
 {
     public interface IExpenseRepository : IRepository<Expense>

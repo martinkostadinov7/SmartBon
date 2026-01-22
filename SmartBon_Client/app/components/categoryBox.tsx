@@ -1,28 +1,44 @@
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 
-export function CategoryBox({
-  name,
-  icon,
-  color,
-  selected,
-  onPress
-}: categoryBoxProps) {
+  export function CategoryBox({
+    name,
+    icon,
+    color,
+    selected,
+    boxSize = 100,
+    iconSize = 35,
+    fontSize = 15,
+    pressable = true,
+    onPress
+  }: categoryBoxProps) {
 
-  return (
-    <TouchableOpacity onPress={onPress} style={[selected ? styles.selected : styles.box, {backgroundColor: color}]}>
-        <Text style={styles.icon}>{icon}</Text>
-        <Text numberOfLines={2} ellipsizeMode="tail" style={styles.name}>{name}</Text>
-    </TouchableOpacity>
-  );
-}
+    return (<>
+      {pressable ? (
+        <TouchableOpacity onPress={onPress} style={[selected ? styles.selected : styles.box, {backgroundColor: color, width: boxSize, height: boxSize}]}>
+          <Text style={[styles.icon, {fontSize: iconSize}]}>{icon}</Text>
+          <Text numberOfLines={2} ellipsizeMode="tail" style={[styles.name, {fontSize: fontSize}]}>{name}</Text>
+        </TouchableOpacity>
+        ) :  
+      (
+      <View style={[selected ? styles.selected : styles.box, {backgroundColor: color, width: boxSize, height: boxSize}]}>
+          <Text style={[styles.icon, {fontSize: iconSize}]}>{icon}</Text>
+          <Text numberOfLines={2} ellipsizeMode="tail" style={[styles.name, {fontSize: fontSize}]}>{name}</Text>
+      </View>)}
+    </>
+    );
+  }
 
-type categoryBoxProps = {
-  name: string;
-  icon: string;
-  color: string;
-  selected: boolean;
-  onPress: () => void
-};
+  type categoryBoxProps = {
+    name: string;
+    icon: string;
+    color: string;
+    selected: boolean;
+    boxSize?: number;
+    iconSize?: number;
+    fontSize?: number;
+    pressable?: boolean;
+    onPress: () => void
+  };
 
 
 const styles = StyleSheet.create({

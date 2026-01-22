@@ -1,8 +1,6 @@
 ﻿using Data.Models;
 using Microsoft.AspNetCore.Identity;
 using Shared.Enums;
-using System;
-
 namespace Data
 {
     public static class SeedData
@@ -12,26 +10,26 @@ namespace Data
         public static readonly string[] Colors =
         {
             "#EF9A9A", // Soft Red
-            "#F48FB1", // Soft Pink
-            "#CE93D8", // Soft Purple
-            "#B39DDB", // Soft Deep Purple
-            "#9FA8DA", // Soft Indigo
-            "#90CAF9", // Soft Blue
-            "#81D4FA", // Soft Light Blue
-            "#80DEEA", // Soft Cyan
-            "#80CBC4", // Soft Teal
-            "#A5D6A7", // Soft Green
-            "#C5E1A5", // Soft Light Green
-            "#E6EE9C", // Soft Lime
-            "#FFF59D", // Soft Yellow
-            "#FFE082", // Soft Amber
-            "#FFCC80", // Soft Orange
             "#FFAB91", // Soft Deep Orange
+            "#FFCC80", // Soft Orange
+            "#FFE082", // Soft Amber
+            "#FFF59D", // Soft Yellow
+            "#E6EE9C", // Soft Lime
+            "#C5E1A5", // Soft Light Green
+            "#A5D6A7", // Soft Green
+            "#80CBC4", // Soft Teal
+            "#80DEEA", // Soft Cyan
+            "#81D4FA", // Soft Light Blue
+            "#90CAF9", // Soft Blue
+            "#9FA8DA", // Soft Indigo
+            "#B39DDB", // Soft Deep Purple
+            "#CE93D8", // Soft Purple
+            "#F48FB1", // Soft Pink
             "#BCAAA4", // Soft Brown
-            "#E0E0E0", // Soft Grey
             "#B0BEC5", // Soft Blue Grey
-            "#424242", // Dark Neutral (за контрастни card-и)
+            "#E0E0E0", // Soft Grey
         };
+
 
         public static void SeedAll(AppDbContext dbContext)
         {

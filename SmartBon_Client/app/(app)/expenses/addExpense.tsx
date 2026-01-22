@@ -9,7 +9,7 @@ import { apiFetch } from '../../services/api';
 const paymentTypeMap: Record<string, number> = {
   Cash: 0,
   Card: 1,
-  Bank_Transfer: 2,
+  Transfer: 2,
 };
 
 export default function AddExpense() {
@@ -88,12 +88,12 @@ export default function AddExpense() {
     }
 
     function handleCategoryAdd(){
-        router.push("../categories/addCategory");
+        router.push("(modals)/categories/addCategory");
     }
 
     function handleSubcategoryAdd(){
         router.push({
-            pathname: "../categories/addSubcategory",
+            pathname: "(modals)/categories/addSubcategory",
             params: { categoryId: String(selectedCategoryId) },
             }); 
     }
@@ -160,6 +160,7 @@ export default function AddExpense() {
                 key={category.id}
                 name={category.name}
                 icon={category.icon}
+                fontSize={16}
                 color={category.colorHex}
                 selected={selectedCategoryId === category.id}
                 onPress={() => {
@@ -173,6 +174,7 @@ export default function AddExpense() {
                 name="Add"
                 icon="+"
                 color={"#FFFFFF"}
+                fontSize={16}
                 selected={false}
                 onPress={handleCategoryAdd}
               />
@@ -193,6 +195,7 @@ export default function AddExpense() {
                         key={subcategory.id}
                         name={subcategory.name}
                         icon={subcategory.icon}
+                        fontSize={16}
                         color={subcategory.colorHex}
                         selected={selectedSubcategoryId === subcategory.id}
                         onPress={() => setSelectedSubcategoryId(subcategory.id)}
@@ -203,6 +206,7 @@ export default function AddExpense() {
                     name="Add"
                     icon="+"
                     color={"#FFFFFF"}
+                    fontSize={16}
                     selected={false}
                     onPress={handleSubcategoryAdd}
                 />
@@ -269,12 +273,12 @@ const styles = StyleSheet.create({
     heading: {
     marginBottom: 10,
     marginLeft: 20,
-    fontSize: 30
+    fontSize: 36
   },
   text: {
     marginLeft: 20,
     marginBottom: 10,
-    fontSize: 20
+    fontSize: 24
   },
   titleInput: {
     marginLeft: 20,
@@ -284,7 +288,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 10,
     width: 250,
-    height: 30    
+    height: 30,
+    fontSize: 18
+
   },
   costInput: {
     marginLeft: 20,
@@ -293,12 +299,16 @@ const styles = StyleSheet.create({
     borderColor: "black",
     borderWidth: 1,
     borderRadius: 10,
-    width: 60,
-    height: 30    
+    width: 100,
+    height: 30,
+    fontSize: 18,
+    alignSelf: 'flex-start', // Shrinks the width to fit the content
+    minWidth: 40, 
+
   },
   dateInput: {
     marginLeft: 10,
-    marginBottom: 10
+    marginBottom: 10,
   },
   descriptionInput: {
     marginLeft: 20,
@@ -307,7 +317,9 @@ const styles = StyleSheet.create({
     borderColor: "black",
     borderWidth: 1,
     borderRadius: 10,
-    width: 250,
-    height: 100    
+    width: 350,
+    height: 100,  
+    fontSize: 18
+
   }
 });

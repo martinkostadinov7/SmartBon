@@ -1,6 +1,5 @@
 ﻿using Data.Interfaces;
 using Data.Models;
-using Microsoft.EntityFrameworkCore;
 
 namespace Data.Repositories
 {

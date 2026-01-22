@@ -3,7 +3,6 @@ using Data.Interfaces;
 using Data.Models;
 using Services.Interfaces;
 using Shared.ApiExceptions;
-using Shared.DTOs.CategoryDTOs;
 using Shared.DTOs.ExpenseDTOs;
 
 namespace Services.Expenses
@@ -34,8 +33,7 @@ namespace Services.Expenses
             {
                 throw new UnauthorizedException("User has no access to this content!");
             }
-            ExpenseReadDto readDto = mapper.Map<ExpenseReadDto>(expenseFromDb);
-            return readDto;
+            return mapper.Map<ExpenseReadDto>(expenseFromDb);
         }
 
 
@@ -49,8 +47,23 @@ namespace Services.Expenses
             }
             await expenseRepository.DeleteAsync(expenseFromDb);
 
-            ExpenseReadDto readDto = mapper.Map<ExpenseReadDto>(expenseFromDb);
-            return readDto;
+            return mapper.Map<ExpenseReadDto>(expenseFromDb);
+        }
+
+        public async Task<ExpenseReadDto> UpdateExpenseAsync(int id, ExpenseUpdateDto dto)
+        {
+            Expense expenseFromDb = await expenseRepository.GetByIdAsync(id) ?? throw new NotFoundException($"Expense with id {id} was not found");
+
+            if (expenseFromDb.UserId != user.Id)
+            {
+                throw new UnauthorizedException("User has no access to this content!");
+            }
+
+            mapper.Map(dto, expenseFromDb);
+
+            await expenseRepository.UpdateAsync(expenseFromDb);
+
+            return mapper.Map<ExpenseReadDto>(expenseFromDb);
         }
 
         public async Task<List<ExpenseReadDto>> GetRecentExpensesAsync(int count)
@@ -59,6 +72,5 @@ namespace Services.Expenses
 
             return mapper.Map<List<ExpenseReadDto>>(expensesFromDb);
         }
-
     }
 }

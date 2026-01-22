@@ -8,5 +8,6 @@ public class ExpenseProfile : Profile
         // Example mappings
         CreateMap<Expense, ExpenseReadDto>();
         CreateMap<ExpenseCreateDto, Expense>();
+        CreateMap<ExpenseUpdateDto, Expense>();
     }
 }

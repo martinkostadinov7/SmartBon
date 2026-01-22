@@ -9,7 +9,6 @@ import { ExpenseCard } from "../../components/expense";
 export default function HomeScreen() {
   const { categories } = useCategories();
   const [recentExpenses, setRecentExpenses] = useState<Expense[]>([]);
-  
   const loadExpenses = useCallback(() => {
     fetchRecentExpenses().then(setRecentExpenses);
   }, []);
@@ -20,7 +19,11 @@ export default function HomeScreen() {
     }, [loadExpenses])
   );
   function handleAddExpense() {
-    router.push("expenses/addExpense");
+    router.push("../expenses/addExpense");
+  }
+
+  function handleExpenseView(id: number){
+    router.push(`/(modals)/expenses/${id}`);
   }
 
   return (<>
@@ -42,6 +45,7 @@ export default function HomeScreen() {
             subcategoryEmoji={subcategory?.icon}
             subcategoryText={subcategory?.name}
             subcategoryColor={subcategory?.colorHex ?? "#FFFFFF"}
+            onPress={() => handleExpenseView(expense.id)}
           />
         );
       })}

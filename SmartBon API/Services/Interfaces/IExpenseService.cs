@@ -7,6 +7,7 @@ namespace Services.Interfaces
         Task<ExpenseReadDto> GetExpenseByIdAsync(int id);
         Task<List<ExpenseReadDto>> GetExpensesAsync();
         Task<ExpenseReadDto> DeleteExpenseAsync(int id);
+        Task<ExpenseReadDto> UpdateExpenseAsync(int id, ExpenseUpdateDto dto);
         Task<List<ExpenseReadDto>> GetRecentExpensesAsync(int count);
 
     }

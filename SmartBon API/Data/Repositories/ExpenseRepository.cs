@@ -1,10 +1,5 @@
 ﻿using Data.Interfaces;
 using Data.Models;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Query;
-using Shared.ApiExceptions;
-using System.Linq;
-using System.Linq.Expressions;
 
 namespace Data.Repositories
 {
