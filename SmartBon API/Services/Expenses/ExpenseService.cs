@@ -4,6 +4,7 @@ using Data.Models;
 using Services.Interfaces;
 using Shared.ApiExceptions;
 using Shared.DTOs.ExpenseDTOs;
+using Shared.DTOs.ExpenseDTOs.Ranges;
 
 namespace Services.Expenses
 {
@@ -71,6 +72,33 @@ namespace Services.Expenses
             List<Expense> expensesFromDb = await expenseRepository.GetRecentExpensesAsync(user.Id, count);
 
             return mapper.Map<List<ExpenseReadDto>>(expensesFromDb);
+        }
+
+        public async Task<List<ExpenseReadDto>> GetExpensesWithQueryParamsAsync(ExpenseQueryParams queryParams)
+        {
+            if(queryParams?.FilterParams?.StartDate > queryParams?.FilterParams?.EndDate)
+            {
+                throw new BadRequestException("'startDate' cannot be after 'endDate'.");
+            }
+
+            if (queryParams?.FilterParams?.FromCost > queryParams?.FilterParams?.ToCost)
+            {
+                throw new BadRequestException("'fromCost' cannot be larger than 'toCost'.");
+            }
+
+            List<Expense> expensesFromDb = await expenseRepository.GetExpensesFromQueryAsync(user.Id, queryParams!);
+
+            return mapper.Map<List<ExpenseReadDto>>(expensesFromDb);
+        }
+
+        public async Task<CostRangeDto> GetCostRangeAsync()
+        {
+            return await expenseRepository.GetCostRangeAsync(user.Id);
+        }
+
+        public async Task<DateRangeDto> GetDateRangeAsync()
+        {
+            return await expenseRepository.GetDateRangeAsync(user.Id);
         }
     }
 }

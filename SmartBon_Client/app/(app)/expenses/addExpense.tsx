@@ -14,7 +14,6 @@ const paymentTypeMap: Record<string, number> = {
 
 export default function AddExpense() {
     const { categories } = useCategories();
-    
     const [title, setTitle] = useState("");
     const [date, setDate] = useState(new Date());
     const [cost, setCost] = useState("");

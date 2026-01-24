@@ -2,15 +2,20 @@ import { ScrollView, StyleSheet, Text, TouchableOpacity } from "react-native";
 import React, { useCallback, useState } from "react";
 import { router, useFocusEffect } from "expo-router";
 import { useCategories } from "../../context/CategoriesContext";
-import { fetchRecentExpenses } from "../../services/expenseService";
 import { Expense } from "../../types/expense";
 import { ExpenseCard } from "../../components/expense";
+import { AddButton } from "../../components/addButton";
+import { apiFetch } from "../../services/api";
 
 export default function HomeScreen() {
   const { categories } = useCategories();
   const [recentExpenses, setRecentExpenses] = useState<Expense[]>([]);
-  const loadExpenses = useCallback(() => {
-    fetchRecentExpenses().then(setRecentExpenses);
+  const loadExpenses =  useCallback(async () => {
+      const response = await apiFetch("/Expenses/recent/10");
+      if (!response.ok) {
+        throw new Error("Failed to load expenses");
+      }
+      await response.json().then(setRecentExpenses);
   }, []);
 
   useFocusEffect(
@@ -50,26 +55,14 @@ export default function HomeScreen() {
         );
       })}
     </ScrollView>
-    <TouchableOpacity style={styles.button} onPress= {handleAddExpense}>
-      <Text style={{ color: 'white', fontSize: 50, transform: [{ translateY: -2}]}}>+</Text>
-    </TouchableOpacity>
+    <AddButton
+      onPress={handleAddExpense}
+    />
   </>
   );
 }
 
-
 const styles = StyleSheet.create({
-  button: {
-    position: 'absolute',
-    bottom: 16, 
-    right: 16,
-    backgroundColor: "#3077ceff",
-    height: 60,
-    width: 60,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 30
-  },
   container: {
     padding: 16,
     backgroundColor: "#e1ebffff"

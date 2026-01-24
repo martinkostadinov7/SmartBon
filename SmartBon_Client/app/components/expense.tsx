@@ -173,7 +173,7 @@
 
     amount: {
       color: "red",
-      fontSize: 14,
+      fontSize: 15,
       fontWeight: "bold",
     },
 

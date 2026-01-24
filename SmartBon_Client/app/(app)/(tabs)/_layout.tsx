@@ -18,6 +18,12 @@ export default function AppLayout() {
             case "expenses":
               iconName = "receipt";
               break;
+            case "statistics":
+              iconName = "chart-pie";
+              break;
+            case "settings":
+            iconName = "user-gear";
+            break;
             default:
               iconName = "receipt";
           }
@@ -28,6 +34,8 @@ export default function AppLayout() {
     >
       <Tabs.Screen name="home" options={{ title: "Home" }} />
       <Tabs.Screen name="expenses" options={{ title: "Expenses" }} />
+      <Tabs.Screen name="statistics" options={{ title: "Statistics" }} />
+      <Tabs.Screen name="settings" options={{ title: "Profile & Settings" }} />
       
     </Tabs>
   );

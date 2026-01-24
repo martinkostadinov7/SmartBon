@@ -1,8 +1,7 @@
-import { View, Text, Pressable, KeyboardAvoidingView, StyleSheet, TouchableOpacity, Modal, TextInput, Keyboard, Alert} from 'react-native'
+import { View, Text, Pressable, KeyboardAvoidingView, StyleSheet, TouchableOpacity, Modal, TextInput, Keyboard, Alert, Platform, ScrollView} from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { router, useLocalSearchParams } from 'expo-router';
 import { Expense, PaymentType } from '../../../types/expense';
-import { getExpenseById } from "../../../services/expenseService";
 import { CategoryBox } from '../../../components/categoryBox';
 import { useCategories } from '../../../context/CategoriesContext';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -30,6 +29,7 @@ export default function ExpenseViewScreen() {
     const [description, setDescription] = useState("");
     const [isEditing, setIsEditing] = useState(false);
     const [categoryId, setCategoryId] = useState(-1);
+    const [screenHeight, setScreenHeight] = useState(600);
 
     const paymentOptions: { value: PaymentType; label: string }[] = [
     { value: "Cash", label: "Cash" },
@@ -41,7 +41,11 @@ export default function ExpenseViewScreen() {
     const currentPaymentLabel = paymentOptions.find(p => p.value === paymentType)?.label ?? paymentType;
 
    useEffect(() => {(async () => {
-      const expense = await getExpenseById(Number(id));
+      const response = await apiFetch(`/Expenses/${id}`);
+      if (!response.ok) {
+        throw new Error("Failed to load expense");
+      }
+      const expense = await response.json();
       setExpense(expense);
       setTitle(expense?.title ?? "undefined");
       setDate(new Date(expense?.expenseDate) ?? new Date());
@@ -83,7 +87,7 @@ export default function ExpenseViewScreen() {
       
               const expenseToAdd = {
                   Title: title.trim(),
-                  Description: description.trim(),
+                  Description: description ? description.trim() : null,
                   Cost: costNumber,
                   CategoryId: currentCategoryId,
                   SubcategoryId: subCategory ? currentSubcategoryId : null,
@@ -128,29 +132,44 @@ export default function ExpenseViewScreen() {
     }
     
     async function handleDeleteExpense(){
-      try {
-                  const response = await apiFetch(`/Expenses/${id}`, {
-                  method: "DELETE",
-                  headers: {
-                      "Content-Type": "application/json",
-                  }
-                  });
-                  if (!response.ok) return;
-      
-                  console.log("Expense deleted successfully ✅");
-                  
-                  setIsEditing(false);
+    Alert.alert(
+        "Delete Expense",
+        "Are you sure you want to delete this record?",
+        [
+          { text: "Cancel", style: "cancel" },
+          { 
+            text: "Delete", 
+            style: "destructive", 
+            onPress: async () => {
+              try {
+                const response = await apiFetch(`/Expenses/${id}`, {
+                method: "DELETE",
+                headers: {
+                    "Content-Type": "application/json",
+                }
+                });
+                if (!response.ok) return;
+    
+                console.log("Expense deleted successfully ✅");
+                
+                setIsEditing(false);
 
-                  handleCloseScreen();
-              } catch (e: any) {
+                handleCloseScreen();
+            } catch (e: any) {
 
-                Alert.alert(
-                  "Error",
-                  "An error occured while trying to save the expense!",
-                  [{ text: "OK" }]
-                  );
-                  console.log("Network/API error:", e?.message ?? e);
-              }
+              Alert.alert(
+                "Error",
+                "An error occured while trying to save the expense!",
+                [{ text: "OK" }]
+                );
+                console.log("Network/API error:", e?.message ?? e);
+            }
+              await apiFetch(`/Expenses/${id}`, { method: 'DELETE' });
+              router.back();
+            } 
+          }
+        ]
+      );
     }
   return (
     <>
@@ -158,7 +177,7 @@ export default function ExpenseViewScreen() {
         <KeyboardAvoidingView
             style={styles.wrapper}
         >
-            <Pressable style={styles.container} onPress={() => Keyboard.dismiss()}>
+            <Pressable style={[styles.container, {height: screenHeight}]} onPress={() => Keyboard.dismiss()}>
             <View style={styles.header}>
                 <TouchableOpacity onPress={handleCloseScreen}>
                 <Text style={styles.headerBtn}>Cancel</Text>
@@ -228,6 +247,8 @@ export default function ExpenseViewScreen() {
                     onChangeText={newDescription => setDescription(newDescription)}
                     value={description}
                     multiline
+                    onFocus={() => setScreenHeight(700)}
+                    onBlur={() => setScreenHeight(590)}
                   /> :
                   <Text style={[styles.descriptionInput]}>{description}</Text>
                   }
@@ -285,7 +306,6 @@ export default function ExpenseViewScreen() {
                       borderWidth: 1.5,
                       borderColor: "white",
                       backgroundColor: "#3077ceff"
-
                       }}
                     >
                     <Text style={{ fontSize: 16, color: "white"}}>
@@ -294,10 +314,10 @@ export default function ExpenseViewScreen() {
                   </Pressable>
                 </View>
               )}
+              <TouchableOpacity style={styles.button} onPress={handleDeleteExpense}>
+                <Text style={{ color: "white", fontSize: 20 }}>Delete</Text>
+              </TouchableOpacity>
             </View>
-            <TouchableOpacity style={styles.button} onPress={handleDeleteExpense}>
-            <Text style={{ color: "white", fontSize: 25 }}>Delete</Text>
-          </TouchableOpacity>
             </Pressable>
         </KeyboardAvoidingView>
         </Pressable>
@@ -309,12 +329,12 @@ const styles = StyleSheet.create({
   button: {
     backgroundColor: "rgba(228, 67, 67, 0.85)",
     height: 40,
-    width: 150,
+    width: 100,
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 30,
     alignSelf: "center",
-    margin: 10
+    margin: 15
   },
     overlay: {
     flex: 1,
@@ -326,8 +346,7 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     padding: 20,
     borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
-    height: 600,
+    borderTopRightRadius: 16
   },
   header: {
     flexDirection: "row",
