@@ -91,10 +91,10 @@ namespace Data.Repositories
                     query = query.Where(e => e.SubcategoryId != null && subcategoryIds.Contains(e.SubcategoryId.Value));
                 }
 
-                if (startDate != null) query = query.Where(e => e.ExpenseDate > startDate);    
-                if (endDate != null) query = query.Where(e => e.ExpenseDate < endDate);
-                if (fromCost != null) query = query.Where(e => e.Cost > fromCost);
-                if (toCost != null) query = query.Where(e => e.Cost < toCost);
+                if (startDate != null) query = query.Where(e => e.ExpenseDate >= startDate);    
+                if (endDate != null) query = query.Where(e => e.ExpenseDate <= endDate);
+                if (fromCost != null) query = query.Where(e => e.Cost >= fromCost);
+                if (toCost != null) query = query.Where(e => e.Cost <= toCost);
 
                 if (paymentTypes != null && paymentTypes.Any())
                 {
@@ -102,33 +102,62 @@ namespace Data.Repositories
                 }
             }
 
-            if (queryParams.SortParams != null)
-            {
-                ExpenseSortParams sortParams = queryParams.SortParams;
-                bool descending = sortParams.Descending;
-                SortBy sortBy = sortParams.Sortby;
+            ExpenseSortParams sortParams = queryParams.SortParams;
+            bool descending = sortParams.Descending;
+            SortBy sortBy = sortParams.Sortby;
 
+            switch (sortBy)
+            {
+                case SortBy.Title:
+                    query = descending ? 
+                        query.OrderByDescending(e => e.Title).ThenByDescending(e => e.ExpenseDate) : 
+                        query.OrderBy(e => e.Title).ThenByDescending(e => e.ExpenseDate);
+                    break;
+                case SortBy.Cost:
+                    query = descending ? 
+                        query.OrderByDescending(e => e.Cost).ThenByDescending(e => e.ExpenseDate) : 
+                        query.OrderBy(e => e.Cost).ThenByDescending(e => e.ExpenseDate);
+                    break;
+                case SortBy.Date:
+                    query = descending ? 
+                        query.OrderByDescending(e => e.ExpenseDate).ThenByDescending(e => e.ExpenseDate) : 
+                        query.OrderBy(e => e.ExpenseDate).ThenByDescending(e => e.ExpenseDate);
+                    break;
+                default:
+                    break;
+            }
+
+            string? afterValue = queryParams.AfterValue;
+            DateTime? afterDate = queryParams.AfterDate;
+
+            if (!string.IsNullOrEmpty(queryParams.AfterValue) && queryParams.AfterDate.HasValue)
+            {
                 switch (sortBy)
                 {
                     case SortBy.Title:
-                        query = descending ? query.OrderByDescending(e => e.Title) : query.OrderBy(e => e.Title);
+                        string title = afterValue!;
+                        query = descending ?
+                            query.Where(e => e.Title.CompareTo(afterValue) < 0 || (e.Title == afterValue && e.ExpenseDate < afterDate)) :
+                            query.Where(e => e.Title.CompareTo(afterValue) > 0 || (e.Title == afterValue && e.ExpenseDate < afterDate));
                         break;
                     case SortBy.Cost:
-                        query = descending ? query.OrderByDescending(e => e.Cost) : query.OrderBy(e => e.Cost);
+                        decimal afterCost = decimal.Parse(afterValue!);
+                        query = descending ?
+                            query.Where(e => e.Cost < afterCost || (e.Cost == afterCost && e.ExpenseDate < afterDate)) :
+                            query.Where(e => e.Cost > afterCost || (e.Cost == afterCost && e.ExpenseDate < afterDate));
                         break;
                     case SortBy.Date:
-                        query = descending ? query.OrderByDescending(e => e.ExpenseDate) : query.OrderBy(e => e.ExpenseDate);
-                        break;
-                    default:
+                        var thresholdDate = descending ? afterDate : afterDate!.Value.AddMilliseconds(1);
+                        query = descending ?
+                            query.Where(e => e.ExpenseDate < thresholdDate) :
+                            query.Where(e => e.ExpenseDate > thresholdDate);
                         break;
                 }
             }
-            else
-            {
-                query = query.OrderByDescending(e => e.ExpenseDate);
-            }
 
-            return await query.ToListAsync();
+            return await query
+                .Take(queryParams.PageSize)
+                .ToListAsync();
         }
 
         public async Task<List<Expense>> GetRecentExpensesAsync(int userId, int count)

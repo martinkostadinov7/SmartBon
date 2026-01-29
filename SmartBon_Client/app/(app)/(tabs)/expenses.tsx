@@ -1,4 +1,4 @@
-import { View, ScrollView, StyleSheet, Text, TouchableOpacity, TextInput, Keyboard, Pressable, Dimensions } from "react-native";
+import { View, ScrollView, StyleSheet, Text, TouchableOpacity, TextInput, Keyboard, Pressable, Dimensions, FlatList } from "react-native";
 import React, { useCallback, useEffect, useState } from "react";
 import { router, useFocusEffect } from "expo-router";
 import { useCategories } from "../../context/CategoriesContext";
@@ -43,6 +43,8 @@ export default function ExpensesScreen() {
   const [selectedSortBy, setSelectedSortBy] = useState("Date");
   const [selectedOrder, setSelectedOrder] = useState("Descending");
 
+  let afterValue = "";
+  let afterDate = "";
   const [costRange, setCostRange] = useState([0, 9999.99]); // Начална и крайна цена
   let subcategories: Subcategory[] = [];
 
@@ -62,8 +64,8 @@ export default function ExpensesScreen() {
   }
 
   const loadExpenses = useCallback(async () => {
-    fetchData();
     setRangesFromDb();
+    fetchData();
   }, []);
 
   async function setRangesFromDb(){
@@ -146,9 +148,17 @@ export default function ExpensesScreen() {
       setIsFilterScreenOpened(false);
     }
   }
-  const fetchData = async () => {
+
+  async function updateExpensesFromQuery(){
+    if (selectedCategoryIds.length > 1) {
+      setSelectedSubcategoryIds([]);
+    }
+    
     const query = new URLSearchParams({
       "Search": search,
+      "AfterValue": "",
+      "AfterDate": "",
+      "PageSize": "10",
       "FilterParams.StartDate": dateRange[0].toISOString(),
       "FilterParams.EndDate": dateRange[1].toISOString(),
       "FilterParams.FromCost": String(costRange[0]), 
@@ -157,6 +167,111 @@ export default function ExpensesScreen() {
       "SortParams.SortBy": String(sortByMap[selectedSortBy]),  
     });
 
+    console.log("updateExpensesFromQuery");
+    console.log(query);
+
+    selectedCategoryIds.forEach(id => {
+        query.append("FilterParams.CategoryIds", id.toString());
+    });
+
+    selectedSubcategoryIds.forEach(id => {
+        query.append("FilterParams.SubcategoryIds", id.toString());
+    });
+
+    selectedPaymentTypes.forEach(paymentType => {
+        query.append("FilterParams.PaymentTypes", String(paymentTypeMap[paymentType]));
+    });
+
+    
+    const response = await apiFetch(`/Expenses?${query.toString()}`, {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+        }
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to load expenses");
+    }
+    
+    await response.json().then(setExpenses); 
+  }
+
+const [isLoading, setIsLoading] = useState(false);
+
+async function loadNextPage() {
+  if (isLoading || expenses.length === 0) return; // Предотвратява дублиране
+
+  setIsLoading(true);
+  const lastExpense = expenses[expenses.length - 1];
+  
+  let currentAfterValue = "";
+  if (selectedSortBy === "Title") currentAfterValue = lastExpense.title;
+  else if (selectedSortBy === "Cost") currentAfterValue = String(lastExpense.cost.toLocaleString('bg-BG'));
+  else if (selectedSortBy === "Date") currentAfterValue = new Date(lastExpense.expenseDate + "Z").toISOString();;
+
+  const currentAfterDate = new Date(lastExpense.expenseDate + "Z").toISOString();
+
+  const query = new URLSearchParams({
+    "Search": search,
+    "AfterValue": currentAfterValue,
+    "AfterDate": currentAfterDate,
+    "PageSize": "10", 
+    "FilterParams.StartDate": dateRange[0].toISOString(),
+    "FilterParams.EndDate": dateRange[1].toISOString(),
+    "FilterParams.FromCost": String(costRange[0]),
+    "FilterParams.ToCost": String(costRange[1]),
+    "SortParams.Descending": selectedOrder === "Descending" ? "true" : "false",
+    "SortParams.SortBy": String(sortByMap[selectedSortBy]),
+  });
+
+    selectedCategoryIds.forEach(id => {
+          query.append("FilterParams.CategoryIds", id.toString());
+      });
+
+      selectedSubcategoryIds.forEach(id => {
+          query.append("FilterParams.SubcategoryIds", id.toString());
+      });
+
+      selectedPaymentTypes.forEach(paymentType => {
+          query.append("FilterParams.PaymentTypes", String(paymentTypeMap[paymentType]));
+      });
+  try {
+    const response = await apiFetch(`/Expenses?${query.toString()}`);
+    if (response.ok) {
+      const newExpenses = await response.json();
+      if (newExpenses.length > 0) {
+        setExpenses(prev => [...prev, ...newExpenses]);
+      }
+    }
+  } catch (e) {
+    console.error(e);
+  } finally {
+    setIsLoading(false);
+  }
+}
+
+  const fetchData = async () => {
+    if (selectedCategoryIds.length > 1) {
+      setSelectedSubcategoryIds([]);
+    }
+    
+    const query = new URLSearchParams({
+      "Search": "",
+      "AfterValue": "",
+      "AfterDate": "",
+      "PageSize": "10",
+      "FilterParams.StartDate": dateRange[0].toISOString(),
+      "FilterParams.EndDate": dateRange[1].toISOString(),
+      "FilterParams.FromCost": String(costRange[0]), 
+      "FilterParams.ToCost": String(costRange[1]),
+      "SortParams.Descending": "true",  
+      "SortParams.SortBy": "Date",  
+    });
+
+    console.log("fetchData");
+    console.log(query);
+    
     selectedCategoryIds.forEach(id => {
         query.append("FilterParams.CategoryIds", id.toString());
     });
@@ -183,7 +298,7 @@ export default function ExpensesScreen() {
   }
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
-    fetchData();
+    updateExpensesFromQuery();
     }, 500);
 
     return () => clearTimeout(delayDebounceFn);
@@ -208,7 +323,7 @@ export default function ExpensesScreen() {
       onPress={() => Keyboard.dismiss()}>
          <View style={styles.header}>
             <TouchableOpacity onPress={handleToggleFilterScreen}>
-            <Text style={styles.headerBtn}>Apply</Text>
+            <Text style={[styles.headerBtn, {}]}>{"▲"}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity onPress={handleClearParams}>
@@ -363,7 +478,7 @@ export default function ExpensesScreen() {
       onPress={() => Keyboard.dismiss()}>
         <View style={styles.header}>
             <TouchableOpacity onPress={handleToggleSortScreen}>
-            <Text style={styles.headerBtn}>Apply</Text>
+            <Text style={styles.headerBtn}>{"▲"}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity onPress={handleClearParams}>
@@ -456,30 +571,41 @@ export default function ExpensesScreen() {
         </View>
       </Pressable>
     )}
-    <ScrollView style={styles.expensesContainer}
-    onTouchEndCapture={() => {setIsFilterScreenOpened(false); setFilterIconColor("white")}}>
-      {expenses.map(expense => {
-        const category = categories.find(c => c.id === expense.categoryId);
-        const subcategory = categories
-          .find(c => c.id === expense.categoryId)
-          ?.subcategories.find(sc => sc.id === expense.subcategoryId);
-        return (
-          <ExpenseCard
-            key={expense.id}
-            title={expense.title}
-            amount={expense.cost}
-            date={String(expense.expenseDate)}
-            categoryName= {category?.name ?? "Unknown"}
-            categoryEmoji={category?.icon ?? "❌"}
-            categoryColor={category?.colorHex ?? "#FFFFFF"}
-            subcategoryEmoji={subcategory?.icon}
-            subcategoryText={subcategory?.name}
-            subcategoryColor={subcategory?.colorHex ?? "#FFFFFF"}
-            onPress={() => handleExpenseView(expense.id)}
-          />
-        );
-      })}
-    </ScrollView>
+
+<FlatList
+  data={expenses} // Масивът с данни
+  keyExtractor={(item) => item.id.toString()} // Уникален ключ за всеки елемент
+  style={styles.expensesContainer}
+  onEndReached={loadNextPage}
+  // Затваря филтъра при докосване на списъка
+  onTouchEndCapture={() => {
+    setIsFilterScreenOpened(false); 
+    setFilterIconColor("white");
+  }}
+
+  renderItem={({ item: expense }) => {
+    const category = categories.find(c => c.id === expense.categoryId);
+    const subcategory = category?.subcategories.find(sc => sc.id === expense.subcategoryId);
+
+    return (
+      <ExpenseCard
+        key={expense.id}
+        title={expense.title}
+        amount={expense.cost}
+        date={String(expense.expenseDate)}
+        categoryName={category?.name ?? "Unknown"}
+        categoryEmoji={category?.icon ?? "❌"}
+        categoryColor={category?.colorHex ?? "#FFFFFF"}
+        subcategoryEmoji={subcategory?.icon}
+        subcategoryText={subcategory?.name}
+        subcategoryColor={subcategory?.colorHex ?? "#FFFFFF"}
+        onPress={() => handleExpenseView(expense.id)}
+      />
+    );
+  }}
+  
+  contentContainerStyle={{ paddingBottom: 75 }}
+/>
   </View>
     <AddButton
     onPress={handleAddExpense}/>
@@ -503,7 +629,7 @@ const styles = StyleSheet.create({
   },
   filterScreen:{
     padding: 15,
-    borderWidth: 2,
+    borderWidth: 3,
     borderRadius: 10,
     margin: 5,
     backgroundColor: "white"

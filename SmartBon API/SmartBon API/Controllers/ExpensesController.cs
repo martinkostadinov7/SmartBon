@@ -17,13 +17,6 @@ namespace SmartBon_API.Controllers
             return CreatedAtAction(nameof(GetExpenseById), new { id = result.Id }, result);
         }
 
-        //[Authorize]
-        //[HttpGet]
-        //public async Task<ActionResult<List<ExpenseReadDto>>> GetExpenses() // todo imeplemtn parameters for filtering and searching
-        //{
-        //    List<ExpenseReadDto> result = await expenseService.GetExpensesAsync();
-        //    return Ok(result);
-        //}
         [Authorize]
         [HttpGet]
         public async Task<ActionResult<List<ExpenseReadDto>>> GetExpensesWithQueryParams([FromQuery] ExpenseQueryParams queryParams) 
@@ -68,7 +61,7 @@ namespace SmartBon_API.Controllers
         [HttpGet("costRange")]
         public async Task<ActionResult<CostRangeDto>> GetCostRange()  
         {
-                CostRangeDto result = await expenseService.GetCostRangeAsync();
+            CostRangeDto result = await expenseService.GetCostRangeAsync();
             return Ok(result);
         }
 
