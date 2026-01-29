@@ -25,13 +25,15 @@ namespace Data.Models
 
         public PaymentType PaymentType { get; set; }
 
+        public Currency Currency { get; set; }
+
         public User User { get; set; }
         
         public int UserId { get; set; }
             
         private Expense() { }
         public Expense(string title, string? description, decimal cost, int categoryId,
-            int? subCategoryId,  DateTime expenseDate, PaymentType paymentType, int userId)
+            int? subCategoryId,  DateTime expenseDate, PaymentType paymentType, int userId, Currency currency)
         {
             Title = title;
             Description = description;
@@ -42,6 +44,7 @@ namespace Data.Models
             PaymentType = paymentType;
             UserId = userId;
             CreatedAt = DateTime.Now;
+            Currency = currency;
         }
     }
 }

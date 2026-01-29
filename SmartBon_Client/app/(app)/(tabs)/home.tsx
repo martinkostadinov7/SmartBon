@@ -2,10 +2,15 @@ import { ScrollView, StyleSheet, Text, TouchableOpacity } from "react-native";
 import React, { useCallback, useState } from "react";
 import { router, useFocusEffect } from "expo-router";
 import { useCategories } from "../../context/CategoriesContext";
-import { Expense } from "../../types/expense";
+import { Currency, Expense } from "../../types/expense";
 import { ExpenseCard } from "../../components/expense";
 import { AddButton } from "../../components/addButton";
 import { apiFetch } from "../../services/api";
+
+const currencyFromNumber: Record<number, Currency> = {
+  0: "EUR",
+  1: "USD"
+};
 
 export default function HomeScreen() {
   const { categories } = useCategories();
@@ -31,6 +36,13 @@ export default function HomeScreen() {
     router.push(`/(modals)/expenses/${id}`);
   }
 
+  const formatCost = (amount: number, currencyCode: string) => {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: currencyCode, // Тук подаваш директно "EUR", "BGN" или "USD"
+  }).format(amount);
+};
+
   return (<>
     <ScrollView style={styles.container}>
       {recentExpenses.map(expense => {
@@ -42,7 +54,7 @@ export default function HomeScreen() {
           <ExpenseCard
             key={expense.id}
             title={expense.title}
-            amount={expense.cost}
+            amount={formatCost(expense.cost, currencyFromNumber[expense.currency])}
             date={String(expense.expenseDate)}
             categoryName= {category?.name ?? "Unknown"}
             categoryEmoji={category?.icon ?? "❌"}

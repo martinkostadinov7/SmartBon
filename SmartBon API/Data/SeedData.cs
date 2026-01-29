@@ -30,7 +30,6 @@ namespace Data
             "#E0E0E0", // Soft Grey
         };
 
-
         public static void SeedAll(AppDbContext dbContext)
         {
             db = dbContext;
@@ -59,8 +58,8 @@ namespace Data
             var hasher = new PasswordHasher<User>();
             List<User> users = new()
             {
-                new User("m.kostadinov07@gmail.com", hasher.HashPassword(null!, "192837465Aqs")),
-                new User("temp@example.com", hasher.HashPassword(null!, "123456789"))
+                new User("m.kostadinov07@gmail.com", hasher.HashPassword(null!, "192837465Aqs"), "Martin Kostadinov", true, Currency.EUR),
+                new User("temp@example.com", hasher.HashPassword(null!, "123456789"), "Temp User", false, Currency.USD)
             };
             db.Users.AddRange(users);
             db.SaveChanges();
@@ -251,7 +250,8 @@ namespace Data
                         subCategoryId: subCategoryId,
                         expenseDate: RandomDate(random, startDate, endDate),
                         paymentType: (PaymentType)random.Next(0, 3),
-                        userId: userId
+                        userId: userId,
+                        currency: (Currency)random.Next(0, 2)
                     );
 
                     expenses.Add(expense);

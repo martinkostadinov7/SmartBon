@@ -5,11 +5,17 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { CategoryBox } from '../../components/categoryBox';
 import { router } from 'expo-router';
 import { apiFetch } from '../../services/api';
+import * as SecureStore from "expo-secure-store";
 
 const paymentTypeMap: Record<string, number> = {
   Cash: 0,
   Card: 1,
   Transfer: 2,
+};
+
+const currencyMap: Record<string, number> = {
+  EUR: 0,
+  USD: 1
 };
 
 export default function AddExpense() {
@@ -20,7 +26,8 @@ export default function AddExpense() {
     const [description, setDescription] = useState("");
     const [selectedCategoryId, setSelectedCategoryId] = useState(-1);
     const [selectedSubcategoryId, setSelectedSubcategoryId] = useState(-1);
-
+    const defaultCurrency = SecureStore.getItem("currency");
+    const [selectedCurrency, setSelectedCurrency] = useState(defaultCurrency ? defaultCurrency : "EUR");
     type PaymentType = "Cash" | "Card" | "Transfer";
 
     const paymentOptions: { value: PaymentType; label: string }[] = [
@@ -62,6 +69,7 @@ export default function AddExpense() {
             SubcategoryId: selectedSubcategoryId > 0 ? selectedSubcategoryId : null,
             ExpenseDate: date.toISOString(),
             PaymentType: paymentTypeMap[paymentType],
+            Currency: currencyMap[selectedCurrency || "EUR"]
         };
 
         try {
@@ -73,13 +81,8 @@ export default function AddExpense() {
             body: JSON.stringify(expense),
             });
 
-            console.log("REQUEST BODY:", expense);
-            console.log("STATUS:", response.status);
-            console.log("BODY:", await response.text());
-
             if (!response.ok) return;
 
-            console.log("Expense added successfully ✅");
             handleCloseScreen();
         } catch (e: any) {
             console.log("Network/API error:", e?.message ?? e);
@@ -213,6 +216,32 @@ export default function AddExpense() {
             </View>
             </>
         )}
+        <Text style={styles.text}>Currency</Text>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+          <TouchableOpacity
+            style={[
+              styles.buttonPicker, 
+              selectedCurrency === "EUR" && styles.activeButton
+            ]}
+            onPress={() => setSelectedCurrency("EUR")}
+          >
+            <Text style={selectedCurrency === "EUR" ? styles.activeText : styles.textPicker}>
+              EUR
+            </Text>
+          </TouchableOpacity>
+
+           <TouchableOpacity
+            style={[
+              styles.buttonPicker, 
+              selectedCurrency === "USD" && styles.activeButton
+            ]}
+            onPress={() => setSelectedCurrency("USD")}
+          >
+            <Text style={selectedCurrency === "USD" ? styles.activeText : styles.textPicker}>
+              USD
+            </Text>
+          </TouchableOpacity>
+        </View>
 
         <Text style={styles.text}>Payment Type</Text>
         <View style={{ marginLeft: 20, marginBottom: 10, flexDirection: "row", gap: 10 }}>
@@ -238,6 +267,7 @@ export default function AddExpense() {
             );
           })}
         </View>
+        
       </ScrollView>
     </View>
 
@@ -249,7 +279,12 @@ export default function AddExpense() {
 
 }
 
-const styles = StyleSheet.create({
+export const styles = StyleSheet.create({
+  currencyPicker:{
+    width:70,
+    marginLeft: 15,
+    marginTop: 0,
+  },
     button: {
     position: "absolute",
     bottom: 25,
@@ -320,5 +355,40 @@ const styles = StyleSheet.create({
     height: 100,  
     fontSize: 18
 
-  }
+  },
+  container: {
+    flexDirection: 'row',
+    backgroundColor: '#F2F2F7', // Светло сиво за фон (iOS системно сиво)
+    borderRadius: 12,
+    padding: 4,
+    marginVertical: 10,
+  },
+  buttonPicker: {
+    marginHorizontal: 15,
+    marginBottom: 10,
+    flex: 1, // Прави всички бутони с еднаква ширина
+    paddingVertical: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 8,
+  },
+  activeButton: {
+    backgroundColor: '#FFFFFF', // Бял фон за активния елемент
+    // Сянка за дълбочина
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3, // За Android
+  },
+  textPicker: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#8E8E93', // По-блед цвят за неактивните
+  },
+  activeText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#000000', // Черен цвят за активния
+  },
 });

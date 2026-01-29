@@ -51,7 +51,7 @@ namespace SmartBon_API.Controllers
 
         [Authorize]
         [HttpGet("recent/{count}")]
-        public async Task<ActionResult<List<ExpenseReadDto>>> GetRecentExpenses(int count) // todo imeplemtn parameters for filtering and searching
+        public async Task<ActionResult<List<ExpenseReadDto>>> GetRecentExpenses(int count)
         {
             List<ExpenseReadDto> result = await expenseService.GetRecentExpensesAsync(count);
             return Ok(result);

@@ -13,7 +13,7 @@ namespace Data
         public DbSet<Subcategory> Subcategories { get; set; }
 
         public AppDbContext() { }
-        public AppDbContext(DbContextOptions options) : base(options) { }
+        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -23,6 +23,10 @@ namespace Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<User>()
+                .Property(e => e.DefaultCurrency)
+                .HasConversion<string>();
 
             modelBuilder.Entity<Expense>()
                 .Property(e => e.PaymentType)

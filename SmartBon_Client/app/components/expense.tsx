@@ -48,7 +48,7 @@
         </View>
 
         <View style={styles.right}>
-          <Text style={styles.amount}>{amount.toFixed(2)}</Text>
+          <Text style={styles.amount}>{amount}</Text>
           <Text style={styles.date}>{formatDate(date)}</Text>
         </View>
       </TouchableOpacity>
@@ -58,7 +58,7 @@
 
   type ExpenseCardProps = {
     title: string;
-    amount: number;
+    amount: string;
     date: string; 
     categoryName: string;
     categoryEmoji: string;   

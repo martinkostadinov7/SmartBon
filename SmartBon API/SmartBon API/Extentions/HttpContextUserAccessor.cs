@@ -17,7 +17,7 @@ public class HttpContextUserAccessor : IUserAccessor
     {
         get
         {
-            var idStr = _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var idStr = _httpContextAccessor.HttpContext?.User?.FindFirst("Id")?.Value;
             if (!int.TryParse(idStr, out var id))
             {
                 throw new BadRequestException("Invalid token!");

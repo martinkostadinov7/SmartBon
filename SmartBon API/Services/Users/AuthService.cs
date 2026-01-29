@@ -34,7 +34,7 @@ namespace Services.UserServices
             if (userFromDb != null)
                 throw new BadRequestException("User already exists");
             
-            User user = new User(userToRegister.Email, "temp");
+            User user = new User(userToRegister.Email, "temp", userToRegister.Name, userToRegister.IsPremium ,userToRegister.DefaultCurrency);
 
             string hashedPassword = new PasswordHasher<User>().HashPassword(user, userToRegister.Password);
             user.PasswordHash = hashedPassword;
@@ -48,8 +48,11 @@ namespace Services.UserServices
         {
             var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.Name, user.Email),
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
+                new Claim("Email", user.Email),
+                new Claim("Id", user.Id.ToString()),
+                new Claim("Name", user.Name),
+                new Claim("IsPremium", user.IsPremium.ToString()),
+                new Claim("Currency", user.DefaultCurrency.ToString())
             };
 
             var tokenValue = configuration["AppSettings:Token"] ?? throw new InvalidOperationException("Token value is missing in AppSettings.");

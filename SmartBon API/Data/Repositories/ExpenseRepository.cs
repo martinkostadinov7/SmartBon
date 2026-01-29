@@ -80,6 +80,7 @@ namespace Data.Repositories
                 decimal? fromCost = filterParams.FromCost;
                 decimal? toCost = filterParams.ToCost;
                 List<PaymentType>? paymentTypes = filterParams.PaymentTypes;
+                Currency? currency = filterParams.Currency; 
 
                 if (categoryIds != null && categoryIds.Any())
                 {
@@ -99,6 +100,11 @@ namespace Data.Repositories
                 if (paymentTypes != null && paymentTypes.Any())
                 {
                     query = query.Where(e => paymentTypes.Contains(e.PaymentType));
+                }
+
+                if (currency != null)
+                {
+                    query = query.Where(e => e.Currency == currency);
                 }
             }
 

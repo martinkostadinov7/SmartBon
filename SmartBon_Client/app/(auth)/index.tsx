@@ -5,6 +5,7 @@ import * as SecureStore from "expo-secure-store";
 import { router } from "expo-router";
 import { apiFetch } from "../services/api";
 import { useCategories } from "../context/CategoriesContext";
+import { jwtDecode } from "jwt-decode";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -14,7 +15,7 @@ export default function LoginPage() {
   useEffect(() => {
     async function checkToken() {
       const token = await SecureStore.getItemAsync("token");
-
+      
       if (token) {
         await reloadCategories();
         router.replace("/(app)/home");
@@ -54,6 +55,18 @@ export default function LoginPage() {
       }
       const token = data.value;
       SecureStore.setItem("token", token);
+      interface TokenPayload {
+        email: string;
+        name: string;
+        isPremium: string;
+        currency: string;
+      }
+
+      const decoded = jwtDecode<TokenPayload>(token);
+      SecureStore.setItem("currency", decoded.currency);
+      SecureStore.setItem("isPremium", decoded.isPremium);
+      SecureStore.setItem("name", decoded.name);
+      
       await reloadCategories();
       router.replace("/(app)/home");
   }

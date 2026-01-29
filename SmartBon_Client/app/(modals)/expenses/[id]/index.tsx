@@ -1,7 +1,7 @@
 import { View, Text, Pressable, KeyboardAvoidingView, StyleSheet, TouchableOpacity, Modal, TextInput, Keyboard, Alert, Platform, ScrollView} from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { router, useLocalSearchParams } from 'expo-router';
-import { Expense, PaymentType } from '../../../types/expense';
+import { Currency, Expense, PaymentType } from '../../../types/expense';
 import { CategoryBox } from '../../../components/categoryBox';
 import { useCategories } from '../../../context/CategoriesContext';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -19,6 +19,15 @@ const paymentTypeMap: Record<string, number> = {
   Transfer: 2,
 };
 
+const currencyMap: Record<string, number> = {
+  EUR: 0,
+  USD: 1
+};
+
+const currencyFromNumber: Record<number, Currency> = {
+  0: "EUR",
+  1: "USD"
+};
 export default function ExpenseViewScreen() {
     const { id } = useLocalSearchParams<{ id: string}>();
     const [expense, setExpense] = useState<Expense | null>(null);
@@ -29,7 +38,8 @@ export default function ExpenseViewScreen() {
     const [description, setDescription] = useState("");
     const [isEditing, setIsEditing] = useState(false);
     const [categoryId, setCategoryId] = useState(-1);
-    const [screenHeight, setScreenHeight] = useState(600);
+    const [screenHeight, setScreenHeight] = useState(685);
+    const [selectedCurrency, setSelectedCurrency] = useState("EUR");
 
     const paymentOptions: { value: PaymentType; label: string }[] = [
     { value: "Cash", label: "Cash" },
@@ -52,6 +62,7 @@ export default function ExpenseViewScreen() {
       setCost(String(expense?.cost));
       setDescription(expense?.description ?? null);
       setPaymentType(paymentTypeFromNumber[expense?.paymentType]);
+      setSelectedCurrency(currencyFromNumber[expense?.currency])
     })();
    }, [id]);
 
@@ -75,55 +86,53 @@ export default function ExpenseViewScreen() {
 
     async function handleSaveExpense(){
       const normalizedCost = cost.replace(",", ".").trim();
-              const costNumber = parseFloat(normalizedCost);
-      
-              if(!title || !cost){
-                  Alert.alert(
-                  "Input error",
-                  "Fill out title and cost fields!",
-                  [{ text: "OK" }]
-                  );
-              }
-      
-              const expenseToAdd = {
-                  Title: title.trim(),
-                  Description: description ? description.trim() : null,
-                  Cost: costNumber,
-                  CategoryId: currentCategoryId,
-                  SubcategoryId: subCategory ? currentSubcategoryId : null,
-                  ExpenseDate: date.toISOString(),
-                  PaymentType: paymentTypeMap[paymentType],
-              };
-      
-              try {
-                  const response = await apiFetch(`/Expenses/${id}`, {
-                  method: "PUT",
-                  headers: {
-                      "Content-Type": "application/json",
-                  },
-                  body: JSON.stringify(expenseToAdd),
-                  });
-      
-                  console.log("REQUEST BODY:", expenseToAdd);
-                  console.log("STATUS:", response.status);
-                  console.log("BODY:", await response.text());
-      
-                  if (!response.ok) return;
-      
-                  console.log("Expense edited successfully ✅");
-                  
-                  setIsEditing(false);
+      const costNumber = parseFloat(normalizedCost);
 
-                  handleCloseScreen();
-              } catch (e: any) {
+      if(!title || !cost){
+          Alert.alert(
+          "Input error",
+          "Fill out title and cost fields!",
+          [{ text: "OK" }]
+          );
+      }
 
-                Alert.alert(
-                  "Error",
-                  "An error occured while trying to save the expense!",
-                  [{ text: "OK" }]
-                  );
-                  console.log("Network/API error:", e?.message ?? e);
-              }
+      console.log(currencyMap[selectedCurrency]);
+
+      const expenseToUpdate = {
+          Title: title.trim(),
+          Description: description ? description.trim() : null,
+          Cost: costNumber,
+          CategoryId: currentCategoryId,
+          SubcategoryId: subCategory ? currentSubcategoryId : null,
+          ExpenseDate: date.toISOString(),
+          PaymentType: paymentTypeMap[paymentType],
+          Currency: currencyMap[selectedCurrency]
+      };
+
+      try {
+          const response = await apiFetch(`/Expenses/${id}`, {
+          method: "PUT",
+          headers: {
+              "Content-Type": "application/json",
+          },
+          body: JSON.stringify(expenseToUpdate),
+          });
+          if (!response.ok) 
+            {
+              console.log(await response.json())
+              return;
+            }
+          setIsEditing(false);
+          handleCloseScreen();
+      } catch (e: any) {
+
+        Alert.alert(
+          "Error",
+          "An error occured while trying to save the expense!",
+          [{ text: "OK" }]
+          );
+          console.log("Network/API error:", e?.message ?? e);
+      }
       setTempCategory({ cid: -1, sid: -1 });
     }
 
@@ -131,46 +140,43 @@ export default function ExpenseViewScreen() {
       router.back();
     }
     
-    async function handleDeleteExpense(){
-    Alert.alert(
-        "Delete Expense",
-        "Are you sure you want to delete this record?",
-        [
-          { text: "Cancel", style: "cancel" },
-          { 
-            text: "Delete", 
-            style: "destructive", 
-            onPress: async () => {
-              try {
-                const response = await apiFetch(`/Expenses/${id}`, {
-                method: "DELETE",
-                headers: {
-                    "Content-Type": "application/json",
-                }
-                });
-                if (!response.ok) return;
-    
-                console.log("Expense deleted successfully ✅");
-                
-                setIsEditing(false);
+      async function handleDeleteExpense() {
+  Alert.alert(
+    "Delete Expense",
+    "Are you sure you want to delete this record?",
+    [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Delete",
+        style: "destructive",
+        onPress: async () => {
+          try {
+            // 1. Изпращаме само ЕДНА заявка
+            const response = await apiFetch(`/Expenses/${id}`, {
+              method: "DELETE",
+              headers: {
+                "Content-Type": "application/json",
+              }
+            });
 
-                handleCloseScreen();
-            } catch (e: any) {
-
-              Alert.alert(
-                "Error",
-                "An error occured while trying to save the expense!",
-                [{ text: "OK" }]
-                );
-                console.log("Network/API error:", e?.message ?? e);
+            if (response.ok) {
+              // 2. Логика само при успех
+              setIsEditing(false);
+              router.back(); 
+              // или handleCloseScreen(); ако тя прави същото
+            } else {
+              Alert.alert("Error", "Could not delete the expense.");
             }
-              await apiFetch(`/Expenses/${id}`, { method: 'DELETE' });
-              router.back();
-            } 
+          } catch (e) {
+            // 3. Логика при мрежова грешка
+            Alert.alert("Error", "An error occurred while trying to delete the expense!");
+            console.log("Network/API error:", e);
           }
-        ]
-      );
-    }
+        }
+      }
+    ]
+  );
+} 
   return (
     <>
         <Pressable style={styles.overlay} onPress={handleCloseScreen}>
@@ -247,8 +253,8 @@ export default function ExpenseViewScreen() {
                     onChangeText={newDescription => setDescription(newDescription)}
                     value={description}
                     multiline
-                    onFocus={() => setScreenHeight(700)}
-                    onBlur={() => setScreenHeight(590)}
+                    onFocus={() => setScreenHeight(685)}
+                    onBlur={() => setScreenHeight(685)}
                   /> :
                   <Text style={[styles.descriptionInput]}>{description}</Text>
                   }
@@ -269,6 +275,53 @@ export default function ExpenseViewScreen() {
                   {new Date(date).toLocaleString('bg-BG')}
                 </Text>
               )}
+
+              <Text style={{fontSize: 18, borderWidth: 0}}>Currency</Text>
+              {isEditing ? (
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                <TouchableOpacity
+                  style={[
+                    styles.buttonPicker, 
+                    selectedCurrency === "EUR" && styles.activeButton
+                  ]}
+                  onPress={() => setSelectedCurrency("EUR")}
+                >
+                  <Text style={selectedCurrency === "EUR" ? styles.activeText : styles.textPicker}>
+                    EUR
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[
+                    styles.buttonPicker, 
+                    selectedCurrency === "USD" && styles.activeButton
+                  ]}
+                  onPress={() => setSelectedCurrency("USD")}
+                >
+                  <Text style={selectedCurrency === "USD" ? styles.activeText : styles.textPicker}>
+                    USD
+                  </Text>
+                </TouchableOpacity>
+              </View>
+              ) : (
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                <View
+                  style={[
+                    styles.buttonPicker, styles.activeButton
+                  ]}
+                >
+                  <Text style={styles.activeText}>
+                    {selectedCurrency}
+                  </Text>
+                </View>
+                <View
+                  style={styles.buttonPicker}
+                >
+                </View>
+              </View>
+              )}
+
+
               <Text style={{fontSize: 18, borderWidth: 0}}>Payment Type</Text>
               {isEditing ? (
                 <View style={{ marginTop: 10, flexDirection: "row", gap: 10}}>
@@ -402,6 +455,35 @@ const styles = StyleSheet.create({
     borderColor: "black",
     borderWidth: 1,
     borderRadius: 10, 
-    width: 195
-  }
+    width: 200
+  },
+  buttonPicker: {
+    marginHorizontal: 0,
+    marginBottom: 10,
+    flex: 1, // Прави всички бутони с еднаква ширина
+    paddingVertical: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 8,
+    marginTop: 10
+  },
+  activeButton: {
+    backgroundColor: '#FFFFFF', // Бял фон за активния елемент
+    // Сянка за дълбочина
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3, // За Android
+  },
+  textPicker: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#8E8E93', // По-блед цвят за неактивните
+  },
+  activeText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#000000', // Черен цвят за активния
+  },
 });

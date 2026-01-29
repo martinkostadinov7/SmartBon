@@ -17,5 +17,8 @@
         public DateTime ExpenseDate { get; set; }
 
         public PaymentType PaymentType { get; set; }
+
+        public Currency Currency { get; set; }
+
     }
 }

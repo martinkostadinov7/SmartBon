@@ -15,6 +15,8 @@ namespace Shared.DTOs.ExpenseDTOs.QueryParams
         public decimal? FromCost { get; set; }
 
         public decimal? ToCost { get; set; }
+        
+        public Currency? Currency { get; set; }
 
         public List<PaymentType>? PaymentTypes { get; set; }
     }

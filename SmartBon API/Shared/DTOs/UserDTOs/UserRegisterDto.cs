@@ -1,12 +1,16 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Shared.Enums;
 namespace Shared.DTOs.UserDTOs
 {
     public class UserRegisterDto
     {
-        [Required]
-        public string Email { get; set; }
+        public required string Email { get; set; }
 
-        [Required]
-        public string Password { get; set; }
+        public required string Password { get; set; }
+
+        public required string Name { get; set; }
+
+        public required bool IsPremium { get; set; }
+
+        public required Currency DefaultCurrency { get; set; }
     }
 }

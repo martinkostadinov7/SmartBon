@@ -71,14 +71,7 @@ export default function AddCategoryModal() {
         },
         body: JSON.stringify(subcategory),
         });
-
-        console.log("REQUEST BODY:", subcategory);
-        console.log("STATUS:", response.status);
-        console.log("BODY:", await response.text());
-
         if (!response.ok) return;
-
-        console.log("Subcategory added successfully ✅");
         reloadCategories()
         router.back();
         } catch (e: any) {

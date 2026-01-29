@@ -2,7 +2,7 @@ import { View, ScrollView, StyleSheet, Text, TouchableOpacity, TextInput, Keyboa
 import React, { useCallback, useEffect, useState } from "react";
 import { router, useFocusEffect } from "expo-router";
 import { useCategories } from "../../context/CategoriesContext";
-import { Expense } from "../../types/expense";
+import { Currency, Expense } from "../../types/expense";
 import { ExpenseCard } from "../../components/expense";
 import { AddButton } from "../../components/addButton";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
@@ -24,7 +24,15 @@ const sortByMap: Record<string, number> = {
   Cost: 2,
 };
 
+const currencyFromNumber: Record<number, Currency> = {
+  0: "EUR",
+  1: "USD"
+};
 
+const currencyMap: Record<string, number | null> = {
+  EUR: 0,
+  USD: 1
+};
 export default function ExpensesScreen() {
   const { categories } = useCategories();
   const [expenses, setExpenses] = useState<Expense[]>([]);
@@ -42,6 +50,7 @@ export default function ExpensesScreen() {
   const [highestCost, setHighestCost] = useState(0);
   const [selectedSortBy, setSelectedSortBy] = useState("Date");
   const [selectedOrder, setSelectedOrder] = useState("Descending");
+  const [selectedCurrency, setSelectedCurrency] = useState("");
 
   let afterValue = "";
   let afterDate = "";
@@ -74,7 +83,6 @@ export default function ExpensesScreen() {
       throw new Error("Failed to load cost range");
     }
     const costData = await costResponse.json();
-    console.log(costData);
     setLowestCost(costData.lowest);
     setHighestCost(costData.highest);
     setCostRange([costData.lowest, costData.highest]);
@@ -84,7 +92,6 @@ export default function ExpensesScreen() {
       throw new Error("Failed to load date range");
     }
     const dataData = await dateResponse.json();
-    console.log(dataData);
     const parseDate = (dateString: string) => {
     const fixedString = dateString.includes('.') 
         ? dateString.split('.')[0] + '.' + dateString.split('.')[1].substring(0, 3) + 'Z'
@@ -109,7 +116,11 @@ export default function ExpensesScreen() {
   function handleExpenseView(id: number) {
     router.push(`(modals)/expenses/${id}`);
   }
-  
+  function handleClearSortParams(){
+    setSelectedOrder("Descending");
+    setSelectedSortBy("Date");
+  }
+
   function handleClearParams(){
     setSearch("");
     setSelectedCategoryIds([]);
@@ -117,8 +128,7 @@ export default function ExpensesScreen() {
     setSelectedPaymentType([]);
     setCostRange([lowestCost, highestCost]);
     setDateRange([earliestDate, latestDate]);
-    setSelectedOrder("Descending");
-    setSelectedSortBy("Date");
+    setSelectedCurrency("");
   }
 
   function handleToggleFilterScreen(){
@@ -153,7 +163,6 @@ export default function ExpensesScreen() {
     if (selectedCategoryIds.length > 1) {
       setSelectedSubcategoryIds([]);
     }
-    
     const query = new URLSearchParams({
       "Search": search,
       "AfterValue": "",
@@ -166,9 +175,6 @@ export default function ExpensesScreen() {
       "SortParams.Descending": selectedOrder === "Descending" ? "true" : "false",  
       "SortParams.SortBy": String(sortByMap[selectedSortBy]),  
     });
-
-    console.log("updateExpensesFromQuery");
-    console.log(query);
 
     selectedCategoryIds.forEach(id => {
         query.append("FilterParams.CategoryIds", id.toString());
@@ -183,6 +189,11 @@ export default function ExpensesScreen() {
     });
 
     
+    if(selectedCurrency != ""){
+      query.append("FilterParams.Currency", String(currencyMap[selectedCurrency]));
+    }
+
+    
     const response = await apiFetch(`/Expenses?${query.toString()}`, {
         method: "GET",
         headers: {
@@ -193,7 +204,6 @@ export default function ExpensesScreen() {
     if (!response.ok) {
       throw new Error("Failed to load expenses");
     }
-    
     await response.json().then(setExpenses); 
   }
 
@@ -236,6 +246,11 @@ async function loadNextPage() {
       selectedPaymentTypes.forEach(paymentType => {
           query.append("FilterParams.PaymentTypes", String(paymentTypeMap[paymentType]));
       });
+
+    if(selectedCurrency != ""){
+      query.append("FilterParams.Currency", String(currencyMap[selectedCurrency]));
+    }
+
   try {
     const response = await apiFetch(`/Expenses?${query.toString()}`);
     if (response.ok) {
@@ -269,9 +284,6 @@ async function loadNextPage() {
       "SortParams.SortBy": "Date",  
     });
 
-    console.log("fetchData");
-    console.log(query);
-    
     selectedCategoryIds.forEach(id => {
         query.append("FilterParams.CategoryIds", id.toString());
     });
@@ -283,6 +295,10 @@ async function loadNextPage() {
     selectedPaymentTypes.forEach(paymentType => {
         query.append("FilterParams.PaymentTypes", String(paymentTypeMap[paymentType]));
     });
+
+    if(selectedCurrency != ""){
+      query.append("FilterParams.Currency", String(currencyMap[selectedCurrency]));
+    }
 
     const response = await apiFetch(`/Expenses?${query.toString()}`, {
         method: "GET",
@@ -302,8 +318,14 @@ async function loadNextPage() {
     }, 500);
 
     return () => clearTimeout(delayDebounceFn);
-}, [selectedCategoryIds, selectedSubcategoryIds,selectedPaymentTypes ,search, dateRange, costRange, selectedOrder, selectedSortBy]);
+}, [selectedCategoryIds, selectedSubcategoryIds,selectedPaymentTypes ,search, dateRange, costRange, selectedOrder, selectedSortBy, selectedCurrency]);
 
+const formatCost = (amount: number, currencyCode: string) => {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: currencyCode,
+  }).format(amount);
+};
 
   return (<>
   <View style={{backgroundColor: "#e1ebffff"}}>
@@ -444,6 +466,32 @@ async function loadNextPage() {
         selectedStyle={{ backgroundColor: 'rgb(16, 85, 221)' }} // Твоят син цвят
         markerStyle={{ backgroundColor: 'white', borderWidth: 2, marginLeft: 15, borderColor: 'rgb(16, 85, 221)' }}
       />
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+          <TouchableOpacity
+            style={[
+              styles.buttonPicker, 
+              selectedCurrency === "EUR" && styles.activeButton
+            ]}
+            onPress={() => selectedCurrency == "EUR" ? setSelectedCurrency("") : setSelectedCurrency("EUR")}
+          >
+            <Text style={selectedCurrency === "EUR" ? styles.activeText : styles.textPicker}>
+              EUR
+            </Text>
+          </TouchableOpacity>
+
+           <TouchableOpacity
+            style={[
+              styles.buttonPicker, 
+              selectedCurrency === "USD" && styles.activeButton
+            ]}
+            onPress={() => selectedCurrency == "USD" ? setSelectedCurrency("") :  setSelectedCurrency("USD")}
+          >
+            <Text style={selectedCurrency === "USD" ? styles.activeText : styles.textPicker}>
+              USD
+            </Text>
+          </TouchableOpacity>
+        </View>
+
       <Text style={{ fontSize: 18, marginBottom: 5 }}>Payment Type</Text>
       <View style={{marginBottom: 10, flexDirection: "row", gap: 10 }}>
         {paymentOptions.map(opt => {
@@ -481,7 +529,7 @@ async function loadNextPage() {
             <Text style={styles.headerBtn}>{"▲"}</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity onPress={handleClearParams}>
+            <TouchableOpacity onPress={handleClearSortParams}>
               <Text style={[styles.headerBtn, {color: "red"}]}>Clear</Text> 
             </TouchableOpacity>
         </View>
@@ -591,7 +639,7 @@ async function loadNextPage() {
       <ExpenseCard
         key={expense.id}
         title={expense.title}
-        amount={expense.cost}
+        amount={formatCost(expense.cost, currencyFromNumber[expense.currency])}
         date={String(expense.expenseDate)}
         categoryName={category?.name ?? "Unknown"}
         categoryEmoji={category?.icon ?? "❌"}
@@ -632,7 +680,7 @@ const styles = StyleSheet.create({
     borderWidth: 3,
     borderRadius: 10,
     margin: 5,
-    backgroundColor: "white"
+    backgroundColor: "#efefef"
   },
   searchInput: {
     marginBottom: 10,
@@ -642,7 +690,8 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     width: 280,
     height: 30,
-    fontSize: 18
+    fontSize: 18,
+    backgroundColor: "white"
   },
   dateInput: {
     marginBottom: 10,
@@ -658,6 +707,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     alignSelf: 'flex-start', // Shrinks the width to fit the content
     minWidth: 40, 
+    backgroundColor: "white"
 
   },
   expensesContainer: {
@@ -698,5 +748,33 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 30
-  }
+  },
+  buttonPicker: {
+    marginHorizontal: 15,
+    marginBottom: 10,
+    flex: 1, // Прави всички бутони с еднаква ширина
+    paddingVertical: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 8,
+  },
+  activeButton: {
+    backgroundColor: '#FFFFFF', // Бял фон за активния елемент
+    // Сянка за дълбочина
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3, // За Android
+  },
+  textPicker: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#8E8E93', // По-блед цвят за неактивните
+  },
+  activeText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#000000', // Черен цвят за активния
+  },
 });
