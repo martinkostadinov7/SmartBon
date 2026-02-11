@@ -26,4 +26,5 @@ public class HttpContextUserAccessor : IUserAccessor
              return id;
         }
     }
+
 }

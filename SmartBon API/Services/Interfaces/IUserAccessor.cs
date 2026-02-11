@@ -5,6 +5,7 @@ namespace Services.Interfaces
     public interface IUserAccessor
     {
         int Id { get; }
+
         ClaimsPrincipal? User { get; }
     }
 }

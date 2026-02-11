@@ -1,4 +1,4 @@
-import { ScrollView, StyleSheet, Text, TouchableOpacity } from "react-native";
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import React, { useCallback, useState } from "react";
 import { router, useFocusEffect } from "expo-router";
 import { useCategories } from "../../context/CategoriesContext";
@@ -44,6 +44,9 @@ export default function HomeScreen() {
 };
 
   return (<>
+    <View style={[{padding: 15, backgroundColor: "#3077ceff"}]}>
+        <Text style={{fontSize: 32, color: "white"}}>SmartBon</Text>
+    </View>
     <ScrollView style={styles.container}>
       {recentExpenses.map(expense => {
         const category = categories.find(c => c.id === expense.categoryId);

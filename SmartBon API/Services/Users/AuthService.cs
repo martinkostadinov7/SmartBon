@@ -32,7 +32,7 @@ namespace Services.UserServices
             User? userFromDb = userRepo.GetByEmail(userToRegister.Email);
             
             if (userFromDb != null)
-                throw new BadRequestException("User already exists");
+                throw new BadRequestException("User with this email already exists");
             
             User user = new User(userToRegister.Email, "temp", userToRegister.Name, userToRegister.IsPremium ,userToRegister.DefaultCurrency);
 

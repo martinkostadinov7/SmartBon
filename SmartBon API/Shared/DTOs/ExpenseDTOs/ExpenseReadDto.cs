@@ -1,5 +1,4 @@
-﻿using Shared.DTOs.CategoryDTOs;
-using Shared.Enums;
+﻿using Shared.Enums;
 
 namespace Shared.DTOs.ExpenseDTOs
 {

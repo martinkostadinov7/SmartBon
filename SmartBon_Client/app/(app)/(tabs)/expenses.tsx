@@ -38,8 +38,8 @@ export default function ExpensesScreen() {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<Number[]>([]);
   const [selectedSubcategoryIds, setSelectedSubcategoryIds] = useState<Number[]>([]);
-  const [filterIconColor, setFilterIconColor] = useState("white");
-  const [sortIconColor, setSortIconColor] = useState("white");
+  const [filterIconColor, setFilterIconColor] = useState("#3077ceff");
+  const [sortIconColor, setSortIconColor] = useState("#3077ceff");
   const [isFilterScreenOpened, setIsFilterScreenOpened] = useState(false);
   const [isSortScreenOpened, setIsSortScreenOpened] = useState(false);
   const [dateRange, setDateRange] = useState<[Date, Date]>([new Date(), new Date()]);
@@ -133,12 +133,12 @@ export default function ExpensesScreen() {
 
   function handleToggleFilterScreen(){
     if(isFilterScreenOpened){
-      setFilterIconColor("white");
+      setFilterIconColor("#3077ceff");
       setIsFilterScreenOpened(false);
     }
     else{
       setFilterIconColor("black");
-      setSortIconColor("white");
+      setSortIconColor("#3077ceff");
   
       setIsFilterScreenOpened(true);
       setIsSortScreenOpened(false);
@@ -147,12 +147,12 @@ export default function ExpensesScreen() {
 
   function handleToggleSortScreen(){
     if(isSortScreenOpened){
-      setSortIconColor("white");
+      setSortIconColor("#3077ceff");
       setIsSortScreenOpened(false);
     }
     else{
       setSortIconColor("black");
-      setFilterIconColor("white");
+      setFilterIconColor("#3077ceff");
   
       setIsSortScreenOpened(true);
       setIsFilterScreenOpened(false);
@@ -331,7 +331,8 @@ const formatCost = (amount: number, currencyCode: string) => {
   <View style={{backgroundColor: "#e1ebffff"}}>
     <View style={[styles.row, {padding: 15, backgroundColor: "#3077ceff"}]}>
       <Text style={{fontSize: 32, color: "white"}}>Expenses</Text>
-      <View style={[styles.row, {width: 65}]}>
+    </View>
+    <View style={[styles.row, {marginLeft: 15, marginTop: 15, width: 65}]}>
         <TouchableOpacity onPress={handleToggleFilterScreen}>
           <FontAwesome6 name="filter" size={30} color={filterIconColor}/>
         </TouchableOpacity>
@@ -339,7 +340,6 @@ const formatCost = (amount: number, currencyCode: string) => {
           <FontAwesome6 name="sort" size={30} color={sortIconColor}/>
         </TouchableOpacity>
       </View>
-    </View>
     {isFilterScreenOpened && (
       <Pressable style={styles.filterScreen}
       onPress={() => Keyboard.dismiss()}>

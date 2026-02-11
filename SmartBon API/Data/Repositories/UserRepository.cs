@@ -9,5 +9,11 @@ namespace Data.Repositories
         {
             return _dbSet.SingleOrDefault(x => x.Email == email);
         }
+
+        public decimal GetUserTotalExpenses(int id)
+        {
+            decimal total = _context.Expenses.Where(e => e.UserId == id).Sum(e => e.Cost);
+            return total;
+        }
     }
 }

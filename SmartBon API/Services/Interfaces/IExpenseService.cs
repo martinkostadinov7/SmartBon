@@ -1,4 +1,5 @@
-﻿using Shared.DTOs.ExpenseDTOs;
+﻿using Microsoft.AspNetCore.Http;
+using Shared.DTOs.ExpenseDTOs;
 using Shared.DTOs.ExpenseDTOs.Ranges;
 namespace Services.Interfaces
 {
@@ -13,5 +14,6 @@ namespace Services.Interfaces
         Task<List<ExpenseReadDto>> GetRecentExpensesAsync(int count);
         Task<CostRangeDto> GetCostRangeAsync();
         Task<DateRangeDto> GetDateRangeAsync();
+        Task<ExpenseFilledFromImageDto> ExtractExpenseDataAsync(IFormFile image);
     }
 }

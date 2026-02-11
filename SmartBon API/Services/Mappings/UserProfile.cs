@@ -9,5 +9,7 @@ public class UserProfile : Profile
         // Example mappings
         CreateMap<User, UserLoginDto>();
         CreateMap<UserRegisterDto, User>();
+        
+        CreateMap<User, UserInfoDto>();
     }
 }

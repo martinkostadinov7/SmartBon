@@ -25,7 +25,7 @@ namespace SmartBon_API.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<ActionResult<JsonWebToken>> Register(UserRegisterDto request)
+        public async Task<ActionResult<JsonWebToken>> Register([FromBody] UserRegisterDto request)
         {
             var token = await authService.RegisterAsync(request);
             return Ok(token);

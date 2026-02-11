@@ -17,6 +17,16 @@ namespace SmartBon_API.Controllers
             return CreatedAtAction(nameof(GetExpenseById), new { id = result.Id }, result);
         }
 
+
+        [Authorize]
+        [HttpPost("upload-receipt")]
+        public async Task<ActionResult<ExpenseFilledFromImageDto>> ExtractExpenseData(IFormFile image)
+        {
+            ExpenseFilledFromImageDto result = await expenseService.ExtractExpenseDataAsync(image);
+            return result;
+        }
+
+
         [Authorize]
         [HttpGet]
         public async Task<ActionResult<List<ExpenseReadDto>>> GetExpensesWithQueryParams([FromQuery] ExpenseQueryParams queryParams) 

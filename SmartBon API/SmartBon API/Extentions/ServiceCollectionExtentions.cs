@@ -4,6 +4,7 @@ using Services.Categories;
 using Services.Expenses;
 using Services.Interfaces;
 using Services.Subcategories;
+using Services.Users;
 using Services.UserServices;
 namespace FeelBack.Api.Extentions
 {
@@ -13,6 +14,7 @@ namespace FeelBack.Api.Extentions
         {
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<IUserService, UserService>();
 
             services.AddScoped<IExpenseRepository, ExpenseRepository>();
             services.AddScoped<IExpenseService, ExpenseService>();
