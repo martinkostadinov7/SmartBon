@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Data.Interfaces;
 using Data.Models;
+using Microsoft.AspNetCore.Identity;
 using Services.Interfaces;
 using Shared.ApiExceptions;
 using Shared.DTOs.UserDTOs;
@@ -20,7 +21,7 @@ namespace Services.Users
                 User? userFromDb = userRepo.GetByEmail(newEmail);
                 if (userFromDb != null)
                 {
-                    throw new BadRequestException("A user with tihs email already has an account!");
+                    throw new BadRequestException("A user with this email already has an account!");
                 }
             }
             
@@ -38,6 +39,35 @@ namespace Services.Users
 
             UserInfoDto userInfo = mapper.Map<UserInfoDto>(userFromDb);
             return userInfo;
+        }
+
+        public async Task<bool> ChangePassword(PasswordChangeDto dto)
+        {
+            string oldPassword = dto.OldPassword;
+            string newPassword = dto.NewPassword;
+
+            if (oldPassword == newPassword)
+            {
+                throw new BadRequestException("New password should not be identical to the old one!");
+            }
+            User userFromDb = await userRepo.GetByIdAsync(user.Id) ?? throw new NotFoundException($"User was not found");
+            if (new PasswordHasher<User>().VerifyHashedPassword(userFromDb, userFromDb.PasswordHash, oldPassword) == PasswordVerificationResult.Failed)
+            {
+                throw new BadRequestException("Old password is wrong!");
+            }
+
+            string hashedPassword = new PasswordHasher<User>().HashPassword(userFromDb, newPassword);
+            userFromDb.PasswordHash = hashedPassword;
+            await userRepo.UpdateAsync(userFromDb);
+            return true;
+        }
+
+        public async Task<bool> ManagePlan(bool isPremium)
+        {
+            User userFromDb = await userRepo.GetByIdAsync(user.Id) ?? throw new NotFoundException($"User was not found");
+            userFromDb.IsPremium = isPremium;
+            await userRepo.UpdateAsync(userFromDb);
+            return true;
         }
     }
 }

@@ -1,11 +1,12 @@
 import { View, Text, StyleSheet, TextInput, ScrollView, TouchableOpacity, Pressable, Keyboard, Alert } from 'react-native'
-import React, { useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import { useCategories } from "../../context/CategoriesContext";
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { CategoryBox } from '../../components/categoryBox';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { apiFetch } from '../../services/api';
 import * as SecureStore from "expo-secure-store";
+import { Currency } from '../../types/expense';
 
 const paymentTypeMap: Record<string, number> = {
   Cash: 0,
@@ -18,6 +19,11 @@ const currencyMap: Record<string, number> = {
   USD: 1
 };
 
+const currencyFromNumber: Record<number, Currency> = {
+  0: "EUR",
+  1: "USD"
+};
+
 export default function AddExpense() {
     const { categories } = useCategories();
     const [title, setTitle] = useState("");
@@ -26,8 +32,8 @@ export default function AddExpense() {
     const [description, setDescription] = useState("");
     const [selectedCategoryId, setSelectedCategoryId] = useState(-1);
     const [selectedSubcategoryId, setSelectedSubcategoryId] = useState(-1);
-    const defaultCurrency = SecureStore.getItem("currency");
-    const [selectedCurrency, setSelectedCurrency] = useState(defaultCurrency ? defaultCurrency : "EUR");
+    const [userDefaultCurrency, setUserDefaultCurrency] = useState("Unidentified");
+    const [selectedCurrency, setSelectedCurrency] = useState(userDefaultCurrency ? userDefaultCurrency : "EUR");
     type PaymentType = "Cash" | "Card" | "Transfer";
 
     const paymentOptions: { value: PaymentType; label: string }[] = [
@@ -88,6 +94,28 @@ export default function AddExpense() {
             console.log("Network/API error:", e?.message ?? e);
         }
     }
+
+    useFocusEffect(
+         useCallback(() => {
+           const fetchProfile = async () => {
+             try {
+               const response = await apiFetch(`/Users/me`);
+               if (!response.ok) throw new Error("Failed");
+               const profileData = await response.json();
+               const currencyStr = currencyFromNumber[profileData.defaultCurrency];
+                setUserDefaultCurrency(currencyStr);
+                setSelectedCurrency(currencyStr);
+
+             } catch (error) {
+               console.error(error);
+             }
+           };
+       
+       
+           fetchProfile();
+           return () => {}; 
+         }, []) 
+       );
 
     function handleCategoryAdd(){
         router.push("(modals)/categories/addCategory");

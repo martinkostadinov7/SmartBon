@@ -61,8 +61,8 @@ return (<>
     <View style={styles.profileContainer}>
       <Text style={{fontSize: 26}}>{userName}</Text>
       <Text style={{fontSize: 18, marginTop: 5}}>{userEmail}</Text>
-      <View style={[{marginTop: 10, width: 80, borderRadius: 15, alignItems: "center"} , isUserPremium ? {backgroundColor: "#5c67e3"} : {backgroundColor: "gray"}]}>
-        <Text style={{fontSize: 16, color: "white", margin: 5}}>{isUserPremium ? "Premium" : "Free"}</Text>
+      <View style={[{marginTop: 10, borderRadius: 15, alignItems: "center"} , isUserPremium ? {backgroundColor: "#5c67e3", width: 110} : {backgroundColor: "gray", width: 60}]}>
+        <Text style={{fontSize: 16, color: "white", margin: 5}}>{isUserPremium ? <FontAwesome6 name="crown" size={21} color="yellow" /> : ""}{isUserPremium ? " Premium" : "Free"}</Text>
       </View>
 
       <Text style={{fontSize: 16, marginTop: 5}}>Default Currency: {userDefaultCurrency}</Text>
@@ -76,11 +76,11 @@ return (<>
         <Text style={{margin: 10, fontSize: 17}}><FontAwesome6 name="user-pen" size={21} color="black" />   Edit profile</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={{borderRadius:10, backgroundColor: "rgba(48, 119, 206, 0.32)", marginBottom: 10}}>
+      <TouchableOpacity onPress={() => router.push('/(modals)/users/changePassword')} style={{borderRadius:10, backgroundColor: "rgba(48, 119, 206, 0.32)", marginBottom: 10}}>
         <Text style={{margin: 10, fontSize: 17}}><FontAwesome6 name="key" size={21} color="black" />   Change password</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={{borderRadius:10,backgroundColor: "rgba(48, 119, 206, 0.32)", marginBottom: 10}}>
+      <TouchableOpacity onPress={() => router.push('/(modals)/users/managePlan')} style={{borderRadius:10,backgroundColor: "rgba(48, 119, 206, 0.32)", marginBottom: 10}}>
         <Text style={{margin: 10, fontSize: 17}}><FontAwesome6 name="credit-card" size={21} color="black" />   Manage plan</Text>
       </TouchableOpacity>
     </View>

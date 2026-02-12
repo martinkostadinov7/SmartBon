@@ -1,5 +1,4 @@
-﻿using Shared.DTOs.CategoryDTOs;
-using Shared.DTOs.UserDTOs;
+﻿using Shared.DTOs.UserDTOs;
 
 namespace Services.Interfaces
 {
@@ -8,5 +7,8 @@ namespace Services.Interfaces
         Task<UserInfoDto> GetProfileDataAsync();
 
         Task<UserInfoDto> EditProfileDataAsync(UserUpdateDto dto);
+
+        Task<bool> ChangePassword(PasswordChangeDto dto);
+        Task<bool> ManagePlan(bool isPremium);
     }
 }

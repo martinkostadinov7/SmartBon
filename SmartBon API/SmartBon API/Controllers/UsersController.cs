@@ -26,5 +26,21 @@ namespace SmartBon_API.Controllers
 
             return Ok(user);
         }
+
+        [HttpPost("changePassword")]
+        [Authorize]
+        public async Task<ActionResult> EditProfileData(PasswordChangeDto request)
+        {
+            await userService.ChangePassword(request);
+            return Ok();
+        }
+
+        [HttpPost("managePlan")]
+        [Authorize]
+        public async Task<ActionResult> ManagePlan(bool isPremium)
+        {
+            await userService.ManagePlan(isPremium);
+            return Ok();
+        }
     }
 }
