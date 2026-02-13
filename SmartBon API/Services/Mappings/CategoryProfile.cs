@@ -6,7 +6,6 @@ public class CategoryProfile : Profile
 {
     public CategoryProfile()
     {
-        // Example mappings
         CreateMap<Category, CategoryReadDto>();
         CreateMap<CategoryCreateDto, Category>();
 

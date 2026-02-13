@@ -6,10 +6,8 @@ public class UserProfile : Profile
 {
     public UserProfile()
     {
-        // Example mappings
         CreateMap<User, UserLoginDto>();
         CreateMap<UserRegisterDto, User>();
-        
         CreateMap<User, UserInfoDto>();
     }
 }
