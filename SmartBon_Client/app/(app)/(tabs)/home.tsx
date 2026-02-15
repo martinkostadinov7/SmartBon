@@ -49,8 +49,12 @@ export default function HomeScreen() {
     router.push("../expenses/addExpense");
   }
 
-  function handleBudgetView(){
+  function handleBudgetView(id: number){
+    router.push(`/(modals)/budgets/${id}`);
+  }
 
+  function handleBudgetCreate(){
+      router.push(`/(modals)/budgets/addBudget`);
   }
 
   function handleExpenseView(id: number){
@@ -96,15 +100,18 @@ export default function HomeScreen() {
     <View style={[{padding: 15, backgroundColor: "#3077ceff"}]}>
         <Text style={{fontSize: 32, color: "white"}}>SmartBon</Text>
     </View>
-    <ScrollView style={{paddingTop: 10}}>
+    <ScrollView style={{padding: 12}}>
       <View>
-        <Text style={{margin: 12, fontSize: 20}}>Budgets</Text>
+        <Text style={{fontSize: 20, marginVertical: 10 }}>Budgets</Text>
         {
           budgets.map(budget => {
-            const budgetCategories = categories.filter(category => 
+            let budgetCategories = categories.filter(category => 
             budget.categoryIds.includes(category.id)
           );
-
+          if(budgetCategories.length == categories.length){
+            budgetCategories = [];
+          } 
+          
             const allSubcategories = categories.flatMap(cat => cat.subcategories);
 
             const budgetSubcategories = allSubcategories.filter(sub => 
@@ -115,22 +122,25 @@ export default function HomeScreen() {
             key={budget.id}
             icon={budget.icon}
             colorHex={budget.colorHex}
-            progressBarColor={getProgressBarColor((budget.currentAmount / budget.maxAmount * 100))}
+            progressBarColor={getProgressBarColor((budget.currentAmount / budget.limit * 100))}
             name={budget.name}
-            percentage={Number(((budget.currentAmount / budget.maxAmount) * 100).toFixed(2))}
+            percentage={Number(((budget.currentAmount / budget.limit) * 100).toFixed(2))}
             from={formatDate(budget.from)} 
             to={formatDate(budget.to)} 
-            maxAmount={String(formatCost(budget.maxAmount, userDefaultCurrency))} 
+            limit={String(formatCost(budget.limit, userDefaultCurrency))} 
             currentAmount={String(formatCost(budget.currentAmount, userDefaultCurrency))} 
-            remainingAmount={String(formatCost(budget.maxAmount - budget.currentAmount, userDefaultCurrency))} 
+            remainingAmount={String(formatCost(budget.limit - budget.currentAmount, userDefaultCurrency))} 
             categories={budgetCategories} 
             subCategories={budgetSubcategories} 
             onPress={function (): void {
-                handleBudgetView
+                handleBudgetView(budget.id)
               } } />)})
         }
+        <TouchableOpacity onPress={handleBudgetCreate} style={{borderWidth: 2, borderRadius: 15, borderStyle: "dashed"}}>
+          <Text style={{textAlign: "center", fontSize: 35}}>+</Text>
+        </TouchableOpacity>
       </View>
-      <Text style={{margin: 12, fontSize: 20}}>Recent expenses</Text>
+      <Text style={{fontSize: 20, marginVertical: 10}}>Recent expenses</Text>
       {recentExpenses.map(expense => {
         const category = categories.find(c => c.id === expense.categoryId);
         const subcategory = categories

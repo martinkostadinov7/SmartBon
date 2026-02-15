@@ -4,7 +4,7 @@ export interface Budget {
   description: string;
   from: Date;
   to: Date;
-  maxAmount: number;
+  limit: number;
   currentAmount: number;
   icon: string;
   colorHex: string;

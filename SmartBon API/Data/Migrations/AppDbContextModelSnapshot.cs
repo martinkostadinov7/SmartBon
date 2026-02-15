@@ -51,7 +51,7 @@ namespace Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<decimal>("MaxAmount")
+                    b.Property<decimal>("Limit")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Name")

@@ -711,7 +711,7 @@ const styles = StyleSheet.create({
 
   },
   expensesContainer: {
-    marginVertical: 10
+    margin: 10
   },
   card: {
     backgroundColor: "#fff",

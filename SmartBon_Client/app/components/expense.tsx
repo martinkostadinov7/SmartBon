@@ -96,7 +96,6 @@
       borderColor: "black",
       borderRadius: 16,
       padding: 8,
-      marginHorizontal: 10,
       marginBottom: 10,
       backgroundColor: "white",
       shadowColor: '#000',

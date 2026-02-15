@@ -47,10 +47,10 @@ export default function AddCategoryModal() {
 
   async function handleAddCategory(){
 
-    if(!name || !icon){
+    if(!name){
         Alert.alert(
         "Input error",
-        "Fill out name and icon fields!",
+        "Fill out name field!",
         [{ text: "OK" }]
         );
     }

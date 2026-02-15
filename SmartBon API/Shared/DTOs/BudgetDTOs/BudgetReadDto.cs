@@ -12,7 +12,7 @@
 
         public DateTime To { get; set; }
 
-        public decimal MaxAmount { get; set; }
+        public decimal Limit { get; set; }
 
         public decimal CurrentAmount { get; set; }
 

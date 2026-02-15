@@ -10,7 +10,7 @@ import { Subcategory } from "../types/subcategory";
     percentage,
     from,
     to,  
-    maxAmount,
+    limit,
     currentAmount,
     remainingAmount,
     categories,
@@ -50,7 +50,7 @@ import { Subcategory } from "../types/subcategory";
         <View style={styles.row}>
             <Text>{from} - {to}</Text>
             <View>
-                <Text>{currentAmount} spent out of {maxAmount}</Text>
+                <Text>{currentAmount} spent out of {limit}</Text>
                 <Text>Remaining: {remainingAmount}</Text>
             </View>
         </View>
@@ -66,7 +66,7 @@ import { Subcategory } from "../types/subcategory";
     percentage: number; 
     from: string;
     to: string;   
-    maxAmount: string;
+    limit: string;
     currentAmount: string; 
     remainingAmount: string;
     categories: Category[]; 
@@ -76,7 +76,6 @@ import { Subcategory } from "../types/subcategory";
 
   const styles = StyleSheet.create({
     card: {
-    marginHorizontal: 10,
     marginBottom: 10,
     borderWidth: 2,
     borderColor: "black",

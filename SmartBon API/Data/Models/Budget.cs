@@ -16,7 +16,7 @@
 
         public DateTime To { get; set; }
 
-        public decimal MaxAmount { get; set; }
+        public decimal Limit { get; set; }
 
         public decimal CurrentAmount { get; set; }
 
@@ -31,14 +31,14 @@
         private Budget() {}
 
         public Budget(string name, string? description, int userId, DateTime from, 
-            DateTime to, decimal maxAmount, decimal currentAmount, string icon, string colorHex, List<int> categoryIds, List<int> subCategoryIds)
+            DateTime to, decimal limit, decimal currentAmount, string icon, string colorHex, List<int> categoryIds, List<int> subCategoryIds)
         {
             Name = name;
             Description = description;
             UserId = userId;
             From = from;
             To = to;
-            MaxAmount = maxAmount;
+            Limit = limit;
             CurrentAmount = currentAmount;
             Icon = icon;
             ColorHex = colorHex;

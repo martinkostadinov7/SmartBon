@@ -5,6 +5,7 @@ import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
     icon,
     color,
     selected,
+    readOnly = false,
     boxSize = 100,
     iconSize = 35,
     fontSize = 15,
@@ -14,7 +15,7 @@ import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 
     return (<>
       {pressable ? (
-        <TouchableOpacity onPress={onPress} style={[selected ? styles.selected : styles.box, {backgroundColor: color, width: boxSize, height: boxSize}]}>
+        <TouchableOpacity activeOpacity={readOnly ? 1 : 0.3} onPress={onPress} style={[selected ? styles.selected : styles.box, {backgroundColor: color, width: boxSize, height: boxSize}]}>
           <Text style={[styles.icon, {fontSize: iconSize}]}>{icon}</Text>
           <Text numberOfLines={2} ellipsizeMode="tail" style={[styles.name, {fontSize: fontSize}]}>{name}</Text>
         </TouchableOpacity>
@@ -33,6 +34,7 @@ import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
     icon: string;
     color: string;
     selected: boolean;
+    readOnly?: boolean;
     boxSize?: number;
     iconSize?: number;
     fontSize?: number;
