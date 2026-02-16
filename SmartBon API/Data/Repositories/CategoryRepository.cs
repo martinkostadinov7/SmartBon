@@ -34,5 +34,12 @@ namespace Data.Repositories
 
             return categories;
         }
+
+        public async Task<Category> GetByIdAsync(int id)
+        {
+            var query = _dbSet.AsQueryable().Include(c => c.Subcategories);
+
+            return await query.SingleOrDefaultAsync(x => EF.Property<int>(x, "Id") == id);
+        }
     }
 }

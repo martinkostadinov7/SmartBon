@@ -73,9 +73,9 @@ export default function HomeScreen() {
       return "#2ad100"
     }
     else if(percentage >= 60 && percentage < 80){
-      return "#e6e600"
+      return "#ffff00"
     }
-    else if(percentage >= 80 && percentage <= 100){
+    else if(percentage >= 80){
       return "#e60000"
     }
     return "#ffffff"
@@ -98,49 +98,54 @@ export default function HomeScreen() {
 };
   return (<>
     <View style={[{padding: 15, backgroundColor: "#3077ceff"}]}>
-        <Text style={{fontSize: 32, color: "white"}}>SmartBon</Text>
+        <Text style={{fontSize: 32, color: "white", fontWeight: '600'}}>SmartBon</Text>
     </View>
     <ScrollView style={{padding: 12}}>
       <View>
-        <Text style={{fontSize: 20, marginVertical: 10 }}>Budgets</Text>
-        {
-          budgets.map(budget => {
-            let budgetCategories = categories.filter(category => 
-            budget.categoryIds.includes(category.id)
-          );
-          if(budgetCategories.length == categories.length){
-            budgetCategories = [];
-          } 
-          
-            const allSubcategories = categories.flatMap(cat => cat.subcategories);
+        <View style={styles.row}>
+          <Text style={{fontSize: 20, marginVertical: 10, fontWeight: '700'}}>Budgets</Text>
+          <TouchableOpacity style={{marginLeft: 10}} onPress={handleBudgetCreate}>
+            <Text style={{color: "#3077ce", fontWeight: "600", fontSize: 16}}>+ Add New</Text>
+          </TouchableOpacity>
+        </View>
+        <ScrollView horizontal>
 
-            const budgetSubcategories = allSubcategories.filter(sub => 
-              budget.subcategoryIds.includes(sub.id)
+          {
+            budgets.map(budget => {
+              let budgetCategories = categories.filter(category => 
+              budget.categoryIds.includes(category.id)
             );
-            return (
-          <BudgetCard 
-            key={budget.id}
-            icon={budget.icon}
-            colorHex={budget.colorHex}
-            progressBarColor={getProgressBarColor((budget.currentAmount / budget.limit * 100))}
-            name={budget.name}
-            percentage={Number(((budget.currentAmount / budget.limit) * 100).toFixed(2))}
-            from={formatDate(budget.from)} 
-            to={formatDate(budget.to)} 
-            limit={String(formatCost(budget.limit, userDefaultCurrency))} 
-            currentAmount={String(formatCost(budget.currentAmount, userDefaultCurrency))} 
-            remainingAmount={String(formatCost(budget.limit - budget.currentAmount, userDefaultCurrency))} 
-            categories={budgetCategories} 
-            subCategories={budgetSubcategories} 
-            onPress={function (): void {
-                handleBudgetView(budget.id)
-              } } />)})
-        }
-        <TouchableOpacity onPress={handleBudgetCreate} style={{borderWidth: 2, borderRadius: 15, borderStyle: "dashed"}}>
-          <Text style={{textAlign: "center", fontSize: 35}}>+</Text>
-        </TouchableOpacity>
+            if(budgetCategories.length == categories.length){
+              budgetCategories = [];
+            } 
+            
+              const allSubcategories = categories.flatMap(cat => cat.subcategories);
+
+              const budgetSubcategories = allSubcategories.filter(sub => 
+                budget.subcategoryIds.includes(sub.id)
+              );
+              return (
+            <BudgetCard 
+              key={budget.id}
+              icon={budget.icon}
+              colorHex={budget.colorHex}
+              progressBarColor={getProgressBarColor((budget.currentAmount / budget.limit * 100))}
+              name={budget.name}
+              percentage={Number(((budget.currentAmount / budget.limit) * 100).toFixed(0))}
+              from={formatDate(budget.from)} 
+              to={formatDate(budget.to)} 
+              limit={String(formatCost(budget.limit, userDefaultCurrency))} 
+              currentAmount={String(formatCost(budget.currentAmount, userDefaultCurrency))} 
+              remainingAmount={String(formatCost(budget.limit - budget.currentAmount, userDefaultCurrency))} 
+              categories={budgetCategories} 
+              subCategories={budgetSubcategories} 
+              onPress={function (): void {
+                  handleBudgetView(budget.id)
+                } } />)})
+          }
+        </ScrollView>
       </View>
-      <Text style={{fontSize: 20, marginVertical: 10}}>Recent expenses</Text>
+      <Text style={{fontSize: 20, marginVertical: 10, fontWeight: '700'}}>Recent expenses</Text>
       {recentExpenses.map(expense => {
         const category = categories.find(c => c.id === expense.categoryId);
         const subcategory = categories
@@ -195,5 +200,9 @@ const styles = StyleSheet.create({
     marginTop: 6,
     fontSize: 13,
     color: "#555",
+  },
+  row:{
+    flexDirection: 'row',
+    alignItems: 'center',
   },
 });

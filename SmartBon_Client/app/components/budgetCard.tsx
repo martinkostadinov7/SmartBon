@@ -19,40 +19,41 @@ import { Subcategory } from "../types/subcategory";
   }: BudgetCardProps) {
     return (
       <TouchableOpacity onPress={onPress} style={[styles.card, {backgroundColor: colorHex}]}>
-        <View style={[styles.row,{marginBottom: 10}]}>
+        <View style={[styles.row,{marginBottom: 5}]}>
             <Text style={{fontSize: 40}}>{icon}</Text>
             <Text
              numberOfLines={1}
-            ellipsizeMode="tail" style={{fontSize: 22, marginRight: 10, maxWidth: 290}}>{name}</Text>
+            ellipsizeMode="tail" style={{fontSize: 20, marginRight: 10, maxWidth: 290}}>{name}</Text>
         </View>
         <ScrollView horizontal>
             {subCategories.length > 0 ? 
             (subCategories.map(subCategory => (
-            <View key={subCategory.id}  style={[styles.row, {padding: 5,borderRadius: 10, backgroundColor: subCategory.colorHex, marginRight: 10, borderWidth:1}]}>
-                <Text style={{fontSize: 20}}>{subCategory.icon}</Text>
-                <Text style={{fontSize: 16, marginLeft: 5, marginVertical: 0}}>{subCategory.name}</Text>
+            <View key={subCategory.id}  style={[styles.row, {padding: 5,borderRadius: 10, backgroundColor: subCategory.colorHex, marginRight: 10}]}>
+                <Text style={{fontSize: 16}}>{subCategory.icon}</Text>
+                <Text style={{fontSize: 14, marginLeft: 5, marginVertical: 0}}>{subCategory.name}</Text>
             </View>))) : 
             (
             categories.length > 0 ? (categories.map(category => (
-            <View key={category.id} style={[styles.row, {padding: 5,borderRadius: 10, backgroundColor: category.colorHex, marginRight: 10, borderWidth:1}]}>
-                <Text style={{fontSize: 20}}>{category.icon}</Text>
-                <Text style={{fontSize: 16, marginLeft: 5, marginVertical: 0}}>{category.name}</Text>
+            <View key={category.id} style={[styles.row, {padding: 5,borderRadius: 10, backgroundColor: category.colorHex, marginRight: 10}]}>
+                <Text style={{fontSize: 16}}>{category.icon}</Text>
+                <Text style={{fontSize: 14, marginLeft: 5, marginVertical: 0}}>{category.name}</Text>
             </View>
             ))) : (<></>)
             )}
         </ScrollView>
-        <View style={styles.progressBarContainer}>
-            <View style={[styles.progressBarFill, { backgroundColor: progressBarColor, width: `${percentage}%`}]} />
-            <View style={styles.textContainer}>
-                <Text style={styles.percentageText}>{percentage}%</Text>
-            </View>
-        </View>
-        <View style={styles.row}>
+        <View style={[styles.row, {marginTop: 10}]}>
             <Text>{from} - {to}</Text>
             <View>
-                <Text>{currentAmount} spent out of {limit}</Text>
+                <Text>{currentAmount} / {limit}</Text>
                 <Text>Remaining: {remainingAmount}</Text>
             </View>
+        </View>
+        <View style={styles.progressBarContainer}>
+            <View style={[styles.progressBarFill, {backgroundColor: progressBarColor, width: `${percentage}%`}]}>
+            </View>
+                <View style={styles.textContainer}>
+                    <Text style={styles.percentageText}>{percentage}%</Text>
+                </View>
         </View>
       </TouchableOpacity>
     );
@@ -77,10 +78,15 @@ import { Subcategory } from "../types/subcategory";
   const styles = StyleSheet.create({
     card: {
     marginBottom: 10,
-    borderWidth: 2,
     borderColor: "black",
     borderRadius: 16,
     padding: 10,
+    marginRight: 10,
+    minWidth: 300,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 1,
 },
     row: {
     flexDirection: 'row',
@@ -88,12 +94,11 @@ import { Subcategory } from "../types/subcategory";
     alignItems: 'center',
   },
   progressBarContainer: {
-    borderWidth: 2,
     borderRadius: 10,
     backgroundColor: "white",
     padding: 0,
-    height: 30,
-    marginVertical: 10
+    height: 25,
+    marginTop: 10
   },
   progressBarFill:{
     borderWidth: 0,
@@ -102,7 +107,7 @@ import { Subcategory } from "../types/subcategory";
     borderTopRightRadius: 10,
     borderBottomRightRadius: 10,
     margin: 0,
-    height: 26
+    height: 25
   },
   textContainer: {
     ...StyleSheet.absoluteFillObject,

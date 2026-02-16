@@ -18,13 +18,29 @@ import { CategoryBox } from "../../../components/categoryBox";
 import { Subcategory } from "../../../types/subcategory";
 import { Budget } from "../../../types/budget";
 
-export default function AddBudgetModal() {
+const dateRangeFromNumber: Record<number, string> = {
+  0: "Daily",
+  1: "Weekly",
+  2: "Monthly",
+  3: "Yearly",
+  4: "Custom",
+};
+
+const dateRangeFromString: Record<string, number> = {
+  "Daily": 0,
+  "Weekly": 1,
+  "Monthly": 2,
+  "Yearly": 3,
+  "Custom": 4
+};
+export default function ViewBudgetModal() {
   const [budget, setBudget] = useState<Budget | null>(null);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [from, setFrom] = useState(new Date());
   const [to, setTo] = useState(new Date());
   const [selectedLimit, setSelectedLimit] = useState("");
+  const [originalLimit, setOriginalLimit] = useState("");
   const [currentAmount, setCurrentAmount] = useState();
   const [selectedIcon, setIcon] = useState("📌");
   const [isEmojiOpen, setIsEmojiOpen] = useState(false);
@@ -35,7 +51,7 @@ export default function AddBudgetModal() {
   const { categories } = useCategories();
   const { id } = useLocalSearchParams<{ id: string}>();
   const [isEditing, setIsEditing] = useState(false);
-        const ranges = ["weekly", "monthly", "yearly", "daily", "custom"];
+        const ranges = ["Weekly", "Monthly", "Yearly", "Daily", "Custom"];
   const colors = [
     "#EF9A9A", // Soft Red
     "#FFAB91", // Soft Deep Orange
@@ -80,17 +96,17 @@ function getProgressBarColor(percentage: number): string {
       return "#2ad100"
     }
     else if(percentage >= 60 && percentage < 80){
-      return "#e6e600"
+      return "#ffff00"
     }
-    else if(percentage >= 80 && percentage <= 100){
+    else if(percentage >= 80){
       return "#e60000"
     }
     return "#ffffff"
   }
-const progressBarColor= getProgressBarColor((Number(currentAmount) / Number(selectedLimit) * 100))
-
-const percentage= Number(((Number(currentAmount) / Number(selectedLimit)) * 100).toFixed(2))
-
+  const [confirmedLimit, setConfirmedLimit] = useState("");
+  const progressBarColor= getProgressBarColor((Number(currentAmount) / Number(confirmedLimit) * 100))
+const percentage= Math.min((Number(currentAmount) / Number(confirmedLimit)) * 100, 100).toFixed(0)
+const remaining = (Number(confirmedLimit) - Number(currentAmount)).toFixed(2)
 useEffect(() => {(async () => {
       const response = await apiFetch(`/Budgets/${id}`);
       if (!response.ok) {
@@ -103,27 +119,16 @@ useEffect(() => {(async () => {
       setDescription(budget?.description ?? null);
       setTo(new Date(budget?.to) ?? new Date());
       setFrom(new Date(budget?.from) ?? new Date());
-      const rangeType = determineRangeType(new Date(budget?.from), new Date(budget?.to));
-      setSelectedDateRange(rangeType);
+      setSelectedDateRange(dateRangeFromNumber[budget?.dateRange ?? "undefined"]);
       setSelectedLimit(String(budget?.limit) ?? "undefined");
+      setOriginalLimit(String(budget?.limit) ?? "undefined");
+      setConfirmedLimit(String(budget?.limit) ?? "undefined");
       setCurrentAmount(budget?.currentAmount ?? "undefined");
       setSelectedColor(budget?.colorHex ?? "undefined");
       setSelectedCategoryIds(budget?.categoryIds ?? []);
       setSelectedSubcategoryIds(budget?.subcategoryIds ?? []);
     })();
    }, [id]);
-
-    const determineRangeType = (fromDate: Date, toDate: Date): string => {
-    const diffInMs = toDate.getTime() - fromDate.getTime();
-    const diffInDays = Math.round(diffInMs / (1000 * 60 * 60 * 24));
-
-    if (diffInDays === 1) return "daily";
-    if (diffInDays >= 6 && diffInDays <= 8) return "weekly"; 
-    
-    if (diffInDays >= 28 && diffInDays <= 31) return "monthly";
-    if (diffInDays >= 364 && diffInDays <= 366) return "yearly";
-    return "custom";
-    };
 
     useEffect(() => {
         if(isEditing)
@@ -138,12 +143,31 @@ useEffect(() => {(async () => {
 
     function updateDateRange(dateRange: string){
         switch(dateRange){
-            case "weekly": setSelectedDateRange("weekly"); setTo(new Date(new Date().setDate(from.getDate() + 7))); break;
-            case "monthly": setSelectedDateRange("monthly"); setTo(new Date(new Date().setMonth(from.getMonth() + 1))); break;
-            case "yearly": setSelectedDateRange("yearly"); setTo(new Date(new Date().setFullYear(from.getFullYear() + 1))); break;
-            case "daily": setSelectedDateRange("daily"); setTo(new Date(new Date().setDate(from.getDate() + 1))); break;
+            case "Weekly": setSelectedDateRange("Weekly"); setTo(new Date(new Date(from).setDate(from.getDate() + 7))); break;
+            case "Monthly": setSelectedDateRange("Monthly"); setTo(new Date(new Date(from).setMonth(from.getMonth() + 1))); break;
+            case "Yearly": setSelectedDateRange("Yearly"); setTo(new Date(new Date(from).setFullYear(from.getFullYear() + 1))); break;
+            case "Daily": setSelectedDateRange("Daily"); setTo(new Date(new Date(from).setDate(from.getDate() + 1))); break;
+            case "Custom": setSelectedDateRange("Custom"); break;
         }
     }
+
+    function handleSelectLimit(limit: string) {
+        const normalizedLimit = limit.replace(",", ".").trim();
+        setSelectedLimit(normalizedLimit);
+    }
+
+    function validateLimit() {
+    const numLimit = Number(selectedLimit);
+    const numCurrent = Number(currentAmount);
+
+    if (!isNaN(numLimit) && numLimit >= numCurrent) {
+        setConfirmedLimit(selectedLimit);
+    } else {
+        Alert.alert("Error", "Invalid limit");
+        setSelectedLimit(confirmedLimit);
+    }
+}
+
   async function handleSaveBudget(){
       if(!name || !selectedLimit || !selectedDateRange){
           Alert.alert(
@@ -163,6 +187,7 @@ useEffect(() => {(async () => {
             limit: limit,
             from: from,
             to: to,
+            dateRange: dateRangeFromString[selectedDateRange],
             colorHex: selectedColor,
             categoryIds: categoryIds,
             subcategoryIds: subcategoryIds
@@ -181,11 +206,50 @@ useEffect(() => {(async () => {
             throw new Error(errorData.message || "An unknown error occurred");
         }
         router.back();
-        } catch (e: any) {
-            console.log("Network/API error:", e?.message ?? e);
-        }
+    } catch (e: any) {
+
+    Alert.alert(
+        "Error",
+        e?.message,
+        [{ text: "OK" }]
+        );
+        console.log("Network/API error:", e?.message.message ?? e);
+    }
   }
 
+  async function handleDeleteBudget() {
+    Alert.alert(
+      "Delete Budget",
+      "Are you sure you want to delete this record?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              const response = await apiFetch(`/Budgets/${id}`, {
+                method: "DELETE",
+                headers: {
+                  "Content-Type": "application/json",
+                }
+              });
+  
+              if (response.ok) {
+                setIsEditing(false);
+                router.back(); 
+              } else {
+                Alert.alert("Error", "Could not delete the expense.");
+              }
+            } catch (e) {
+              Alert.alert("Error", "An error occurred while trying to delete the expense!");
+              console.log("Network/API error:", e);
+            }
+          }
+        }
+      ]
+    );
+}
   return (
     <>
       <Pressable style={styles.overlay} onPress={() => router.back()}>        
@@ -195,11 +259,13 @@ useEffect(() => {(async () => {
                 <Text style={styles.headerBtn}>Cancel</Text>
               </TouchableOpacity>
 
-              <Text style={styles.title}>{isEditing ? "Edit Budget" : ""}</Text>
+              <TouchableOpacity onPress={handleDeleteBudget}>
+                <Text style={[styles.headerBtn, {color: "red"}]}>Delete</Text>
+              </TouchableOpacity>
 
-                <TouchableOpacity onPress={isEditing ? handleSaveBudget : () => setIsEditing(true)}>
-                    <Text style={styles.headerBtn}>{isEditing ? "Save" : "Edit"}</Text> 
-                </TouchableOpacity>
+            <TouchableOpacity onPress={isEditing ? handleSaveBudget : () => setIsEditing(true)}>
+                <Text style={styles.headerBtn}>{isEditing ? "Save" : "Edit"}</Text> 
+            </TouchableOpacity>
             </View>
         <ScrollView>
         {isEditing ? 
@@ -234,66 +300,60 @@ useEffect(() => {(async () => {
 
             <Text style={styles.label}>Progress</Text>
             <View style={styles.progressBarContainer}>
-                <View style={[styles.progressBarFill, { backgroundColor: progressBarColor, width: `${percentage}%`}]} />
+                <View style={[styles.progressBarFill, { backgroundColor: progressBarColor, width: `${Number(percentage)}%`}]} />
                 <View style={styles.textContainer}>
                     <Text style={styles.percentageText}>{percentage}%</Text>
                 </View>
             </View>
              <View style={[styles.row, {justifyContent: "space-between"}]}>
                 <View>
+                    <Text style={styles.label}>Limit</Text>
+                    <TextInput
+                    style={[styles.input, {minWidth: 75}]}
+                    value={selectedLimit}
+                    onChangeText={handleSelectLimit}    
+                    onBlur={validateLimit}   
+                    keyboardType="decimal-pad"
+                    />
+                </View>
+                <Text style={{marginTop: 30}}>-</Text>
+                <View>
                     <Text style={styles.label}>Spent</Text>
                     <View style={[styles.input, {maxWidth: 100, borderWidth: 0}]}>
                         <Text style={{fontSize: 16}}>{(Number(currentAmount)).toFixed(2)}</Text>
                     </View>
                 </View>
-                <Text style={{marginTop: 30}}>+</Text>
+                <Text style={{marginTop: 30}}>=</Text>
                 <View>
                     <Text style={styles.label}>Remaining</Text>
                     <View style={[styles.input, {maxWidth: 100, borderWidth: 0}]}>
-                        <Text style={{fontSize: 16}}>{(Number(selectedLimit) - Number(currentAmount)).toFixed(2)}</Text>
+                        <Text style={{fontSize: 16}}>{(Number(remaining))}</Text>
                     </View>
                 </View>
-                <Text style={{marginTop: 30}}>=</Text>
-                <View>
-                    <Text style={styles.label}>Limit</Text>
-                    <TextInput
-                    style={[styles.input, {maxWidth: 100}]}
-                    value={selectedLimit}
-                    onChangeText={setSelectedLimit}    
-                    keyboardType="decimal-pad"
-                    />
-                </View>
+                
             </View>
             <View>
                 <Text style={{marginVertical: 10, fontSize: 16}}>Date range: {formatDate(from)} - {formatDate(to)}</Text>
                 
                 <View style={styles.row}>
-                    <TouchableOpacity style={{borderWidth: selectedDateRange === "weekly" ? 2 : 1, borderRadius: 10, marginRight: 7, padding: 9, borderColor: selectedDateRange === "weekly" ? "black" : "gray"}}
-                    onPress={() => updateDateRange("weekly")}>
-                        <Text style={{textAlign: "center", fontSize: 14}}>Weekly</Text>
+                    {ranges.map((range) => (
+                    <TouchableOpacity
+                        key={range}
+                        style={{
+                        borderWidth: selectedDateRange === range ? 2 : 1,
+                        borderRadius: 10,
+                        marginRight: 7,
+                        padding: 9
+                        }}
+                        onPress={() => updateDateRange(range)}
+                    >
+                        <Text style={{ textAlign: "center", fontSize: 14, textTransform: 'capitalize'}}>
+                        {range}
+                        </Text>
                     </TouchableOpacity>
-
-                    <TouchableOpacity style={{borderWidth: selectedDateRange === "monthly" ? 2 : 1, borderRadius: 10, marginRight: 7, padding: 9, borderColor: selectedDateRange === "monthly" ? "black" : "gray"}}
-                    onPress={() => updateDateRange("monthly")}>
-                        <Text style={{textAlign: "center", fontSize: 14}}>Monthly</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity style={{borderWidth: selectedDateRange === "yearly" ? 2 : 1, borderRadius: 10, marginRight: 7, padding: 9, borderColor: selectedDateRange === "yearly" ? "black" : "gray"}}
-                    onPress={() => updateDateRange("yearly")}>
-                        <Text style={{textAlign: "center", fontSize: 14}}>Yearly</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity style={{borderWidth: selectedDateRange === "daily" ? 2 : 1, borderRadius: 10, marginRight: 7, padding: 9, borderColor: selectedDateRange === "daily" ? "black" : "gray"}}
-                    onPress={() => updateDateRange("daily")}>
-                        <Text style={{textAlign: "center", fontSize: 14}}>Daily</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity style={{borderWidth: selectedDateRange === "custom" ? 2 : 1, borderRadius: 10, marginRight: 7, padding: 9, borderColor: selectedDateRange === "custom" ? "black" : "gray"}}
-                    onPress={() => setSelectedDateRange("custom")}>
-                        <Text style={{textAlign: "center", fontSize: 14}}>Custom</Text>
-                    </TouchableOpacity>
+                    ))}
                 </View>
-                {selectedDateRange == "custom" ? 
+                {selectedDateRange == "Custom" ? 
                 (<>
                     <View style={[styles.row, {width: 250, justifyContent: "space-between", marginVertical: 5}]}>
                         <Text>From</Text>
@@ -438,7 +498,7 @@ useEffect(() => {(async () => {
 
             <Text style={styles.label}>Progress</Text>
             <View style={styles.progressBarContainer}>
-                <View style={[styles.progressBarFill, { backgroundColor: progressBarColor, width: `${percentage}%`}]} />
+                <View style={[styles.progressBarFill, { backgroundColor: progressBarColor, width: `${Number(percentage)}%`}]} />
                 <View style={styles.textContainer}>
                     <Text style={styles.percentageText}>{percentage}%</Text>
                 </View>
@@ -446,24 +506,24 @@ useEffect(() => {(async () => {
 
             <View style={[styles.row, {justifyContent: "space-between"}]}>
                 <View>
-                    <Text style={styles.label}>Spent</Text>
-                    <View style={[styles.input, {maxWidth: 100, borderWidth: 0}]}>
-                        <Text style={{fontSize: 16}}>{Number(currentAmount).toFixed(2)}</Text>
+                    <Text style={[styles.label, {marginLeft: 12}]}>Limit</Text>
+                    <View style={[styles.input, {maxWidth: 100, borderColor: "#eaeaea"}]}
+                    >
+                        <Text style={{fontSize: 16}}>{selectedLimit}</Text>
                     </View>
                 </View>
-                <Text style={{marginTop: 30}}>+</Text>
+                <Text style={{marginTop: 30}}>-</Text>
                 <View>
-                    <Text style={styles.label}>Remaining</Text>
-                    <View style={[styles.input, {maxWidth: 100, borderWidth: 0}]}>
-                        <Text style={{fontSize: 16}}>{(Number(selectedLimit) - Number(currentAmount)).toFixed(2)}</Text>
+                    <Text style={styles.label}>Spent</Text>
+                    <View style={[styles.input, {maxWidth: 100, borderWidth: 0, paddingLeft: 0}]}>
+                        <Text style={{fontSize: 16}}>{Number(currentAmount).toFixed(2)}</Text>
                     </View>
                 </View>
                 <Text style={{marginTop: 30}}>=</Text>
                 <View>
-                    <Text style={styles.label}>Limit</Text>
-                    <View style={[styles.input, {maxWidth: 100, borderColor: "#eaeaea"}]}
-                    >
-                        <Text style={{fontSize: 16}}>{selectedLimit}</Text>
+                    <Text style={styles.label}>Remaining</Text>
+                    <View style={[styles.input, {maxWidth: 100, borderWidth: 0, paddingLeft: 0}]}>
+                        <Text style={{fontSize: 16}}>{(Number(selectedLimit) - Number(currentAmount)).toFixed(2)}</Text>
                     </View>
                 </View>
             </View>
@@ -480,7 +540,6 @@ useEffect(() => {(async () => {
                         marginRight: 7,
                         padding: 9,
                         borderColor: selectedDateRange === range ? "black" : "#eaeaea"
-                        
                         }}
                     >
                         <Text style={{ textAlign: "center", fontSize: 14, textTransform: 'capitalize', color: selectedDateRange === range ? "black" : "#8c8c8c" }}>
@@ -489,7 +548,7 @@ useEffect(() => {(async () => {
                     </View>
                     ))}
                 </View>
-                {selectedDateRange == "custom" ? 
+                {selectedDateRange == "Custom" ? 
                 (<>
                     <View style={[styles.row, {width: 250, justifyContent: "space-between", marginVertical: 5}]}>
                         <Text>From</Text>
@@ -589,7 +648,9 @@ useEffect(() => {(async () => {
                     );
                   })}
             </ScrollView></>)}
-        
+            {/* <TouchableOpacity style={styles.button} onPress={handleDeleteBudget}>
+                <Text style={{ color: "white", fontSize: 20 }}>Delete</Text>
+              </TouchableOpacity> */}
         </ScrollView>
           </Pressable>
       </Pressable>
@@ -605,6 +666,16 @@ useEffect(() => {(async () => {
 
 
 const styles = StyleSheet.create({
+    button: {
+    backgroundColor: "rgba(228, 67, 67, 0.85)",
+    height: 40,
+    width: 100,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 30,
+    alignSelf: "center",
+    margin: 7
+  },
     row: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -683,10 +754,7 @@ const styles = StyleSheet.create({
   },
   progressBarFill:{
     borderWidth: 0,
-    borderTopLeftRadius: 8,
-    borderBottomLeftRadius: 8,
-    borderTopRightRadius: 10,
-    borderBottomRightRadius: 10,
+    borderRadius: 8,
     margin: 0,
     height: 26
   },

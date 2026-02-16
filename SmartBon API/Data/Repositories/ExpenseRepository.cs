@@ -160,10 +160,14 @@ namespace Data.Repositories
                         break;
                 }
             }
+            if (queryParams.PageSize != null)
+            {
+                return await query
+                    .Take(queryParams.PageSize.Value)
+                    .ToListAsync();
+            }
 
-            return await query
-                .Take(queryParams.PageSize)
-                .ToListAsync();
+            return await query.ToListAsync();
         }
 
         public async Task<List<Expense>> GetRecentExpensesAsync(int userId, int count)

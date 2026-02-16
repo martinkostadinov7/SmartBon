@@ -1,4 +1,6 @@
-﻿namespace Data.Models
+﻿using Shared.Enums;
+
+namespace Data.Models
 {
     public class Budget : IEntity
     {
@@ -16,6 +18,8 @@
 
         public DateTime To { get; set; }
 
+        public BudgetDateRange DateRange { get; set; }
+
         public decimal Limit { get; set; }
 
         public decimal CurrentAmount { get; set; }
@@ -31,13 +35,14 @@
         private Budget() {}
 
         public Budget(string name, string? description, int userId, DateTime from, 
-            DateTime to, decimal limit, decimal currentAmount, string icon, string colorHex, List<int> categoryIds, List<int> subCategoryIds)
+            DateTime to,BudgetDateRange dateRange ,decimal limit, decimal currentAmount, string icon, string colorHex, List<int> categoryIds, List<int> subCategoryIds)
         {
             Name = name;
             Description = description;
             UserId = userId;
             From = from;
             To = to;
+            DateRange = dateRange;
             Limit = limit;
             CurrentAmount = currentAmount;
             Icon = icon;

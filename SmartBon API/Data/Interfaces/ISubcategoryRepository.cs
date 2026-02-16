@@ -3,6 +3,6 @@ namespace Data.Interfaces
 {
     public interface ISubcategoryRepository : IRepository<Subcategory>
     {
-        Task<List<Subcategory>> GetAll(int userId, int categoryId);
+        public Task<List<Subcategory>> GetAll(int userId, int categoryId);
     }
 }

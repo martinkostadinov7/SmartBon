@@ -1,4 +1,6 @@
-﻿namespace Shared.DTOs.BudgetDTOs
+﻿using Shared.Enums;
+
+namespace Shared.DTOs.BudgetDTOs
 {
     public class BudgetReadDto
     {
@@ -11,6 +13,8 @@
         public DateTime From { get; set; }
 
         public DateTime To { get; set; }
+
+        public BudgetDateRange DateRange { get; set; }
 
         public decimal Limit { get; set; }
 

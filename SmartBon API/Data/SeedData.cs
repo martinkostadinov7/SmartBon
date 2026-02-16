@@ -1,4 +1,5 @@
 ﻿using Data.Models;
+using Microsoft.AspNet.Identity;
 using Microsoft.AspNetCore.Identity;
 using Shared.Enums;
 namespace Data
@@ -50,8 +51,49 @@ namespace Data
             {
                 SeedExpenses();
             }
+            if (!db.Expenses.Any())
+            {
+                SeedBudgets();
+            }
         }
 
+        private static void SeedBudgets()
+        {
+            List<Budget> budgets = new List<Budget>
+            {
+                new Budget(
+                    "Monthly Transport",
+                    "Fuel, Public Transport and Car Maintenance",
+                    1,
+                    new DateTime(2026, 1, 1, 14, 0, 0),
+                    new DateTime(2026, 2, 1, 3, 8, 0),
+                    BudgetDateRange.Monthly,
+                    2000.00m,
+                    1600.22m,
+                    "🚗",
+                    "#81D4FA",
+                    new List<int> { 5, 7 },
+                    new List<int>()
+                ),
+
+                new Budget(
+                    "Dining Out & Fast Food",
+                    "Monthly limit for restaurants and fast food",
+                    1,
+                    new DateTime(2026, 2, 1, 0, 0, 0),
+                    new DateTime(2026, 2, 7, 23, 59, 59),
+                    BudgetDateRange.Weekly,
+                    200.00m,
+                    67.67m,
+                    "🍔",
+                    "#EF9A9A",
+                    new List<int> { 1 },
+                    new List<int> { 1, 2 }
+                )
+            };
+            db.Budgets.AddRange(budgets);
+            db.SaveChanges();
+        }
 
         private static void SeedUsers()
         {

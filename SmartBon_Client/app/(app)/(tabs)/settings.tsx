@@ -61,7 +61,7 @@ return (<>
     <View style={styles.profileContainer}>
       <Text style={{fontSize: 26}}>{userName}</Text>
       <Text style={{fontSize: 18, marginTop: 5}}>{userEmail}</Text>
-      <View style={[{marginTop: 10, borderRadius: 15, alignItems: "center"} , isUserPremium ? {backgroundColor: "#5c67e3", width: 110} : {backgroundColor: "gray", width: 60}]}>
+      <View style={[{marginTop: 10, borderRadius: 15, alignItems: "center"} , isUserPremium ? {backgroundColor: "#3077ceff", width: 110} : {backgroundColor: "gray", width: 60}]}>
         <Text style={{fontSize: 16, color: "white", margin: 5}}>{isUserPremium ? <FontAwesome6 name="crown" size={21} color="yellow" /> : ""}{isUserPremium ? " Premium" : "Free"}</Text>
       </View>
 
@@ -89,7 +89,7 @@ return (<>
       <Text style={{fontSize: 20, marginBottom: 20}}>Alerts and Reports</Text>
 
       <View style={{borderRadius:10,backgroundColor: "rgba(48, 119, 206, 0.13)", marginBottom: 10}}>
-        <View style={styles.row}>
+        <TouchableOpacity activeOpacity={0.9} style={styles.row} onPress={() => setIsBudgetLimitAlertEnabled(previousState => !previousState)}>
           <Text style={{margin: 10, fontSize: 17}}><FontAwesome6 name="triangle-exclamation" size={21} color="black" />   Budget limit alert</Text>
           <Switch
             style={{margin:7}}
@@ -98,10 +98,11 @@ return (<>
             onValueChange={() => setIsBudgetLimitAlertEnabled(previousState => !previousState)}
             value={isBudgetLimitAlertEnabled}
           />
-        </View>
+        </TouchableOpacity>
       </View>
       <View style={{borderRadius:10,backgroundColor: "rgba(48, 119, 206, 0.13)", marginBottom: 10}}>
-        <View style={styles.row}>
+        <TouchableOpacity activeOpacity={0.9} style={styles.row} onPress={() => setIsMonthlyAppReportsEnabled(previousState => !previousState)}>
+
           <Text style={{margin: 10, fontSize: 17}}><FontAwesome6 name="calendar-check" size={21} color="black" />   Monthly in-app reports</Text>
           <Switch
               style={{margin:7}}
@@ -110,11 +111,11 @@ return (<>
               onValueChange={() => setIsMonthlyAppReportsEnabled(previousState => !previousState)}
               value={isMonthlyAppReportsEnabled}
             />
-        </View>
+        </TouchableOpacity>
       </View>
       
       <View style={{borderRadius:10,backgroundColor: "rgba(48, 119, 206, 0.13)", marginBottom: 10}}>
-        <View style={styles.row}>
+        <TouchableOpacity activeOpacity={0.9} style={styles.row} onPress={() => setIsMonthlyEmailReportsEnabled(previousState => !previousState)}>
           <Text style={{margin: 10, fontSize: 17}}><FontAwesome6 name="envelope-open-text" size={21} color="black" />   Monthly email reports</Text>
           <Switch
               style={{margin:7}}
@@ -123,7 +124,7 @@ return (<>
               onValueChange={() => setIsMonthlyEmailReportsEnabled(previousState => !previousState)}
               value={isMonthlyEmailReportsEnabled}
             />
-        </View>
+        </TouchableOpacity>
       </View>
     </View>
 

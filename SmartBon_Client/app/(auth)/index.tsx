@@ -66,6 +66,7 @@ export default function LoginPage() {
 }
 
   return (
+
       <View style = {styles.container}>
         <Text style= {styles.appTitle}>SmartBon</Text>  
         <Text style= {styles.title}>Sign In</Text>
@@ -102,7 +103,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center', 
-    alignItems: 'center'     
+    alignItems: 'center'  ,
+    backgroundColor: "#e1ebffff"
   },
   title:{
     fontSize: 25,

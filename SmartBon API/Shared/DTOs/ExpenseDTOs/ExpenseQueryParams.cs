@@ -9,7 +9,7 @@ namespace Shared.DTOs.ExpenseDTOs
 
         public DateTime? AfterDate { get; set; }
 
-        public int PageSize { get; set; } = 10;
+        public int? PageSize { get; set; }
 
         public ExpenseFilterParams? FilterParams { get; set; }
 

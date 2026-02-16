@@ -12,8 +12,17 @@
     subcategoryColor,
     onPress
   }: ExpenseCardProps) {
+    const hexToRGBA = (hex: string | undefined, opacity: number) => {
+    // Връщаме лек сив цвят по подразбиране, ако няма цвят от базата
+    if (!hex) return `rgba(200, 200, 200, ${opacity})`;
+    
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+  };
     return (
-      <TouchableOpacity onPress={onPress} style={styles.card}>
+      <TouchableOpacity onPress={onPress} style={[styles.card, {backgroundColor: hexToRGBA(categoryColor, 0.7)}]}>
         <View style={[styles.iconContainer, {backgroundColor: categoryColor}]}>
           <Text style={styles.categoryEmoji}>{categoryEmoji}</Text>
         </View>
@@ -92,7 +101,6 @@
     card: {
       flexDirection: "row",
       alignItems: "center",
-      borderWidth: 2,
       borderColor: "black",
       borderRadius: 16,
       padding: 8,
@@ -172,7 +180,6 @@
     },
 
     amount: {
-      color: "red",
       fontSize: 15,
       fontWeight: "bold",
     },
@@ -180,6 +187,6 @@
     date: {
       marginTop: 4,
       fontSize: 12,
-      color: "#000"
+      color: "#2a2a2a"
     },
   });

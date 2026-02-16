@@ -106,6 +106,7 @@ export default function ExpensesScreen() {
   useFocusEffect(
     useCallback(() => {
       loadExpenses();
+      handleClearParams();
     }, [loadExpenses])
   );
 
@@ -328,7 +329,7 @@ const formatCost = (amount: number, currencyCode: string) => {
 };
 
   return (<>
-  <View style={{backgroundColor: "#e1ebffff"}}>
+  <View >
     <View style={[styles.row, {padding: 15, backgroundColor: "#3077ceff"}]}>
       <Text style={{fontSize: 32, color: "white"}}>Expenses</Text>
     </View>

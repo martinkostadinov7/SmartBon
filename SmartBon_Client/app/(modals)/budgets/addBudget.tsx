@@ -17,6 +17,14 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { CategoryBox } from "../../components/categoryBox";
 import { Subcategory } from "../../types/subcategory";
 
+const dateRangeFromString: Record<string, number> = {
+  "Daily": 0,
+  "Weekly": 1,
+  "Monthly": 2,
+  "Yearly": 3,
+  "Custom": 4
+};
+
 export default function AddBudgetModal() {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -30,7 +38,8 @@ export default function AddBudgetModal() {
   const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
   const [selectedDateRange, setSelectedDateRange] = useState("");
   const { categories } = useCategories();
-  const ranges = ["daily", "weekly", "monthly", "yearly", "custom"];
+    const ranges = ["Weekly", "Monthly", "Yearly", "Daily", "Custom"];
+
   const colors = [
     "#EF9A9A", // Soft Red
     "#FFAB91", // Soft Deep Orange
@@ -80,12 +89,13 @@ const formatDate = (dateString: string | Date): string => {
         }
     }, [selectedCategoryIds]); 
 
-    function updateDateRange(dateRange: string){
+     function updateDateRange(dateRange: string){
         switch(dateRange){
-            case "weekly": setSelectedDateRange("weekly"); setTo(new Date(new Date().setDate(from.getDate() + 7))); break;
-            case "monthly": setSelectedDateRange("monthly"); setTo(new Date(new Date().setMonth(from.getMonth() + 1))); break;
-            case "yearly": setSelectedDateRange("yearly"); setTo(new Date(new Date().setFullYear(from.getFullYear() + 1))); break;
-            case "daily": setSelectedDateRange("daily"); setTo(new Date(new Date().setDate(from.getDate() + 1))); break;
+            case "Weekly": setSelectedDateRange("Weekly"); setTo(new Date(new Date(from).setDate(from.getDate() + 7))); break;
+            case "Monthly": setSelectedDateRange("Monthly"); setTo(new Date(new Date(from).setMonth(from.getMonth() + 1))); break;
+            case "Yearly": setSelectedDateRange("Yearly"); setTo(new Date(new Date(from).setFullYear(from.getFullYear() + 1))); break;
+            case "Daily": setSelectedDateRange("Daily"); setTo(new Date(new Date(from).setDate(from.getDate() + 1))); break;
+            case "Custom": setSelectedDateRange("Custom"); break;
         }
     }
   async function handleAddBudget(){
@@ -108,6 +118,7 @@ const formatDate = (dateString: string | Date): string => {
         limit: limit,
         from: from,
         to: to,
+        dateRange: dateRangeFromString[selectedDateRange],
         colorHex: selectedColor,
         categoryIds: categoryIds,
         subcategoryIds: subcategoryIds
@@ -121,11 +132,21 @@ const formatDate = (dateString: string | Date): string => {
         },
         body: JSON.stringify(budget),
         });
-        if (!response.ok) return;
-        router.back();
-        } catch (e: any) {
-            console.log("Network/API error:", e?.message ?? e);
+        if (!response.ok) 
+        {
+            const errorData = await response.json(); 
+            throw new Error(errorData.message || "An unknown error occurred");
         }
+        router.back();
+    } catch (e: any) {
+
+    Alert.alert(
+        "Error",
+        e?.message,
+        [{ text: "OK" }]
+        );
+        console.log("Network/API error:", e?.message.message ?? e);
+    }
   }
 
   return (
@@ -195,7 +216,7 @@ const formatDate = (dateString: string | Date): string => {
                         padding: 9,
                         borderColor: selectedDateRange === range ? "black" : "gray"
                         }}
-                        onPress={() => range === "custom" ? setSelectedDateRange("custom") : updateDateRange(range)}
+                        onPress={() => updateDateRange(range)}
                     >
                         <Text style={{ textAlign: "center", fontSize: 14, textTransform: 'capitalize' }}>
                         {range}
@@ -203,7 +224,7 @@ const formatDate = (dateString: string | Date): string => {
                     </TouchableOpacity>
                     ))}
                 </View>
-                {selectedDateRange == "custom" ? 
+                {selectedDateRange == "Custom" ? 
                 (<>
                     <View style={[styles.row, {width: 250, justifyContent: "space-between", marginVertical: 5}]}>
                         <Text>From</Text>

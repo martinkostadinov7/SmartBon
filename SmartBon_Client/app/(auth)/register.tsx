@@ -71,7 +71,7 @@ export default function LoginPage() {
 }
 
   return (
-      <View style = {[styles.container, {backgroundColor: "rgb(241, 245, 255)"}]}>
+      <View style = {[styles.container]}>
         <Text style= {styles.appTitle}>SmartBon</Text>  
         <Text style= {styles.title}>Sign Up</Text>
         <Text style = {error ? styles.error : {display: "none"}}>{error}</Text>
@@ -185,7 +185,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   activeButton: {
-    backgroundColor: '#FFFFFF', // Бял фон за активния елемент
+    backgroundColor: '#edf9ff', // Бял фон за активния елемент
     // Сянка за дълбочина
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -206,7 +206,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center', 
-    alignItems: 'center'     
+    alignItems: 'center' ,
+    backgroundColor: "#e1ebffff"    
   },
   title:{
     fontSize: 25,

@@ -1,11 +1,12 @@
 ﻿using Data.Interfaces;
 using Data.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace Data.Repositories
 {
     public class BudgetRepository(AppDbContext context) : EFRepository<Budget>(context), IBudgetRepository
     {
-        public async Task<List<Budget>> GetAll(int userId)
+        public async Task<List<Budget>> GetAllAsync(int userId)
         {
             IQueryable<Budget> query = _dbSet.AsQueryable();
 
@@ -15,5 +16,7 @@ namespace Data.Repositories
 
             return budgets;
         }
+        
+
     }
 }

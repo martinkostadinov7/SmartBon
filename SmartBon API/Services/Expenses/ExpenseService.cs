@@ -12,7 +12,7 @@ using System.Text.Json;
 
 namespace Services.Expenses
 {
-    public class ExpenseService(IUserAccessor user, IExpenseRepository expenseRepository, IMapper mapper) : IExpenseService
+    public class ExpenseService(IUserAccessor user, IExpenseRepository expenseRepository, IMapper mapper, IBudgetRepository budgetRepository) : IExpenseService
     {
         public async Task<ExpenseReadDto> CreateExpenseAsync(ExpenseCreateDto dto)
         {
@@ -21,6 +21,16 @@ namespace Services.Expenses
             expense.UserId = user.Id;
             await expenseRepository.AddAsync(expense);
             
+            List<Budget> budgets = await budgetRepository.GetAllAsync(user.Id);
+            foreach (var budget in budgets)
+            {
+                if ((budget.CategoryIds.Contains(expense.CategoryId) || ((expense.SubcategoryId != null) ? budget.SubcategoryIds.Contains(expense.SubcategoryId!.Value) : false)) && 
+                    (budget.From <= expense.ExpenseDate && budget.To >= expense.ExpenseDate))
+                {
+                    budget.CurrentAmount += expense.Cost;
+                    await budgetRepository.UpdateAsync(budget);
+                }
+            }
             return mapper.Map<ExpenseReadDto>(expense);
         }
 
@@ -51,6 +61,17 @@ namespace Services.Expenses
                 throw new UnauthorizedException("User has no access to this content!");
             }
             await expenseRepository.DeleteAsync(expenseFromDb);
+
+            List<Budget> budgets = await budgetRepository.GetAllAsync(user.Id);
+            foreach (var budget in budgets)
+            {
+                if ((budget.CategoryIds.Contains(expenseFromDb.CategoryId) || ((expenseFromDb.SubcategoryId != null) ? budget.SubcategoryIds.Contains(expenseFromDb.SubcategoryId!.Value) : false)) &&
+                    (budget.From <= expenseFromDb.ExpenseDate && budget.To >= expenseFromDb.ExpenseDate))
+                {
+                    budget.CurrentAmount -= expenseFromDb.Cost;
+                    await budgetRepository.UpdateAsync(budget);
+                }
+            }
 
             return mapper.Map<ExpenseReadDto>(expenseFromDb);
         }
