@@ -22,7 +22,7 @@ namespace Data.Repositories
 
             await context.SaveChangesAsync();
         }
-        public async Task<List<Category>> GetAll(int userId)
+        public async Task<List<Category>> GetAllAsync(int userId)
         {
             IQueryable<Category> query = _dbSet.AsQueryable();
 
@@ -30,12 +30,12 @@ namespace Data.Repositories
                 .Include(c => c.Subcategories)
                 .Where(f => f.UserId == userId || f.IsPredefined == true);
 
-            var categories = query.ToList();
+            var categories = await query.ToListAsync();
 
             return categories;
         }
 
-        public async Task<Category> GetByIdAsync(int id)
+        public async override Task<Category?> GetByIdAsync(int id)
         {
             var query = _dbSet.AsQueryable().Include(c => c.Subcategories);
 

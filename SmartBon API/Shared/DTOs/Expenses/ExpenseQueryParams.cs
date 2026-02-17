@@ -1,0 +1,18 @@
+﻿using Shared.DTOs.Expenses.QueryParams;
+namespace Shared.DTOs.Expenses
+{
+    public class ExpenseQueryParams
+    {
+        public string? Search { get; set; }
+
+        public string? AfterValue { get; set; }
+
+        public DateTime? AfterDate { get; set; }
+
+        public int? PageSize { get; set; }
+
+        public ExpenseFilterParams? FilterParams { get; set; }
+
+        public ExpenseSortParams SortParams { get; set; }
+    }
+}

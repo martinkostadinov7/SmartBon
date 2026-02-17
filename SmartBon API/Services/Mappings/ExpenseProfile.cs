@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using Data.Models;
-using Shared.DTOs.ExpenseDTOs;
+using Shared.DTOs.Expenses;
 public class ExpenseProfile : Profile
 {
     public ExpenseProfile()

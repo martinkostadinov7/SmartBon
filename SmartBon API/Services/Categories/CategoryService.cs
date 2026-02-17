@@ -3,7 +3,7 @@ using Data.Interfaces;
 using Data.Models;
 using Services.Interfaces;
 using Shared.ApiExceptions;
-using Shared.DTOs.CategoryDTOs;
+using Shared.DTOs.Categories;
 namespace Services.Categories
 {
     public class CategoryService(IUserAccessor user, ICategoryRepository categoryRepository, IMapper mapper) : ICategoryService
@@ -19,7 +19,7 @@ namespace Services.Categories
 
         public async Task<List<CategoryReadDto>> GetCategoriesAsync()
         {
-            List<Category> categoriesFromDb = await categoryRepository.GetAll(user.Id);  
+            List<Category> categoriesFromDb = await categoryRepository.GetAllAsync(user.Id);  
 
             return mapper.Map<List<CategoryReadDto>>(categoriesFromDb);
         }

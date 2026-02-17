@@ -14,6 +14,10 @@ namespace Data
 
         public DbSet<Budget> Budgets { get; set; }
 
+        public DbSet<Goal> Goals { get; set; }
+
+        public DbSet<GoalContribution> GoalContributions { get; set; }
+
         public AppDbContext() { }
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 

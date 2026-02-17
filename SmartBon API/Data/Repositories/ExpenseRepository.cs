@@ -1,9 +1,9 @@
 ﻿using Data.Interfaces;
 using Data.Models;
 using Microsoft.EntityFrameworkCore;
-using Shared.DTOs.ExpenseDTOs;
-using Shared.DTOs.ExpenseDTOs.QueryParams;
-using Shared.DTOs.ExpenseDTOs.Ranges;
+using Shared.DTOs.Expenses;
+using Shared.DTOs.Expenses.QueryParams;
+using Shared.DTOs.Expenses.Ranges;
 using Shared.Enums;
 
 namespace Data.Repositories

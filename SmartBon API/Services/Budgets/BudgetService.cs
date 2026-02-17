@@ -4,9 +4,9 @@ using Data.Models;
 using Data.Repositories;
 using Services.Interfaces;
 using Shared.ApiExceptions;
-using Shared.DTOs.BudgetDTOs;
-using Shared.DTOs.ExpenseDTOs;
-using Shared.DTOs.ExpenseDTOs.QueryParams;
+using Shared.DTOs.Budgets;
+using Shared.DTOs.Expenses;
+using Shared.DTOs.Expenses.QueryParams;
 
 namespace Services.Budgets
 {

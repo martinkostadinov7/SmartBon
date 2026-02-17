@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using Data.Models;
-using Shared.DTOs.UserDTOs;
+using Shared.DTOs.Users;
 
 public class UserProfile : Profile
 {

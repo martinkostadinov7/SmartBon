@@ -6,7 +6,7 @@ using Microsoft.IdentityModel.Tokens;
 using Services.Interfaces;
 using Shared;
 using Shared.ApiExceptions;
-using Shared.DTOs.UserDTOs;
+using Shared.DTOs.Users;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;

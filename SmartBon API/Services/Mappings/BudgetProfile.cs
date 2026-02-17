@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using Data.Models;
-using Shared.DTOs.BudgetDTOs;
+using Shared.DTOs.Budgets;
 namespace Services.Mappings
 {
     public class BudgetProfile : Profile

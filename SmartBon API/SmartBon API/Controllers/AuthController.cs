@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Services.Interfaces;
 using Shared;
-using Shared.DTOs.UserDTOs;
+using Shared.DTOs.Users;
 
 namespace SmartBon_API.Controllers
 {

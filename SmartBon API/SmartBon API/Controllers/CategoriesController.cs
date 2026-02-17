@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Services.Interfaces;
-using Shared.DTOs.CategoryDTOs;
+using Shared.DTOs.Categories;
 
 namespace SmartBon_API.Controllers
 {

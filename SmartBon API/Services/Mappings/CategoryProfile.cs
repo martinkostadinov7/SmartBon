@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using Data.Models;
-using Shared.DTOs.CategoryDTOs;
+using Shared.DTOs.Categories;
 
 public class CategoryProfile : Profile
 {

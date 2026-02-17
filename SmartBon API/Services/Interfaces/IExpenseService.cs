@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
-using Shared.DTOs.ExpenseDTOs;
-using Shared.DTOs.ExpenseDTOs.Ranges;
+using Shared.DTOs.Expenses;
+using Shared.DTOs.Expenses.Ranges;
 namespace Services.Interfaces
 {
     public interface IExpenseService

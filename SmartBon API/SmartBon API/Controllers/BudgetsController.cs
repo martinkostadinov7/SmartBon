@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Services.Interfaces;
-using Shared.DTOs.BudgetDTOs;
+using Shared.DTOs.Budgets;
 
 namespace SmartBon_API.Controllers
 {

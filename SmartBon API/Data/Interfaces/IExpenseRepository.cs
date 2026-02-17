@@ -1,6 +1,6 @@
 ﻿using Data.Models;
-using Shared.DTOs.ExpenseDTOs;
-using Shared.DTOs.ExpenseDTOs.Ranges;
+using Shared.DTOs.Expenses;
+using Shared.DTOs.Expenses.Ranges;
 namespace Data.Interfaces
 {
     public interface IExpenseRepository : IRepository<Expense>

@@ -16,13 +16,13 @@ namespace Data.Repositories
             await context.SaveChangesAsync();
         }
 
-        public async Task<List<Subcategory>> GetAll(int userId, int categoryId)
+        public async Task<List<Subcategory>> GetAllAsync(int userId, int categoryId)
         {
             IQueryable<Subcategory> query = _dbSet.AsQueryable();
 
             query = query.Where(f => f.CategoryId == categoryId && f.UserId == userId);
 
-            var subcategories = query.ToList();
+            var subcategories = await query.ToListAsync();
 
             return subcategories;
         }

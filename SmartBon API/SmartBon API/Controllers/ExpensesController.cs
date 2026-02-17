@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Services.Interfaces;
-using Shared.DTOs.ExpenseDTOs;
-using Shared.DTOs.ExpenseDTOs.Ranges;
+using Shared.DTOs.Expenses;
+using Shared.DTOs.Expenses.Ranges;
 namespace SmartBon_API.Controllers
 {
     [Route("/api/[controller]")]

@@ -12,11 +12,9 @@ namespace Data.Repositories
 
             query = query.Where(f => f.UserId == userId);
 
-            var budgets = query.ToList();
+            var budgets = await query.ToListAsync();
 
             return budgets;
         }
-        
-
     }
 }

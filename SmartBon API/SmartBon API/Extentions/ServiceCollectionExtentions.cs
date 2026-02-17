@@ -3,6 +3,8 @@ using Data.Repositories;
 using Services.Budgets;
 using Services.Categories;
 using Services.Expenses;
+using Services.Goals;
+using Services.Goals;
 using Services.Interfaces;
 using Services.Subcategories;
 using Services.Users;
@@ -28,6 +30,13 @@ namespace FeelBack.Api.Extentions
 
             services.AddScoped<IBudgetRepository, BudgetRepository>();
             services.AddScoped<IBudgetService, BudgetService>();
+
+            services.AddScoped<IGoalRepository, GoalRepository>();
+            services.AddScoped<IGoalContributionRepository, GoalContributionRepository>();
+
+            services.AddScoped<IGoalService, GoalService>();
+            services.AddScoped<IGoalContributionService, GoalContributionService>();
+
             return services;
         }
 

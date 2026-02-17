@@ -1,4 +1,4 @@
-﻿using Shared.DTOs.BudgetDTOs;
+﻿using Shared.DTOs.Budgets;
 
 namespace Services.Interfaces
 {

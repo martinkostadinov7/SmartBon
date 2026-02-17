@@ -3,7 +3,7 @@ using Data.Interfaces;
 using Data.Models;
 using Services.Interfaces;
 using Shared.ApiExceptions;
-using Shared.DTOs.CategoryDTOs;
+using Shared.DTOs.Categories;
 
 namespace Services.Subcategories
 {
@@ -21,7 +21,7 @@ namespace Services.Subcategories
 
         public async Task<List<SubcategoryReadDto>> GetSubcategoriesAsync(int categoryId)
         {
-            List<Subcategory> subcategoriesFromDb = await subcategoryRepository.GetAll(user.Id, categoryId);
+            List<Subcategory> subcategoriesFromDb = await subcategoryRepository.GetAllAsync(user.Id, categoryId);
 
             return mapper.Map<List<SubcategoryReadDto>>(subcategoriesFromDb);
         }

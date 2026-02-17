@@ -1,4 +1,4 @@
-﻿using Shared.DTOs.CategoryDTOs;
+﻿using Shared.DTOs.Categories;
 
 namespace Services.Interfaces
 {

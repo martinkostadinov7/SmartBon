@@ -4,7 +4,7 @@ using Data.Models;
 using Microsoft.AspNetCore.Identity;
 using Services.Interfaces;
 using Shared.ApiExceptions;
-using Shared.DTOs.UserDTOs;
+using Shared.DTOs.Users;
 using Shared.Enums;
 namespace Services.Users
 {
