@@ -89,6 +89,17 @@ namespace Services.Expenses
 
             await expenseRepository.UpdateAsync(expenseFromDb);
 
+            List<Budget> budgets = await budgetRepository.GetAllAsync(user.Id);
+            foreach (var budget in budgets)
+            {
+                if ((budget.CategoryIds.Contains(expenseFromDb.CategoryId) || ((expenseFromDb.SubcategoryId != null) ? budget.SubcategoryIds.Contains(expenseFromDb.SubcategoryId!.Value) : false)) &&
+                    (budget.From <= expenseFromDb.ExpenseDate && budget.To >= expenseFromDb.ExpenseDate))
+                {
+                    budget.CurrentAmount += expenseFromDb.Cost;
+                    await budgetRepository.UpdateAsync(budget);
+                }
+            }
+
             return mapper.Map<ExpenseReadDto>(expenseFromDb);
         }
 

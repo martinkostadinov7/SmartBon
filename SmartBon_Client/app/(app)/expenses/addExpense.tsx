@@ -3,7 +3,7 @@ import React, { useCallback, useState } from 'react'
 import { useCategories } from "../../context/CategoriesContext";
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { CategoryBox } from '../../components/categoryBox';
-import { router, useFocusEffect } from 'expo-router';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { apiFetch } from '../../services/api';
 import * as SecureStore from "expo-secure-store";
 import { Currency } from '../../types/expense';
@@ -25,11 +25,12 @@ const currencyFromNumber: Record<number, Currency> = {
 };
 
 export default function AddExpense() {
-    const { categories } = useCategories();
-    const [title, setTitle] = useState("");
+  const { categories } = useCategories();
+  const { title: prefilledTitle, amount: prefilledAmount, description: prefilledDescription, goalId: goalId } = useLocalSearchParams();
+    const [title, setTitle] = useState(String(prefilledTitle) || "");
     const [date, setDate] = useState(new Date());
-    const [cost, setCost] = useState("");
-    const [description, setDescription] = useState("");
+    const [cost, setCost] = useState(String(prefilledAmount) || "");
+    const [description, setDescription] = useState(String(prefilledDescription) || "");
     const [selectedCategoryId, setSelectedCategoryId] = useState(-1);
     const [selectedSubcategoryId, setSelectedSubcategoryId] = useState(-1);
     const [userDefaultCurrency, setUserDefaultCurrency] = useState("Unidentified");
@@ -42,6 +43,8 @@ export default function AddExpense() {
     { value: "Transfer", label: "Transfer" },
     ];
 
+
+    
     const [paymentType, setPaymentType] = useState<PaymentType>("Cash");
 
     function handleCloseScreen(){
@@ -54,6 +57,24 @@ export default function AddExpense() {
         setSelectedCategoryId(-1);
         router.back();
     }
+
+  async function handleDeleteGoal() {
+      try {
+        const response = await apiFetch(`/Goals/${goalId}`, {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          }
+        });
+
+        if (!response.ok) {
+          Alert.alert("Error", "Could not delete the goal.");
+        }
+      } catch (e) {
+        Alert.alert("Error", "An error occurred while trying targetDate delete the expense!");
+        console.log("Network/API error:", e);
+      }
+  }
 
     async function handleAddExpense() {
         const normalizedCost = cost.replace(",", ".").trim();
@@ -88,6 +109,10 @@ export default function AddExpense() {
             });
 
             if (!response.ok) return;
+
+            if(goalId != "") {
+              handleDeleteGoal();
+            }
 
             handleCloseScreen();
         } catch (e: any) {

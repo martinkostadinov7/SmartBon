@@ -1,5 +1,5 @@
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { router, useFocusEffect } from "expo-router";
 import { useCategories } from "../../context/CategoriesContext";
 import { Currency, Expense } from "../../types/expense";
@@ -8,6 +8,8 @@ import { AddButton } from "../../components/addButton";
 import { apiFetch } from "../../services/api";
 import { Budget } from "../../types/budget";
 import { BudgetCard } from "../../components/budgetCard";
+import { Goal } from "../../types/goal";
+import { GoalCard } from "../../components/goalCard";
 
 const currencyFromNumber: Record<number, Currency> = {
   0: "EUR",
@@ -18,7 +20,13 @@ export default function HomeScreen() {
   const { categories } = useCategories();
   const [recentExpenses, setRecentExpenses] = useState<Expense[]>([]);
   const [budgets, setBudgets] = useState<Budget[]>([]);
+  const [goals, setGoals] = useState<Goal[]>([]);
   const [userDefaultCurrency, setUserDefaultCurrency] = useState("Unidentified");
+  const [reload, setReload] = useState(false);
+
+useEffect(() => {
+    loadData();
+}, [reload]);
 
   const loadData =  useCallback(async () => {
     const userResponse = await apiFetch(`/Users/me`);
@@ -27,12 +35,18 @@ export default function HomeScreen() {
     const currencyStr = currencyFromNumber[profileData.defaultCurrency];
     setUserDefaultCurrency(currencyStr);
 
+    const goalResponse = await apiFetch("/Goals");
+    if (!goalResponse.ok) {
+      throw new Error("Failed to load goals");
+    }
+    await goalResponse.json().then(setGoals);
+
     const budgetResponse = await apiFetch("/Budgets");
     if (!budgetResponse.ok) {
       throw new Error("Failed to load budgets");
     }
     await budgetResponse.json().then(setBudgets);
-   
+
     const recentExpenseResponse = await apiFetch("/Expenses/recent/10");
     if (!recentExpenseResponse.ok) {
       throw new Error("Failed to load expenses");
@@ -45,6 +59,8 @@ export default function HomeScreen() {
       loadData();
     }, [loadData])
   );
+
+  
   function handleAddExpense() {
     router.push("../expenses/addExpense");
   }
@@ -57,6 +73,15 @@ export default function HomeScreen() {
       router.push(`/(modals)/budgets/addBudget`);
   }
 
+  function handleGoalView(id: number){
+    router.push(`/(modals)/goals/${id}`);
+  }
+
+  function handleGoalCreate(){
+      router.push(`/(modals)/goals/addGoal`);
+  }
+
+
   function handleExpenseView(id: number){
     router.push(`/(modals)/expenses/${id}`);
   }
@@ -68,17 +93,36 @@ export default function HomeScreen() {
   }).format(amount);
 };
 
-  function getProgressBarColor(percentage: number): string {
-    if(percentage > 0 && percentage < 60){
-      return "#2ad100"
+  function getProgressBarColorBudget(percentage: number): string {
+    // Ограничаваме процента между 0 и 100
+    const clamped = Math.min(Math.max(percentage, 0), 100);
+
+    // Изчисляваме Hue (Хю):
+    // При 0% искаме 120 (зелено), при 100% искаме 0 (червено).
+    // Формула: 120 - (процент * 1.2)
+    const hue = 120 - (clamped * 1.2);
+
+    // Връщаме HSL стринг с фиксирана наситеност и светлина за пастелен ефект
+    return `hsl(${hue}, 100%, 60%)`;
+  }
+
+  function getProgressBarColorGoal(percentage: number): string {
+    const clampedPercentage = Math.min(Math.max(percentage, 0), 100);
+    
+    const opacity = 0.3 + (clampedPercentage / 100) * 0.9;
+
+    return `rgba(42, 209, 0, ${opacity.toFixed(2)})`;
+}
+  function handleRealiseGoal(name: string, amount: number, goalId: number, description: string){
+    router.push({
+    pathname: "/(app)/expenses/addExpense", 
+    params: { 
+      title: name,      
+      amount: amount,   
+      description: description,
+      goalId: goalId
     }
-    else if(percentage >= 60 && percentage < 80){
-      return "#ffff00"
-    }
-    else if(percentage >= 80){
-      return "#e60000"
-    }
-    return "#ffffff"
+  });
   }
 
   const formatDate = (dateString: string | Date): string => {
@@ -109,7 +153,6 @@ export default function HomeScreen() {
           </TouchableOpacity>
         </View>
         <ScrollView horizontal>
-
           {
             budgets.map(budget => {
               let budgetCategories = categories.filter(category => 
@@ -129,7 +172,7 @@ export default function HomeScreen() {
               key={budget.id}
               icon={budget.icon}
               colorHex={budget.colorHex}
-              progressBarColor={getProgressBarColor((budget.currentAmount / budget.limit * 100))}
+              progressBarColor={getProgressBarColorBudget((budget.currentAmount / budget.limit * 100))}
               name={budget.name}
               percentage={Number(((budget.currentAmount / budget.limit) * 100).toFixed(0))}
               from={formatDate(budget.from)} 
@@ -142,6 +185,41 @@ export default function HomeScreen() {
               onPress={function (): void {
                   handleBudgetView(budget.id)
                 } } />)})
+          }
+        </ScrollView>
+      </View>
+      <View>
+        <View style={styles.row}>
+          <Text style={{fontSize: 20, marginVertical: 10, fontWeight: '700'}}>Goals</Text>
+          <TouchableOpacity style={{marginLeft: 10}} onPress={handleGoalCreate}>
+            <Text style={{color: "#3077ce", fontWeight: "600", fontSize: 16}}>+ Add New</Text>
+          </TouchableOpacity>
+        </View>
+        <ScrollView horizontal>
+          {
+            goals.map(goal => (
+            <GoalCard 
+              key={goal.id}
+              id={goal.id}
+              icon={goal.icon}
+              colorHex={goal.colorHex}
+              progressBarColor={getProgressBarColorGoal((goal.currentAmount / goal.finalAmount * 100))}
+              name={goal.name}
+              percentage={Number(((goal.currentAmount / goal.finalAmount) * 100).toFixed(0))}
+              to={formatDate(goal.targetDate)} 
+              limit={String(formatCost(goal.finalAmount, userDefaultCurrency))} 
+              currentAmount={String(formatCost(goal.currentAmount, userDefaultCurrency))} 
+              remainingAmount={String(formatCost(goal.finalAmount - goal.currentAmount, userDefaultCurrency))}
+              remaining={goal.finalAmount - goal.currentAmount >= 0}
+              onPress={function (): void {
+                  handleGoalView(goal.id)
+                } } 
+              onRealiseGoalButtonPress={function (): void {
+                  handleRealiseGoal(goal.name, goal.currentAmount, goal.id, goal.description);
+                } }
+                reloadComponent={function (): void{
+                  setReload(prev => !prev);
+                }}/>))
           }
         </ScrollView>
       </View>

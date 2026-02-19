@@ -92,16 +92,15 @@ const formatDate = (dateString: string | Date): string => {
 };
 
 function getProgressBarColor(percentage: number): string {
-    if(percentage > 0 && percentage < 60){
-      return "#2ad100"
-    }
-    else if(percentage >= 60 && percentage < 80){
-      return "#ffff00"
-    }
-    else if(percentage >= 80){
-      return "#e60000"
-    }
-    return "#ffffff"
+    const clamped = Math.min(Math.max(percentage, 0), 100);
+
+    // Изчисляваме Hue (Хю):
+    // При 0% искаме 120 (зелено), при 100% искаме 0 (червено).
+    // Формула: 120 - (процент * 1.2)
+    const hue = 120 - (clamped * 1.2);
+
+    // Връщаме HSL стринг с фиксирана наситеност и светлина за пастелен ефект
+    return `hsl(${hue}, 100%, 60%)`;
   }
   const [confirmedLimit, setConfirmedLimit] = useState("");
   const progressBarColor= getProgressBarColor((Number(currentAmount) / Number(confirmedLimit) * 100))
@@ -747,6 +746,7 @@ const styles = StyleSheet.create({
   sheetTitle: { fontSize: 16, fontWeight: "600" },
   progressBarContainer: {
     borderWidth: 2,
+    borderColor: "#ccc",
     borderRadius: 10,
     backgroundColor: "white",
     padding: 0,

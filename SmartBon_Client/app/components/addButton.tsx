@@ -1,5 +1,6 @@
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native'
 import React from 'react'
+import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 
 export function AddButton({
     onPress
@@ -7,7 +8,7 @@ export function AddButton({
 
   return (
     <TouchableOpacity style={styles.button} onPress= {onPress}>
-      <Text style={{ color: 'white', fontSize: 50, transform: [{ translateY: -2}]}}>+</Text>
+      <FontAwesome6 name="plus" size={34} color="white" />
     </TouchableOpacity>
   )
 }

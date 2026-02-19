@@ -42,7 +42,7 @@ namespace Services.Goals
             Goal goal = mapper.Map<Goal>(goalCreateDto);
             goal.UserId = user.Id;
             goal.CurrentAmount = 0;
-            
+            goal.StartDate = DateTime.Now;
             await goalRepository.AddAsync(goal);
             return mapper.Map<GoalReadDto>(goal);
         }

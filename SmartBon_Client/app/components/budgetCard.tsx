@@ -17,6 +17,9 @@ import { Subcategory } from "../types/subcategory";
     subCategories,
     onPress
   }: BudgetCardProps) {
+    async function handleArchiveBudget(){
+
+    }
     return (
       <TouchableOpacity onPress={onPress} style={[styles.card, {backgroundColor: colorHex}]}>
         <View style={[styles.row,{marginBottom: 5}]}>
@@ -42,19 +45,29 @@ import { Subcategory } from "../types/subcategory";
             )}
         </ScrollView>
         <View style={[styles.row, {marginTop: 10}]}>
-            <Text>{from} - {to}</Text>
             <View>
-                <Text>{currentAmount} / {limit}</Text>
+                <Text>From: {from}</Text>
+                <Text>To: {to}</Text>
+            </View>
+            <View style={{alignContent: "flex-end"}}>
+                <View style={styles.row}>
+                    <Text style={{fontWeight:"700"}}>{currentAmount}</Text>
+                    <Text> / </Text>
+                    <Text>{limit}</Text>
+                </View>
                 <Text>Remaining: {remainingAmount}</Text>
             </View>
         </View>
-        <View style={styles.progressBarContainer}>
+        {false ? (<TouchableOpacity onPress={handleArchiveBudget} style={styles.archiveBudgetButton}>
+                    <Text style={styles.archiveBudgetText}>Archive budget</Text>
+                </TouchableOpacity>) :
+        (<View style={styles.progressBarContainer}>
             <View style={[styles.progressBarFill, {backgroundColor: progressBarColor, width: `${percentage}%`}]}>
             </View>
                 <View style={styles.textContainer}>
                     <Text style={styles.percentageText}>{percentage}%</Text>
                 </View>
-        </View>
+        </View>)}
       </TouchableOpacity>
     );
   }
@@ -102,10 +115,7 @@ import { Subcategory } from "../types/subcategory";
   },
   progressBarFill:{
     borderWidth: 0,
-    borderTopLeftRadius: 8,
-    borderBottomLeftRadius: 8,
-    borderTopRightRadius: 10,
-    borderBottomRightRadius: 10,
+    borderRadius: 10,
     margin: 0,
     height: 25
   },
@@ -118,5 +128,16 @@ import { Subcategory } from "../types/subcategory";
     fontSize: 12,
     fontWeight: 'bold',
     color: '#000',
-    }
+    },archiveBudgetButton:{
+        backgroundColor: "#b6b000",
+        borderRadius: 10,
+        padding: 10,
+        marginTop: 10   
+    },
+    archiveBudgetText:{
+        textAlign: "center",
+        fontSize: 18,
+        color: "white",
+        fontWeight: "700"
+    },
   });
