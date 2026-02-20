@@ -1,4 +1,4 @@
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import React, { useCallback, useEffect, useState } from "react";
 import { router, useFocusEffect } from "expo-router";
 import { useCategories } from "../../context/CategoriesContext";
@@ -22,6 +22,7 @@ export default function HomeScreen() {
   const [budgets, setBudgets] = useState<Budget[]>([]);
   const [goals, setGoals] = useState<Goal[]>([]);
   const [userDefaultCurrency, setUserDefaultCurrency] = useState("Unidentified");
+  const [isPremium, setIsPremium] = useState(false);
   const [reload, setReload] = useState(false);
 
 useEffect(() => {
@@ -34,7 +35,8 @@ useEffect(() => {
     const profileData = await userResponse.json();
     const currencyStr = currencyFromNumber[profileData.defaultCurrency];
     setUserDefaultCurrency(currencyStr);
-
+    setIsPremium(profileData.isPremium);
+    
     const goalResponse = await apiFetch("/Goals");
     if (!goalResponse.ok) {
       throw new Error("Failed to load goals");
@@ -70,15 +72,51 @@ useEffect(() => {
   }
 
   function handleBudgetCreate(){
-      router.push(`/(modals)/budgets/addBudget`);
+      if(!isPremium && budgets.length >= 2){
+        Alert.alert(
+              "Maximum budgets reached!",
+              "The free plan allows up to 2 active budgets. Would you like to upgrade to Premium for unlimited?",
+              [
+                { text: "Cancel", style: "cancel" },
+                {
+                  text: "Upgrade",
+                  style: "default",
+                  onPress: async () => {
+                    router.push("(modals)/users/managePlan");
+                  }
+                }
+              ]
+            );
+      }
+      else{
+        router.push(`/(modals)/budgets/addBudget`);
+      }
   }
 
   function handleGoalView(id: number){
     router.push(`/(modals)/goals/${id}`);
   }
-
+  
   function handleGoalCreate(){
-      router.push(`/(modals)/goals/addGoal`);
+      if(!isPremium && goals.length >= 2){
+        Alert.alert(
+              "Maximum goals reached!",
+              "The free plan allows up to 2 active goals. Would you like to upgrade to Premium for unlimited?",
+              [
+                { text: "Cancel", style: "cancel" },
+                {
+                  text: "Upgrade",
+                  style: "default",
+                  onPress: async () => {
+                    router.push("(modals)/users/managePlan");
+                  }
+                }
+              ]
+            );
+      }
+      else{
+        router.push(`/(modals)/goals/addGoal`);
+      }
   }
 
 
@@ -152,7 +190,7 @@ useEffect(() => {
             <Text style={{color: "#3077ce", fontWeight: "600", fontSize: 16}}>+ Add New</Text>
           </TouchableOpacity>
         </View>
-        <ScrollView horizontal>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
           {
             budgets.map(budget => {
               let budgetCategories = categories.filter(category => 

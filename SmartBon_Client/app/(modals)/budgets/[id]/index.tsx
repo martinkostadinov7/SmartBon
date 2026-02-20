@@ -17,6 +17,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { CategoryBox } from "../../../components/categoryBox";
 import { Subcategory } from "../../../types/subcategory";
 import { Budget } from "../../../types/budget";
+import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 
 const dateRangeFromNumber: Record<number, string> = {
   0: "Daily",
@@ -51,6 +52,8 @@ export default function ViewBudgetModal() {
   const { categories } = useCategories();
   const { id } = useLocalSearchParams<{ id: string}>();
   const [isEditing, setIsEditing] = useState(false);
+    const [isPremium, setIsPremium] = useState(false);
+  
         const ranges = ["Weekly", "Monthly", "Yearly", "Daily", "Custom"];
   const colors = [
     "#EF9A9A", // Soft Red
@@ -107,6 +110,12 @@ function getProgressBarColor(percentage: number): string {
 const percentage= Math.min((Number(currentAmount) / Number(confirmedLimit)) * 100, 100).toFixed(0)
 const remaining = (Number(confirmedLimit) - Number(currentAmount)).toFixed(2)
 useEffect(() => {(async () => {
+    const userResponse = await apiFetch(`/Users/me`);
+    if (!userResponse.ok) throw new Error("Failed");
+    const profileData = await userResponse.json();
+    setIsPremium(profileData.isPremium);
+
+
       const response = await apiFetch(`/Budgets/${id}`);
       if (!response.ok) {
         throw new Error("Failed to load budget");
@@ -335,22 +344,67 @@ useEffect(() => {(async () => {
                 <Text style={{marginVertical: 10, fontSize: 16}}>Date range: {formatDate(from)} - {formatDate(to)}</Text>
                 
                 <View style={styles.row}>
-                    {ranges.map((range) => (
-                    <TouchableOpacity
-                        key={range}
-                        style={{
-                        borderWidth: selectedDateRange === range ? 2 : 1,
-                        borderRadius: 10,
-                        marginRight: 7,
-                        padding: 9
-                        }}
-                        onPress={() => updateDateRange(range)}
-                    >
-                        <Text style={{ textAlign: "center", fontSize: 14, textTransform: 'capitalize'}}>
-                        {range}
-                        </Text>
-                    </TouchableOpacity>
-                    ))}
+                    <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+
+                        {ranges.map((range) => {
+                            // Дефинираме кои са премиум опциите
+                            const isPremiumRange = range === 'Daily' || range === 'Custom';
+                            const isLocked = !isPremium && isPremiumRange;
+
+                            return (
+                            <TouchableOpacity
+                                key={range}
+                                style={{
+                                flexDirection: 'row', // За да подредим текста и иконата в линия
+                                alignItems: 'center',
+                                borderWidth: selectedDateRange === range ? 2 : 1,
+                                borderRadius: 10,
+                                marginRight: 7,
+                                paddingVertical: 9,
+                                paddingHorizontal: 12, // Малко повече място отстрани
+                                backgroundColor: isLocked ? '#f0f0f0' : 'transparent',
+                                borderColor: (selectedDateRange === range ? "black" : "#d1d1d1"),
+                                opacity: isLocked ? 0.7 : 1, // Визуално подсказва, че е неактивно
+                                }}
+                                onPress={() => {
+                                if (isLocked) {
+                                    Alert.alert(
+                                    "Premium feature!",
+                                    "Choosing a daily or custom period is only available for Premium users.",
+                                    [
+                                        { text: "Cancel", style: "cancel" },
+                                        {
+                                        text: "Upgrade",
+                                        style: "default",
+                                        onPress: async () => {
+                                            router.push("(modals)/users/managePlan");
+                                        }
+                                        }
+                                    ]
+                                    );
+                                } else {
+                                    updateDateRange(range);
+                                }
+                                }}
+                            >
+                                <Text style={{ 
+                                    textAlign: "center", 
+                                    fontSize: 14, 
+                                    textTransform: 'capitalize',
+                                    color: isLocked ? '#888' : 'black',
+                                    fontWeight: selectedDateRange === range ? 'bold' : 'normal',
+                                    marginRight: isLocked ? 5 : 0
+                                }}>
+                                {range}
+                                </Text>
+                                
+                                {isLocked && (
+                                <FontAwesome6 name={"lock"} size={16} color={"#3077ceff"}/>
+                                )}
+                            </TouchableOpacity>
+                            );
+                        })}
+                    </ScrollView>
                 </View>
                 {selectedDateRange == "Custom" ? 
                 (<>
@@ -529,19 +583,19 @@ useEffect(() => {(async () => {
             <View>
                 <Text style={{marginVertical: 10, fontSize: 16}}>Date range: {formatDate(from)} - {formatDate(to)}</Text>
                 
-                <View style={styles.row}>
+               <View style={styles.row}>
                     {ranges.map((range) => (
                     <View
                         key={range}
                         style={{
                         borderWidth: selectedDateRange === range ? 2 : 1,
                         borderRadius: 10,
-                        marginRight: 7,
+                        marginRight: 6,
                         padding: 9,
                         borderColor: selectedDateRange === range ? "black" : "#eaeaea"
                         }}
                     >
-                        <Text style={{ textAlign: "center", fontSize: 14, textTransform: 'capitalize', color: selectedDateRange === range ? "black" : "#8c8c8c" }}>
+                        <Text style={{ textAlign: "center", fontSize: 14, textTransform: 'capitalize', color: selectedDateRange === range ? "black" : "#8c8c8c", fontWeight: selectedDateRange === range ? 700 : 400}}>
                         {range}
                         </Text>
                     </View>
@@ -586,7 +640,6 @@ useEffect(() => {(async () => {
                 </>): 
                 (<></>)}
             </View>
-
 
             <Text style={{fontSize: 16, marginTop: 10, marginBottom: 5}}>Included Categories</Text>
                     <View style={{ overflow: "hidden" }}>

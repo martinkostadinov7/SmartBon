@@ -43,8 +43,6 @@ export default function AddExpense() {
     { value: "Transfer", label: "Transfer" },
     ];
 
-
-    
     const [paymentType, setPaymentType] = useState<PaymentType>("Cash");
 
     function handleCloseScreen(){

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -9,13 +9,14 @@ import {
   Alert,
   ScrollView,
 } from "react-native";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import EmojiPickerModal from "../../components/emojiPicker";
 import { apiFetch } from "../../services/api";
 import { useCategories } from "../../context/CategoriesContext";
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { CategoryBox } from "../../components/categoryBox";
 import { Subcategory } from "../../types/subcategory";
+import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 
 const dateRangeFromString: Record<string, number> = {
   "Daily": 0,
@@ -37,9 +38,12 @@ export default function AddBudgetModal() {
   const [selectedSubcategoryIds, setSelectedSubcategoryIds] = useState<Number[]>([]);
   const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
   const [selectedDateRange, setSelectedDateRange] = useState("");
+  const [isPremium, setIsPremium] = useState(false);
   const { categories } = useCategories();
     const ranges = ["Weekly", "Monthly", "Yearly", "Daily", "Custom"];
+const premiumRanges = ['Daily', 'Custom'];
 
+// Вътре в рендера на бутона:
   const colors = [
     "#EF9A9A", // Soft Red
     "#FFAB91", // Soft Deep Orange
@@ -79,6 +83,24 @@ const formatDate = (dateString: string | Date): string => {
   });
 };
 
+    useFocusEffect(
+        useCallback(() => {
+        const fetchProfile = async () => {
+            try {
+            const response = await apiFetch(`/Users/me`);
+            if (!response.ok) throw new Error("Failed");
+            const profileData = await response.json();
+            setIsPremium(profileData.isPremium);
+            } catch (error) {
+            console.error(error);
+            }
+        };
+
+        fetchProfile();
+        return () => {}; 
+        }, []) 
+    );
+
     useEffect(() => {
         setSelectedSubcategoryIds([]);
         if (selectedCategoryIds.length === 1) {
@@ -90,6 +112,9 @@ const formatDate = (dateString: string | Date): string => {
     }, [selectedCategoryIds]); 
 
      function updateDateRange(dateRange: string){
+        if((dateRange == "Daily" || dateRange == "Custom") && !isPremium){
+            
+        }
         switch(dateRange){
             case "Weekly": setSelectedDateRange("Weekly"); setTo(new Date(new Date(from).setDate(from.getDate() + 7))); break;
             case "Monthly": setSelectedDateRange("Monthly"); setTo(new Date(new Date(from).setMonth(from.getMonth() + 1))); break;
@@ -108,14 +133,14 @@ const formatDate = (dateString: string | Date): string => {
         );
         return;
     }
-    // if(to < new Date()){
-    //     Alert.alert(
-    //         "Input error",
-    //         "End date must not be in the past!",
-    //         [{ text: "OK" }]
-    //     );
-    //     return;
-    // }
+    if(to < new Date()){
+        Alert.alert(
+            "Input error",
+            "End date must not be in the past!",
+            [{ text: "OK" }]
+        );
+        return;
+    }
             
     let categoryIds = selectedCategoryIds.length > 0 ? selectedCategoryIds : categories.map(category => category.id);
     let subcategoryIds = selectedSubcategoryIds.length > 0 ? selectedSubcategoryIds : subcategories.map(subcategory => subcategory.id);
@@ -216,23 +241,67 @@ const formatDate = (dateString: string | Date): string => {
                 <Text style={{marginVertical: 10, fontSize: 16}}>Date range: {formatDate(from)} - {formatDate(to)}</Text>
                 
                 <View style={styles.row}>
-                    {ranges.map((range) => (
-                    <TouchableOpacity
-                        key={range}
-                        style={{
-                        borderWidth: selectedDateRange === range ? 2 : 1,
-                        borderRadius: 10,
-                        marginRight: 7,
-                        padding: 9,
-                        borderColor: selectedDateRange === range ? "black" : "gray"
-                        }}
-                        onPress={() => updateDateRange(range)}
-                    >
-                        <Text style={{ textAlign: "center", fontSize: 14, textTransform: 'capitalize' }}>
-                        {range}
-                        </Text>
-                    </TouchableOpacity>
-                    ))}
+                    <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+
+                        {ranges.map((range) => {
+                            // Дефинираме кои са премиум опциите
+                            const isPremiumRange = range === 'Daily' || range === 'Custom';
+                            const isLocked = !isPremium && isPremiumRange;
+
+                            return (
+                            <TouchableOpacity
+                                key={range}
+                                style={{
+                                flexDirection: 'row', // За да подредим текста и иконата в линия
+                                alignItems: 'center',
+                                borderWidth: selectedDateRange === range ? 2 : 1,
+                                borderRadius: 10,
+                                marginRight: 7,
+                                paddingVertical: 9,
+                                paddingHorizontal: 12, // Малко повече място отстрани
+                                backgroundColor: isLocked ? '#f0f0f0' : 'transparent',
+                                borderColor: isLocked ? '#d1d1d1' : (selectedDateRange === range ? "black" : "gray"),
+                                opacity: isLocked ? 0.7 : 1, // Визуално подсказва, че е неактивно
+                                }}
+                                onPress={() => {
+                                if (isLocked) {
+                                    Alert.alert(
+                                    "Premium feature!",
+                                    "Choosing a daily or custom period is only available for Premium users.",
+                                    [
+                                        { text: "Cancel", style: "cancel" },
+                                        {
+                                        text: "Upgrade",
+                                        style: "default",
+                                        onPress: async () => {
+                                            router.push("(modals)/users/managePlan");
+                                        }
+                                        }
+                                    ]
+                                    );
+                                } else {
+                                    updateDateRange(range);
+                                }
+                                }}
+                            >
+                                <Text style={{ 
+                                    textAlign: "center", 
+                                    fontSize: 14, 
+                                    textTransform: 'capitalize',
+                                    color: isLocked ? '#888' : 'black',
+                                    fontWeight: selectedDateRange === range ? 'bold' : 'normal',
+                                    marginRight: isLocked ? 5 : 0
+                                }}>
+                                {range}
+                                </Text>
+                                
+                                {isLocked && (
+                                <FontAwesome6 name={"lock"} size={16} color={"#3077ceff"}/>
+                                )}
+                            </TouchableOpacity>
+                            );
+                        })}
+                    </ScrollView>
                 </View>
                 {selectedDateRange == "Custom" ? 
                 (<>
