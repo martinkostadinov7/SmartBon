@@ -61,12 +61,20 @@ namespace Services.Goals
             return mapper.Map<GoalReadDto>(goal);
         }
 
-        public async Task<List<GoalReadDto>> GetGoalsAsync()
+        public async Task<List<GoalReadDto>> GetActiveGoalsAsync()
         {
             List<Goal> goalsFromDb = await goalRepository.GetAllAsync(user.Id);
 
             return mapper.Map<List<GoalReadDto>>(goalsFromDb);
         }
+
+        public async Task<List<GoalReadDto>> GetRealisedGoalsAsync()
+        {
+            List<Goal> goalsFromDb = await goalRepository.GetAllAsync(user.Id, false);
+
+            return mapper.Map<List<GoalReadDto>>(goalsFromDb);
+        }
+
 
         public async Task<GoalReadDto> UpdateGoalAsync(int id, GoalUpdateDto goalUpdateDto)
         {
@@ -74,6 +82,13 @@ namespace Services.Goals
             mapper.Map(goalUpdateDto, goalToUpdate);
             await goalRepository.UpdateAsync(goalToUpdate);
             return mapper.Map<GoalReadDto>(goalToUpdate);
+        }
+
+        public async Task RealiseGoalAsync(int id)
+        {
+            Goal goal = await goalRepository.GetByIdAsync(id) ?? throw new NotFoundException($"Goal with id {id} was not found!");
+            goal.IsActive = false;
+            await goalRepository.UpdateAsync(goal);
         }
     }
 }

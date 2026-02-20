@@ -7,11 +7,12 @@ namespace Data.Repositories
 {
     public class GoalRepository(AppDbContext context) : EFRepository<Goal>(context), IGoalRepository
     {
-        public async Task<List<Goal>> GetAllAsync(int userId)
+        public async Task<List<Goal>> GetAllAsync(int userId, bool? isActive = true)
         {
             IQueryable<Goal> query = _dbSet.AsQueryable().Include(g => g.Contributions);
 
             query = query.Where(f => f.UserId == userId);
+            query = query.Where(f => f.IsActive == isActive);
 
             var goals = await query.ToListAsync();
 

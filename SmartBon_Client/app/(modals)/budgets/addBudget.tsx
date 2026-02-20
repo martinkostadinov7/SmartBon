@@ -108,14 +108,14 @@ const formatDate = (dateString: string | Date): string => {
         );
         return;
     }
-    if(to < new Date()){
-        Alert.alert(
-            "Input error",
-            "End date must not be in the past!",
-            [{ text: "OK" }]
-        );
-        return;
-    }
+    // if(to < new Date()){
+    //     Alert.alert(
+    //         "Input error",
+    //         "End date must not be in the past!",
+    //         [{ text: "OK" }]
+    //     );
+    //     return;
+    // }
             
     let categoryIds = selectedCategoryIds.length > 0 ? selectedCategoryIds : categories.map(category => category.id);
     let subcategoryIds = selectedSubcategoryIds.length > 0 ? selectedSubcategoryIds : subcategories.map(subcategory => subcategory.id);

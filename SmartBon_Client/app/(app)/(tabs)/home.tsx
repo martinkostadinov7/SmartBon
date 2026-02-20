@@ -167,6 +167,7 @@ useEffect(() => {
               const budgetSubcategories = allSubcategories.filter(sub => 
                 budget.subcategoryIds.includes(sub.id)
               );
+
               return (
             <BudgetCard 
                 key={budget.id}
@@ -183,7 +184,7 @@ useEffect(() => {
                 remainingAmount={String(formatCost(budget.limit - budget.currentAmount, userDefaultCurrency))}
                 categories={budgetCategories}
                 archived={false}
-                limitReached={budget.limit <= budget.currentAmount}
+                limitReached={budget.limit <= budget.currentAmount || new Date(budget.to) <= new Date()}
                 subCategories={budgetSubcategories}
                 onPress={function (): void {
                   handleBudgetView(budget.id);
@@ -205,27 +206,28 @@ useEffect(() => {
           {
             goals.map(goal => (
             <GoalCard 
-              key={goal.id}
-              id={goal.id}
-              icon={goal.icon}
-              colorHex={goal.colorHex}
-              progressBarColor={getProgressBarColorGoal((goal.currentAmount / goal.finalAmount * 100))}
-              name={goal.name}
-              percentage={Number(Math.floor((goal.currentAmount / goal.finalAmount) * 100).toFixed(0))}
-              to={formatDate(goal.targetDate)} 
-              limit={String(formatCost(goal.finalAmount, userDefaultCurrency))} 
-              currentAmount={String(formatCost(goal.currentAmount, userDefaultCurrency))} 
-              remainingAmount={String(formatCost(goal.finalAmount - goal.currentAmount, userDefaultCurrency))}
-              remaining={goal.finalAmount - goal.currentAmount >= 0}
-              onPress={function (): void {
-                  handleGoalView(goal.id)
-                } } 
-              onRealiseGoalButtonPress={function (): void {
+                key={goal.id}
+                id={goal.id}
+                icon={goal.icon}
+                colorHex={goal.colorHex}
+                progressBarColor={getProgressBarColorGoal((goal.currentAmount / goal.finalAmount * 100))}
+                name={goal.name}
+                percentage={Number(Math.floor((goal.currentAmount / goal.finalAmount) * 100).toFixed(0))}
+                to={formatDate(goal.targetDate)}
+                limit={String(formatCost(goal.finalAmount, userDefaultCurrency))}
+                currentAmount={String(formatCost(goal.currentAmount, userDefaultCurrency))}
+                remainingAmount={String(formatCost(goal.finalAmount - goal.currentAmount, userDefaultCurrency))}
+                remaining={goal.finalAmount - goal.currentAmount >= 0}
+                onPress={function (): void {
+                  handleGoalView(goal.id);
+                } }
+                onRealiseGoalButtonPress={function (): void {
                   handleRealiseGoal(goal.name, goal.currentAmount, goal.id, goal.description);
                 } }
-                reloadComponent={function (): void{
+                reloadComponent={function (): void {
                   setReload(prev => !prev);
-                }}/>))
+                } } 
+                realised={!goal.isActive}/>))
           }
         </ScrollView>
       </View>

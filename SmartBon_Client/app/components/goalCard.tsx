@@ -14,6 +14,7 @@ import { apiFetch } from "../services/api";
     currentAmount,
     remainingAmount,
     remaining,
+    realised,
     onPress,
     onRealiseGoalButtonPress,
     reloadComponent
@@ -86,33 +87,37 @@ import { apiFetch } from "../services/api";
                 (<Text>Extra: {remainingAmount.slice(1, remainingAmount.length)}</Text>)}
             </View>
         </View>
-        {percentage >= 100 ? 
+        {percentage >= 100 && !realised ? 
         (<TouchableOpacity onPress={onRealiseGoalButtonPress} style={styles.realiseGoalButton}>
             <Text style={styles.realiseGoalText}>Realise goal</Text>
         </TouchableOpacity>) : 
         (<>
         <View style={[styles.row, {marginTop: 5}]}>
-            {isAdding ? 
+            {isAdding && !realised ? 
             (<TextInput
                     style={[styles.input, {width: 190}]}
                     value={amount}
                     onChangeText={setAmount}    
                     keyboardType="decimal-pad"
                     />): 
-            (<View style={[styles.progressBarContainer, {marginRight: 5}]}>
+            (<View style={[styles.progressBarContainer, {marginRight: 5, width: realised ? 320 : 230}]}>
                 <View style={[styles.progressBarFill, {backgroundColor: progressBarColor, width: `${Math.min(percentage, 100)}%`}]}>
                 </View>
                     <View style={styles.textContainer}>
                         <Text style={styles.percentageText}>{percentage}%</Text>
                     </View>
             </View>)}
-            {isAdding && (<TouchableOpacity onPress={() => {setIsAdding(false); setAmount("");} } style={[styles.addButton,{alignItems: "center", backgroundColor:"#ff0000"}]}> 
-                <FontAwesome6 name={"xmark"} size={18} color="white" />
-            </TouchableOpacity>)}
-            
-            <TouchableOpacity onPress={() => {isAdding ? handleAddContribution() : setIsAdding(true)} } style={[styles.addButton,{alignItems: "center"}]}> 
-                <FontAwesome6 name={isAdding ? "check" : "plus"} size={18} color="white" />
-            </TouchableOpacity>
+            {!realised && (
+                <>
+                    {isAdding && (<TouchableOpacity onPress={() => {setIsAdding(false); setAmount("");} } style={[styles.addButton,{alignItems: "center", backgroundColor:"#ff0000"}]}> 
+                        <FontAwesome6 name={"xmark"} size={18} color="white" />
+                    </TouchableOpacity>)}
+                    
+                    <TouchableOpacity onPress={() => {isAdding ? handleAddContribution() : setIsAdding(true)} } style={[styles.addButton,{alignItems: "center"}]}> 
+                        <FontAwesome6 name={isAdding ? "check" : "plus"} size={18} color="white" />
+                    </TouchableOpacity>
+                </>
+            )}
         </View>
         </>)}
         
@@ -132,6 +137,7 @@ import { apiFetch } from "../services/api";
     currentAmount: string; 
     remainingAmount: string;
     remaining: boolean;
+    realised: boolean;
     onPress: () => void;
     onRealiseGoalButtonPress: () => void;
     reloadComponent: () => void;

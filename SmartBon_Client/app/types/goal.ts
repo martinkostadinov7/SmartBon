@@ -8,6 +8,7 @@ export interface Goal {
   finalAmount: number;
   currentAmount: number;
   icon: string;
+  isActive: boolean;
   colorHex: string;
   contributions: GoalContribution[];
 }

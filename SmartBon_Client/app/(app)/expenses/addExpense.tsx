@@ -58,23 +58,29 @@ export default function AddExpense() {
         router.back();
     }
 
-  async function handleDeleteGoal() {
-      try {
-        const response = await apiFetch(`/Goals/${goalId}`, {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-          }
+ async function handleRealiseGoal(){  
+     try {
+        const response = await apiFetch(`/Goals/${goalId}/realise`, {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+            }
         });
-
-        if (!response.ok) {
-          Alert.alert("Error", "Could not delete the goal.");
+        if (!response.ok) 
+        {
+            const errorData = await response.json(); 
+            throw new Error(errorData.message || "An unknown error occurred");
         }
-      } catch (e) {
-        Alert.alert("Error", "An error occurred while trying targetDate delete the expense!");
-        console.log("Network/API error:", e);
-      }
-  }
+    } catch (e: any) {
+  
+    Alert.alert(
+        "Error",
+        e?.message,
+        [{ text: "OK" }]
+        );
+        console.log("Network/API error:", e?.message.message ?? e);
+    }
+   }
 
     async function handleAddExpense() {
         const normalizedCost = cost.replace(",", ".").trim();
@@ -111,7 +117,7 @@ export default function AddExpense() {
             if (!response.ok) return;
 
             if(goalId) {
-              handleDeleteGoal();
+              handleRealiseGoal();
             }
 
             handleCloseScreen();

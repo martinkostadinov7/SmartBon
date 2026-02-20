@@ -20,6 +20,8 @@ namespace Shared.DTOs.Goals
 
         public string ColorHex { get; set; }
 
+        public bool IsActive { get; set; }
+
         public List<GoalContributionReadDto> Contributions { get; set; } = new List<GoalContributionReadDto>();
     }
 }

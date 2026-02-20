@@ -86,11 +86,20 @@ return (<>
     </View>
 
 <View style={{backgroundColor: "white" , borderRadius: 20, marginHorizontal: 15, marginBottom: 15, padding: 15}}>
-      <Text style={{fontSize: 20, marginBottom: 20}}>Budgets</Text>
+      <Text style={{fontSize: 20, marginBottom: 20}}>Archive</Text>
       
       <TouchableOpacity onPress={() => router.push('/(modals)/budgets/archived')} style={{borderRadius:10,backgroundColor: "rgba(48, 119, 206, 0.32)", marginBottom: 10}}>
         <Text style={{margin: 10, fontSize: 17}}><FontAwesome6 name="box-archive" size={21} color="black" />   Archived budgets</Text>
       </TouchableOpacity>
+
+      <TouchableOpacity onPress={() => router.push('/(modals)/goals/realised')} style={{borderRadius:10,backgroundColor: "rgba(48, 119, 206, 0.32)", marginBottom: 10}}>
+        <Text style={{margin: 10, fontSize: 17}}><FontAwesome6 name="trophy" size={21} color="black" />   Realised goals</Text>
+      </TouchableOpacity>
+      
+    </View>
+
+    <View style={{backgroundColor: "white" , borderRadius: 20, marginHorizontal: 15, marginBottom: 15, padding: 15}}>
+      <Text style={{fontSize: 20, marginBottom: 20}}>Alerts & Reports</Text>
 
       <View style={{borderRadius:10,backgroundColor: "rgba(48, 119, 206, 0.13)", marginBottom: 10}}>
         <TouchableOpacity activeOpacity={0.9} style={styles.row} onPress={() => setIsBudgetLimitAlertEnabled(previousState => !previousState)}>
@@ -104,10 +113,6 @@ return (<>
           />
         </TouchableOpacity>
       </View>
-    </View>
-
-    <View style={{backgroundColor: "white" , borderRadius: 20, marginHorizontal: 15, marginBottom: 15, padding: 15}}>
-      <Text style={{fontSize: 20, marginBottom: 20}}>Reports</Text>
       <View style={{borderRadius:10,backgroundColor: "rgba(48, 119, 206, 0.13)", marginBottom: 10}}>
         <TouchableOpacity activeOpacity={0.9} style={styles.row} onPress={() => setIsMonthlyAppReportsEnabled(previousState => !previousState)}>
 

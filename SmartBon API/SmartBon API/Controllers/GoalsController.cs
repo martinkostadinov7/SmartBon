@@ -31,7 +31,15 @@ namespace SmartBon_API.Controllers
         [HttpGet]
         public async Task<ActionResult<string>> GetGoals()
         {
-            List<GoalReadDto> result = await goalService.GetGoalsAsync();
+            List<GoalReadDto> result = await goalService.GetActiveGoalsAsync();
+            return Ok(result);
+        }
+
+        [Authorize]
+        [HttpGet("realised")]
+        public async Task<ActionResult<string>> GetRealisedGoals()
+        {
+            List<GoalReadDto> result = await goalService.GetRealisedGoalsAsync();
             return Ok(result);
         }
 
@@ -73,6 +81,14 @@ namespace SmartBon_API.Controllers
         {
             GoalContributionReadDto result = await goalContributionService.UpdateGoalContributionAsync(id, request);
             return Ok(result);
+        }
+
+        [Authorize]
+        [HttpPatch("{id}/realise")]
+        public async Task<ActionResult<string>> RealisGoal(int id)
+        {
+            await goalService.RealiseGoalAsync(id);
+            return Ok();
         }
     }
 }
