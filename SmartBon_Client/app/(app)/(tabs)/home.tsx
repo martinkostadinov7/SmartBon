@@ -169,21 +169,27 @@ useEffect(() => {
               );
               return (
             <BudgetCard 
-              key={budget.id}
-              icon={budget.icon}
-              colorHex={budget.colorHex}
-              progressBarColor={getProgressBarColorBudget((budget.currentAmount / budget.limit * 100))}
-              name={budget.name}
-              percentage={Number(((budget.currentAmount / budget.limit) * 100).toFixed(0))}
-              from={formatDate(budget.from)} 
-              to={formatDate(budget.to)} 
-              limit={String(formatCost(budget.limit, userDefaultCurrency))} 
-              currentAmount={String(formatCost(budget.currentAmount, userDefaultCurrency))} 
-              remainingAmount={String(formatCost(budget.limit - budget.currentAmount, userDefaultCurrency))} 
-              categories={budgetCategories} 
-              subCategories={budgetSubcategories} 
-              onPress={function (): void {
-                  handleBudgetView(budget.id)
+                key={budget.id}
+                id={budget.id}
+                icon={budget.icon}
+                colorHex={budget.colorHex}
+                progressBarColor={getProgressBarColorBudget((budget.currentAmount / budget.limit * 100))}
+                name={budget.name}
+                percentage={Number(Math.floor((budget.currentAmount / budget.limit) * 100).toFixed(0))}
+                from={formatDate(budget.from)}
+                to={formatDate(budget.to)}
+                limit={String(formatCost(budget.limit, userDefaultCurrency))}
+                currentAmount={String(formatCost(budget.currentAmount, userDefaultCurrency))}
+                remainingAmount={String(formatCost(budget.limit - budget.currentAmount, userDefaultCurrency))}
+                categories={budgetCategories}
+                archived={false}
+                limitReached={budget.limit <= budget.currentAmount}
+                subCategories={budgetSubcategories}
+                onPress={function (): void {
+                  handleBudgetView(budget.id);
+                } } 
+                reloadComponent={function (): void {
+                  setReload(prev => !prev);
                 } } />)})
           }
         </ScrollView>
@@ -205,7 +211,7 @@ useEffect(() => {
               colorHex={goal.colorHex}
               progressBarColor={getProgressBarColorGoal((goal.currentAmount / goal.finalAmount * 100))}
               name={goal.name}
-              percentage={Number(((goal.currentAmount / goal.finalAmount) * 100).toFixed(0))}
+              percentage={Number(Math.floor((goal.currentAmount / goal.finalAmount) * 100).toFixed(0))}
               to={formatDate(goal.targetDate)} 
               limit={String(formatCost(goal.finalAmount, userDefaultCurrency))} 
               currentAmount={String(formatCost(goal.currentAmount, userDefaultCurrency))} 

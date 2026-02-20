@@ -16,6 +16,7 @@ namespace Services.Budgets
         {
             Budget budget = mapper.Map<Budget>(budgetCreateDto);
             budget.UserId = user.Id;
+            budget.IsActive = true;
             ExpenseQueryParams queryParams = new ExpenseQueryParams
             {
 
@@ -66,9 +67,16 @@ namespace Services.Budgets
             return mapper.Map<BudgetReadDto>(budget);
         }
 
-        public async Task<List<BudgetReadDto>> GetBudgetsAsync()
+        public async Task<List<BudgetReadDto>> GetActiveBudgetsAsync()
         {
-            List<Budget> budgetsFromDb = await budgetRepository.GetAllAsync(user.Id);
+            List<Budget> budgetsFromDb = await budgetRepository.GetAllAsync(user.Id, true);
+
+            return mapper.Map<List<BudgetReadDto>>(budgetsFromDb);
+        }
+
+        public async Task<List<BudgetReadDto>> GetArchivedBudgetsAsync()
+        {
+            List<Budget> budgetsFromDb = await budgetRepository.GetAllAsync(user.Id, false);
 
             return mapper.Map<List<BudgetReadDto>>(budgetsFromDb);
         }
@@ -116,6 +124,13 @@ namespace Services.Budgets
             await budgetRepository.UpdateAsync(budgetToUpdate);
             
             return mapper.Map<BudgetReadDto>(budgetToUpdate);
+        }
+
+        public async Task ArchiveBudgetAsync(int id)
+        {
+            Budget budget = await budgetRepository.GetByIdAsync(id) ?? throw new NotFoundException($"Budget with id {id} was not found!");
+            budget.IsActive = false;
+            await budgetRepository.UpdateAsync(budget);
         }
     }
 }

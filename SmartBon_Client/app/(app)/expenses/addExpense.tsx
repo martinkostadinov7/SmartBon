@@ -110,7 +110,7 @@ export default function AddExpense() {
 
             if (!response.ok) return;
 
-            if(goalId != "") {
+            if(goalId) {
               handleDeleteGoal();
             }
 

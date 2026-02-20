@@ -24,6 +24,8 @@ namespace Shared.DTOs.Budgets
 
         public string ColorHex { get; set; }
 
+        public bool IsActive { get; set; }
+
         public List<int> CategoryIds { get; set; }
 
         public List<int>? SubcategoryIds { get; set; }

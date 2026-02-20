@@ -84,7 +84,7 @@ namespace Services.Expenses
             {
                 throw new UnauthorizedException("User has no access to this content!");
             }
-
+            decimal previousCost = expenseFromDb.Cost;
             mapper.Map(dto, expenseFromDb);
 
             await expenseRepository.UpdateAsync(expenseFromDb);
@@ -95,6 +95,7 @@ namespace Services.Expenses
                 if ((budget.CategoryIds.Contains(expenseFromDb.CategoryId) || ((expenseFromDb.SubcategoryId != null) ? budget.SubcategoryIds.Contains(expenseFromDb.SubcategoryId!.Value) : false)) &&
                     (budget.From <= expenseFromDb.ExpenseDate && budget.To >= expenseFromDb.ExpenseDate))
                 {
+                    budget.CurrentAmount -= previousCost;
                     budget.CurrentAmount += expenseFromDb.Cost;
                     await budgetRepository.UpdateAsync(budget);
                 }

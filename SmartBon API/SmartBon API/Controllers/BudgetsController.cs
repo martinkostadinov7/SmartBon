@@ -26,10 +26,18 @@ namespace SmartBon_API.Controllers
         }
 
         [Authorize]
-        [HttpGet]
-        public async Task<ActionResult<string>> GetBudgets()
+        [HttpGet()]
+        public async Task<ActionResult<string>> GetActiveBudgets()
         {
-            List<BudgetReadDto> result = await budgetService.GetBudgetsAsync();
+            List<BudgetReadDto> result = await budgetService.GetActiveBudgetsAsync();
+            return Ok(result);
+        }
+
+        [Authorize]
+        [HttpGet("archived")]
+        public async Task<ActionResult<string>> GetArchivedBudgets()
+        {
+            List<BudgetReadDto> result = await budgetService.GetArchivedBudgetsAsync();
             return Ok(result);
         }
 
@@ -47,6 +55,14 @@ namespace SmartBon_API.Controllers
         {
             BudgetReadDto result = await budgetService.UpdateBudgetAsync(id, request);
             return Ok(result);
+        }
+
+        [Authorize]
+        [HttpPatch("{id}/archive")]
+        public async Task<ActionResult<string>> GetArchivedBudgets(int id)
+        {
+            await budgetService.ArchiveBudgetAsync(id);
+            return Ok();
         }
     }
 }

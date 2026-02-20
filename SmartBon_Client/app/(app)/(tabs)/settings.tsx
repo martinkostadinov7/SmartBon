@@ -69,7 +69,7 @@ return (<>
       <Text style={{fontSize: 16, marginTop: 5}}>Joined: {userJoined}</Text>
     </View>
 
-    <View style={{backgroundColor: "white" ,borderWidth: 2, borderRadius: 20, marginHorizontal: 15, marginBottom: 15, padding: 15}}>
+    <View style={{backgroundColor: "white" , borderRadius: 20, marginHorizontal: 15, marginBottom: 15, padding: 15}}>
       <Text style={{fontSize: 20, marginBottom: 20}}>Profile</Text>
 
       <TouchableOpacity onPress={() => router.push('/(modals)/users/editProfile')} style={{borderRadius:10, backgroundColor: "rgba(48, 119, 206, 0.32)", marginBottom: 10}}>
@@ -85,8 +85,12 @@ return (<>
       </TouchableOpacity>
     </View>
 
-    <View style={{backgroundColor: "white" ,borderWidth: 2, borderRadius: 20, marginHorizontal: 15, marginBottom: 15, padding: 15}}>
-      <Text style={{fontSize: 20, marginBottom: 20}}>Alerts and Reports</Text>
+<View style={{backgroundColor: "white" , borderRadius: 20, marginHorizontal: 15, marginBottom: 15, padding: 15}}>
+      <Text style={{fontSize: 20, marginBottom: 20}}>Budgets</Text>
+      
+      <TouchableOpacity onPress={() => router.push('/(modals)/budgets/archived')} style={{borderRadius:10,backgroundColor: "rgba(48, 119, 206, 0.32)", marginBottom: 10}}>
+        <Text style={{margin: 10, fontSize: 17}}><FontAwesome6 name="box-archive" size={21} color="black" />   Archived budgets</Text>
+      </TouchableOpacity>
 
       <View style={{borderRadius:10,backgroundColor: "rgba(48, 119, 206, 0.13)", marginBottom: 10}}>
         <TouchableOpacity activeOpacity={0.9} style={styles.row} onPress={() => setIsBudgetLimitAlertEnabled(previousState => !previousState)}>
@@ -100,6 +104,10 @@ return (<>
           />
         </TouchableOpacity>
       </View>
+    </View>
+
+    <View style={{backgroundColor: "white" , borderRadius: 20, marginHorizontal: 15, marginBottom: 15, padding: 15}}>
+      <Text style={{fontSize: 20, marginBottom: 20}}>Reports</Text>
       <View style={{borderRadius:10,backgroundColor: "rgba(48, 119, 206, 0.13)", marginBottom: 10}}>
         <TouchableOpacity activeOpacity={0.9} style={styles.row} onPress={() => setIsMonthlyAppReportsEnabled(previousState => !previousState)}>
 
@@ -128,7 +136,7 @@ return (<>
       </View>
     </View>
 
-    <View style={{backgroundColor: "white" ,borderWidth: 2, borderRadius: 20, marginHorizontal: 15, marginBottom: 15, padding: 15}}>
+    <View style={{backgroundColor: "white" , borderRadius: 20, marginHorizontal: 15, marginBottom: 15, padding: 15}}>
       <Text style={{fontSize: 20, marginBottom: 20}}>Data</Text>
 
       <TouchableOpacity style={{borderRadius:10,backgroundColor: "rgba(48, 119, 206, 0.32)", marginBottom: 10}}>
@@ -140,7 +148,7 @@ return (<>
       </TouchableOpacity>
     </View>
 
-    <View style={{backgroundColor: "rgba(228, 67, 67, 0.33)" ,borderWidth: 2, borderRadius: 20, marginHorizontal: 15, marginBottom: 15, padding: 15}}>
+    <View style={{backgroundColor: "rgba(228, 67, 67, 0.33)" , borderRadius: 20, marginHorizontal: 15, marginBottom: 15, padding: 15}}>
       <Text style={{fontSize: 20, marginBottom: 20}}>Danger Zone</Text>
 
       <TouchableOpacity style={{borderRadius:10,backgroundColor: "rgba(228, 67, 67, 0.85)", marginBottom: 10}}>
@@ -182,7 +190,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     width: 360,
     borderRadius: 20,
-    borderWidth: 2,
     alignSelf: "center",
     margin: 15,
     padding: 15

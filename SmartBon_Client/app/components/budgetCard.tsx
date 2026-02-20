@@ -1,8 +1,10 @@
-  import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from "react-native";
+  import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert } from "react-native";
 import { Category } from "../types/category";
 import { Subcategory } from "../types/subcategory";
+import { apiFetch } from "../services/api";
 
   export function BudgetCard({
+    id,
     icon,
     name,
     colorHex,
@@ -15,10 +17,34 @@ import { Subcategory } from "../types/subcategory";
     remainingAmount,
     categories,
     subCategories,
-    onPress
+    limitReached,
+    archived,
+    onPress,
+    reloadComponent
   }: BudgetCardProps) {
     async function handleArchiveBudget(){
+        try {
+            const response = await apiFetch(`/Budgets/${id}/archive`, {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json",
+                }
+            });
+            reloadComponent();
+            if (!response.ok) 
+            {
+                const errorData = await response.json(); 
+                throw new Error(errorData.message || "An unknown error occurred");
+            }
+        } catch (e: any) {
 
+        Alert.alert(
+            "Error",
+            e?.message,
+            [{ text: "OK" }]
+            );
+            console.log("Network/API error:", e?.message.message ?? e);
+        }
     }
     return (
       <TouchableOpacity onPress={onPress} style={[styles.card, {backgroundColor: colorHex}]}>
@@ -28,23 +54,23 @@ import { Subcategory } from "../types/subcategory";
              numberOfLines={1}
             ellipsizeMode="tail" style={{fontSize: 20, marginRight: 10, maxWidth: 290}}>{name}</Text>
         </View>
-        <ScrollView horizontal>
+        <ScrollView horizontal style={{marginBottom: 10}}>
             {subCategories.length > 0 ? 
             (subCategories.map(subCategory => (
-            <View key={subCategory.id}  style={[styles.row, {padding: 5,borderRadius: 10, backgroundColor: subCategory.colorHex, marginRight: 10}]}>
+            <View key={subCategory.id}  style={[styles.row, {padding: 5,borderRadius: 10, backgroundColor: subCategory.colorHex, marginRight: 10, height: 30}]}>
                 <Text style={{fontSize: 16}}>{subCategory.icon}</Text>
                 <Text style={{fontSize: 14, marginLeft: 5, marginVertical: 0}}>{subCategory.name}</Text>
             </View>))) : 
             (
             categories.length > 0 ? (categories.map(category => (
-            <View key={category.id} style={[styles.row, {padding: 5,borderRadius: 10, backgroundColor: category.colorHex, marginRight: 10}]}>
+            <View key={category.id} style={[styles.row, {padding: 5,borderRadius: 10, backgroundColor: category.colorHex, marginRight: 10, height: 30}]}>
                 <Text style={{fontSize: 16}}>{category.icon}</Text>
                 <Text style={{fontSize: 14, marginLeft: 5, marginVertical: 0}}>{category.name}</Text>
             </View>
             ))) : (<></>)
             )}
         </ScrollView>
-        <View style={[styles.row, {marginTop: 10}]}>
+        <View style={[styles.row]}>
             <View>
                 <Text>From: {from}</Text>
                 <Text>To: {to}</Text>
@@ -58,7 +84,7 @@ import { Subcategory } from "../types/subcategory";
                 <Text>Remaining: {remainingAmount}</Text>
             </View>
         </View>
-        {false ? (<TouchableOpacity onPress={handleArchiveBudget} style={styles.archiveBudgetButton}>
+        {limitReached && !archived ? (<TouchableOpacity onPress={handleArchiveBudget} style={styles.archiveBudgetButton}>
                     <Text style={styles.archiveBudgetText}>Archive budget</Text>
                 </TouchableOpacity>) :
         (<View style={styles.progressBarContainer}>
@@ -73,6 +99,7 @@ import { Subcategory } from "../types/subcategory";
   }
 
   type BudgetCardProps = {
+    id:number
     icon: string;
     colorHex: string;
     progressBarColor: string;
@@ -83,9 +110,12 @@ import { Subcategory } from "../types/subcategory";
     limit: string;
     currentAmount: string; 
     remainingAmount: string;
+    limitReached: boolean;
+    archived: boolean;
     categories: Category[]; 
     subCategories: Subcategory[]; 
     onPress: () => void
+    reloadComponent: ()=> void
   };
 
   const styles = StyleSheet.create({
@@ -129,7 +159,7 @@ import { Subcategory } from "../types/subcategory";
     fontWeight: 'bold',
     color: '#000',
     },archiveBudgetButton:{
-        backgroundColor: "#b6b000",
+        backgroundColor: "#eae200",
         borderRadius: 10,
         padding: 10,
         marginTop: 10   

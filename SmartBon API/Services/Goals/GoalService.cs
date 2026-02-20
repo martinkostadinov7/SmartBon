@@ -57,6 +57,7 @@ namespace Services.Goals
         public async Task<GoalReadDto> GetGoalByIdAsync(int id)
         {
             Goal goal = await goalRepository.GetByIdAsync(id) ?? throw new NotFoundException($"Goal with id {id} was not found!");
+            goal.Contributions = goal.Contributions.OrderByDescending(c => c.DateTime).ToList();
             return mapper.Map<GoalReadDto>(goal);
         }
 

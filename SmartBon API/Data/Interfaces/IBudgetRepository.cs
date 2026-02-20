@@ -4,6 +4,6 @@ namespace Data.Interfaces
 {
     public interface IBudgetRepository : IRepository<Budget>
     {
-        public Task<List<Budget>> GetAllAsync(int userId);
+        public Task<List<Budget>> GetAllAsync(int userId, bool? active = true);
     }
 }

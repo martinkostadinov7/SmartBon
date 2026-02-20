@@ -28,6 +28,8 @@ namespace Data.Models
 
         public string ColorHex { get; set; }
 
+        public bool IsActive { get; set; } = false;
+
         public List<int> CategoryIds { get; set; } = new List<int>();
 
         public List<int> SubcategoryIds { get; set; } = new List<int>();
