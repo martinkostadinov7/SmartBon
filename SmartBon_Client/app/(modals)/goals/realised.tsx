@@ -23,17 +23,12 @@ export default function ChangeCategory() {
   }).format(amount);
 };
 function getProgressBarColorGoal(percentage: number): string {
-    // Ограничаваме процента между 0 и 100
-    const clamped = Math.min(Math.max(percentage, 0), 100);
+    const clampedPercentage = Math.min(Math.max(percentage, 0), 100);
+    
+    const opacity = 0.3 + (clampedPercentage / 100) * 0.9;
 
-    // Изчисляваме Hue (Хю):
-    // При 0% искаме 120 (зелено), при 100% искаме 0 (червено).
-    // Формула: 120 - (процент * 1.2)
-    const hue = 120 - (clamped * 1.2);
-
-    // Връщаме HSL стринг с фиксирана наситеност и светлина за пастелен ефект
-    return `hsl(${hue}, 100%, 60%)`;
-  }
+    return `rgba(42, 209, 0, ${opacity.toFixed(2)})`;
+}
 const formatDate = (dateString: string | Date): string => {
   const date = new Date(dateString);
   

@@ -6,6 +6,7 @@ using Services.Expenses;
 using Services.Goals;
 using Services.Goals;
 using Services.Interfaces;
+using Services.Statistics;
 using Services.Subcategories;
 using Services.Users;
 using Services.UserServices;
@@ -36,7 +37,9 @@ namespace FeelBack.Api.Extentions
 
             services.AddScoped<IGoalService, GoalService>();
             services.AddScoped<IGoalContributionService, GoalContributionService>();
-
+            
+            services.AddScoped<IStatisticsService, StatisticsService>();
+            
             return services;
         }
 

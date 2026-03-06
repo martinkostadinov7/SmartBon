@@ -5,11 +5,11 @@ using Shared.DTOs.Expenses;
 using Shared.DTOs.Expenses.Ranges;
 namespace SmartBon_API.Controllers
 {
+    [Authorize]
     [Route("/api/[controller]")]
     [ApiController]
     public class ExpensesController(IExpenseService expenseService) : ControllerBase
     {
-        [Authorize]
         [HttpPost]
         public async Task<ActionResult<ExpenseReadDto>> CreateExpense(ExpenseCreateDto request)
         {
@@ -18,16 +18,14 @@ namespace SmartBon_API.Controllers
         }
 
 
-        [Authorize]
         [HttpPost("upload-receipt")]
-        public async Task<ActionResult<ExpenseFilledFromImageDto>> ExtractExpenseData(IFormFile image)
+        public async Task<ActionResult<ExpenseFilledFromImageDto>> ExtractExpenseData([FromForm] IFormFile image)
         {
             ExpenseFilledFromImageDto result = await expenseService.ExtractExpenseDataAsync(image);
             return result;
         }
 
 
-        [Authorize]
         [HttpGet]
         public async Task<ActionResult<List<ExpenseReadDto>>> GetExpensesWithQueryParams([FromQuery] ExpenseQueryParams queryParams) 
         {
@@ -35,7 +33,6 @@ namespace SmartBon_API.Controllers
             return Ok(result);
         }
 
-        [Authorize]
         [HttpGet("{id}")]
         public async Task<ActionResult<ExpenseReadDto>> GetExpenseById(int id)
         {
@@ -43,7 +40,6 @@ namespace SmartBon_API.Controllers
             return Ok(result);  
         }
 
-        [Authorize]
         [HttpDelete("{id}")]
         public async Task<ActionResult<ExpenseReadDto>> DeleteExpense(int id)
         {
@@ -51,7 +47,6 @@ namespace SmartBon_API.Controllers
             return Ok(result);  
         }
 
-        [Authorize]
         [HttpPut("{id}")]
         public async Task<ActionResult<ExpenseReadDto>> UpdateExpense(int id, [FromBody] ExpenseUpdateDto request)
         {
@@ -59,7 +54,6 @@ namespace SmartBon_API.Controllers
             return Ok(result);
         }
 
-        [Authorize]
         [HttpGet("recent/{count}")]
         public async Task<ActionResult<List<ExpenseReadDto>>> GetRecentExpenses(int count)
         {
@@ -67,7 +61,6 @@ namespace SmartBon_API.Controllers
             return Ok(result);
         }
 
-        [Authorize]
         [HttpGet("costRange")]
         public async Task<ActionResult<CostRangeDto>> GetCostRange()  
         {
@@ -75,7 +68,6 @@ namespace SmartBon_API.Controllers
             return Ok(result);
         }
 
-        [Authorize]
         [HttpGet("dateRange")]
         public async Task<ActionResult<DateRangeDto>> GetDateRange()
         {

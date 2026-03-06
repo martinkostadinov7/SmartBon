@@ -5,11 +5,11 @@ using Shared.DTOs.Categories;
 
 namespace SmartBon_API.Controllers
 {
+    [Authorize]
     [Route("/api/[controller]")]
     [ApiController]
     public class CategoriesController(ICategoryService categoryService, ISubcategoryService subcategoryService) : ControllerBase
     {
-        [Authorize]
         [HttpPost]
         public async Task<ActionResult<string>> CreateCategory(CategoryCreateDto request)
         {
@@ -17,7 +17,6 @@ namespace SmartBon_API.Controllers
             return CreatedAtAction(nameof(GetCategoryById), new { id = result.Id }, result);
         }
 
-        [Authorize]
         [HttpGet("{id}")]
         public async Task<ActionResult<string>> GetCategoryById(int id)
         {
@@ -25,15 +24,13 @@ namespace SmartBon_API.Controllers
             return Ok(result);
         }
 
-        [Authorize]
         [HttpGet]
         public async Task<ActionResult<string>> GetCategories() // todo imeplemtn parameters for filtering and searching
         {
             List<CategoryReadDto> result = await categoryService.GetCategoriesAsync();
             return Ok(result);
         }
-
-        [Authorize]
+        
         [HttpDelete("{id}")]
         public async Task<ActionResult<string>> DeleteCategory(int id)
         {
@@ -41,7 +38,6 @@ namespace SmartBon_API.Controllers
             return Ok(result);
         }
 
-        [Authorize]
         [HttpPost("{categoryId}/subcategories")]
         public async Task<ActionResult<string>> CreateSubcategory(int categoryId, SubcategoryCreateDto request)
         {
@@ -49,7 +45,6 @@ namespace SmartBon_API.Controllers
             return Created();
         }
 
-        [Authorize]
         [HttpGet("{categoryId}/subcategories/{id}")]
         public async Task<ActionResult<string>> GetSubcategoryById(int categoryId, int id)
         {
@@ -57,15 +52,13 @@ namespace SmartBon_API.Controllers
             return Ok(result);
         }
 
-        [Authorize]
         [HttpGet("{categoryId}/subcategories")]
         public async Task<ActionResult<string>> GetSubcategories(int categoryId) // todo imeplemtn parameters for filtering and searching
         {
             List<SubcategoryReadDto> result = await subcategoryService.GetSubcategoriesAsync(categoryId);
             return Ok(result);
         }
-
-        [Authorize]
+        
         [HttpDelete("{categoryId}/subcategories/{id}")]
         public async Task<ActionResult<string>> DeleteSubcategory(int id)
         {

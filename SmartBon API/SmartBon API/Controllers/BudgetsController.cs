@@ -5,11 +5,11 @@ using Shared.DTOs.Budgets;
 
 namespace SmartBon_API.Controllers
 {
+    [Authorize]
     [Route("/api/[controller]")]
     [ApiController]
     public class BudgetsController(IBudgetService budgetService) : ControllerBase
     {
-        [Authorize]
         [HttpPost]
         public async Task<ActionResult<string>> CreateBudget(BudgetCreateDto request)
         {
@@ -17,7 +17,6 @@ namespace SmartBon_API.Controllers
             return CreatedAtAction(nameof(GetBudgetById), new { id = result.Id }, result);
         }
 
-        [Authorize]
         [HttpGet("{id}")]
         public async Task<ActionResult<string>> GetBudgetById(int id)
         {
@@ -25,7 +24,6 @@ namespace SmartBon_API.Controllers
             return Ok(result);
         }
 
-        [Authorize]
         [HttpGet()]
         public async Task<ActionResult<string>> GetActiveBudgets()
         {
@@ -33,7 +31,6 @@ namespace SmartBon_API.Controllers
             return Ok(result);
         }
 
-        [Authorize]
         [HttpGet("archived")]
         public async Task<ActionResult<string>> GetArchivedBudgets()
         {
@@ -41,7 +38,6 @@ namespace SmartBon_API.Controllers
             return Ok(result);
         }
 
-        [Authorize]
         [HttpDelete("{id}")]
         public async Task<ActionResult<string>> DeleteBudget(int id)
         {
@@ -49,7 +45,6 @@ namespace SmartBon_API.Controllers
             return Ok(result);
         }
 
-        [Authorize]
         [HttpPut("{id}")]
         public async Task<ActionResult<string>>UpdateBudget(int id, [FromBody] BudgetUpdateDto request)
         {
@@ -57,7 +52,6 @@ namespace SmartBon_API.Controllers
             return Ok(result);
         }
 
-        [Authorize]
         [HttpPatch("{id}/archive")]
         public async Task<ActionResult<string>> GetArchivedBudgets(int id)
         {

@@ -1,4 +1,4 @@
-import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Alert, Dimensions, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import React, { useCallback, useEffect, useState } from "react";
 import { router, useFocusEffect } from "expo-router";
 import { useCategories } from "../../context/CategoriesContext";
@@ -10,11 +10,28 @@ import { Budget } from "../../types/budget";
 import { BudgetCard } from "../../components/budgetCard";
 import { Goal } from "../../types/goal";
 import { GoalCard } from "../../components/goalCard";
+import { ContributionGraph } from "react-native-chart-kit";
+import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 
 const currencyFromNumber: Record<number, Currency> = {
   0: "EUR",
   1: "USD"
 };
+
+interface GraphPointCount {
+  date: string;
+  count: number;
+}
+
+interface GraphPointAmount {
+  date: string;
+  amount: number;
+}
+
+interface ContributionGraphResponse {
+  pointsCount: GraphPointCount[];
+  pointsAmount: GraphPointAmount[];
+}
 
 export default function HomeScreen() {
   const { categories } = useCategories();
@@ -24,6 +41,10 @@ export default function HomeScreen() {
   const [userDefaultCurrency, setUserDefaultCurrency] = useState("Unidentified");
   const [isPremium, setIsPremium] = useState(false);
   const [reload, setReload] = useState(false);
+  const [contributionGraphData, setContributionGraphData] = useState<ContributionGraphResponse | null>(null);
+  const [isHeatmapAmount, setIsHeatmapAmount] = useState(false);
+// Дефинираме типа за избраната точка
+const [selectedDay, setSelectedDay] = useState<{ date: string; count: number } | null>(null);
 
 useEffect(() => {
     loadData();
@@ -49,13 +70,18 @@ useEffect(() => {
     }
     await budgetResponse.json().then(setBudgets);
 
+    const contributionGraphResponse = await apiFetch("/statistics/contributionGraph");
+    if (!contributionGraphResponse.ok) {
+      throw new Error("Failed to load budgets");
+    }
+    await contributionGraphResponse.json().then(setContributionGraphData);
+    
     const recentExpenseResponse = await apiFetch("/Expenses/recent/10");
     if (!recentExpenseResponse.ok) {
       throw new Error("Failed to load expenses");
     }
     await recentExpenseResponse.json().then(setRecentExpenses);
   }, []);
-
   useFocusEffect(
     useCallback(() => {
       loadData();
@@ -143,6 +169,15 @@ useEffect(() => {
     // Връщаме HSL стринг с фиксирана наситеност и светлина за пастелен ефект
     return `hsl(${hue}, 100%, 60%)`;
   }
+
+const getEndDate = () => {
+  const now = new Date();
+  const dayOfWeek = now.getDay(); // 0 за Неделя, 1 за Понеделник...
+  const daysToAdd = 6 - dayOfWeek; // Колко дни остават до края на седмицата
+  const end = new Date();
+  end.setDate(now.getDate() + daysToAdd);
+  return end;
+};
 
   function getProgressBarColorGoal(percentage: number): string {
     const clampedPercentage = Math.min(Math.max(percentage, 0), 100);
@@ -269,6 +304,74 @@ useEffect(() => {
           }
         </ScrollView>
       </View>
+
+<View style={{}}>
+  {/* Показваме информацията над графиката, ако има избран ден */}
+  <View style={[styles.row, {marginVertical: 10,}]}>
+    <Text  style={{fontSize: 20, fontWeight: '700'}}>Heatmap</Text>
+
+    <TouchableOpacity onPress={() => {setIsHeatmapAmount(prev => !prev); setSelectedDay(null)}} style={{backgroundColor: "#3077ce3f", borderRadius: 10, marginHorizontal: 10, paddingHorizontal: 10, paddingVertical: 5}}>
+      <Text style={{fontSize: 15}}><FontAwesome6 name="repeat" size={16} color="black" /> {isHeatmapAmount ? "Amount" : "Count"}</Text>
+    </TouchableOpacity>
+
+    {selectedDay ? (
+      <Text style={{ textAlign: "center", fontSize: 16, fontWeight: '600', color: '#3077ce'}}>
+        
+        {new Date(selectedDay.date).toLocaleDateString('bg-BG', { 
+  day: '2-digit', 
+  month: '2-digit' 
+})} - {' '}
+
+        {isHeatmapAmount ? (
+          formatCost(selectedDay.count, userDefaultCurrency)
+        ) : (
+          `${selectedDay.count} ${selectedDay.count === 1 ? 'expense' : 'expenses'}`
+        )}
+      </Text>
+    ) : (
+      <Text style={{ fontSize: 14, color: '#8E8E93' }}></Text>
+    )}
+  </View>
+
+  <ContributionGraph
+    values={(!isHeatmapAmount ? contributionGraphData?.pointsCount : contributionGraphData?.pointsAmount.map(p => ({
+    date: p.date,
+    count: p.amount // Подаваме сумата като count за визуализация
+  }))) || []}
+    endDate={getEndDate()} // Използваме края на седмицата
+    numDays={105}
+    width={Dimensions.get("window").width - 25}
+    height={220}
+    onDayPress={(value) => {
+      // value съдържа { date, count } на кликнатото квадратче
+      if (value && value.count > 0) {
+        setSelectedDay(value as { date: string; count: number });
+      } else {
+        setSelectedDay(null);
+      }
+    }}
+    style={{borderRadius: 20, marginTop: 0, marginBottom: 10, shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.15,
+      shadowRadius: 1,}}
+    chartConfig={{
+      backgroundColor: "#ffffff",
+      backgroundGradientFrom: "#ffffff",
+      backgroundGradientTo: "#ffffff",
+      color: (opacity = 1) => {
+    // Ако opacity е ниско (0 или много малко разходи), връщаме много светъл цвят
+    if (opacity <= 0.15) {
+      return `rgb(247, 247, 247)`; // Светло сиво (GitHub стил) за 0 разходи
+    }
+    // За реалните разходи използваме твоето синьо
+    return `rgba(48, 119, 206, ${opacity})`; 
+  },
+    }}
+    tooltipDataAttrs={() => ({})} // Изчистваме грешката, за която говорихме
+  />
+  
+</View>
+
       <Text style={{fontSize: 20, marginVertical: 10, fontWeight: '700'}}>Recent expenses</Text>
       {recentExpenses.map(expense => {
         const category = categories.find(c => c.id === expense.categoryId);

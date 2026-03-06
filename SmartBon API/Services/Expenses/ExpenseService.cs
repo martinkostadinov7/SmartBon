@@ -9,7 +9,8 @@ using Shared.DTOs.Expenses.Ranges;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
-
+using OpenAI; // Base namespace
+using OpenAI.Chat;
 namespace Services.Expenses
 {
     public class ExpenseService(IUserAccessor user, IExpenseRepository expenseRepository, IMapper mapper, IBudgetRepository budgetRepository) : IExpenseService
@@ -20,7 +21,9 @@ namespace Services.Expenses
             expense.CreatedAt = DateTime.Now;
             expense.UserId = user.Id;
             await expenseRepository.AddAsync(expense);
-            
+
+            List<string> budgetNamesAlmost = new List<string>();
+            List<string> budgetNamesReached = new List<string>();
             List<Budget> budgets = await budgetRepository.GetAllAsync(user.Id);
             foreach (var budget in budgets)
             {
@@ -30,6 +33,23 @@ namespace Services.Expenses
                     budget.CurrentAmount += expense.Cost;
                     await budgetRepository.UpdateAsync(budget);
                 }
+
+                if (budget.CurrentAmount >= budget.Limit)
+                {
+                    budgetNamesReached.Add(budget.Name);
+                }
+                else if (budget.CurrentAmount >= budget.Limit * 0.8m && budget.CurrentAmount < budget.Limit)
+                {
+                    budgetNamesAlmost.Add(budget.Name);
+                }
+            }
+            if (budgetNamesReached.Any())
+            {
+                throw new BadRequestException($"Budget limit for {string.Join(", ", budgetNamesReached)} reached!");
+            }
+            if (budgetNamesAlmost.Any())
+            {
+                throw new BadRequestException($"Budget limit for {string.Join(", ", budgetNamesAlmost)} almost reached!");
             }
             return mapper.Map<ExpenseReadDto>(expense);
         }
@@ -140,59 +160,65 @@ namespace Services.Expenses
 
         public async Task<ExpenseFilledFromImageDto> ExtractExpenseDataAsync(IFormFile image)
         {
-            using var client = new HttpClient();
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", "ТВОЯТ_API_КЛЮЧ");
+            OpenAIClient client = new("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");
 
-            // 1. Превръщаме снимката в Base64 стринг
-            using var ms = new MemoryStream();
-            await image.CopyToAsync(ms);
-            byte[] imageBytes = ms.ToArray();
-            string base64Image = Convert.ToBase64String(imageBytes);
+            ChatClient chatClient = client.GetChatClient("gpt-4o");
 
-            // 2. Дефинираме промпта
-            string systemPrompt = "You are a receipt scanner. Extract data into JSON: { \"merchant\": string, \"totalAmount\": number, \"date\": string }. Return ONLY raw JSON.";
+            if (image == null || image.Length == 0)
+                throw new BadRequestException("No file uploaded.");
 
-            // 3. Изграждаме JSON тялото на заявката
-            var requestBody = new
+            // 1. Process the stream to BinaryData
+            using var stream = new MemoryStream();
+            await image.CopyToAsync(stream);
+            var imageData = BinaryData.FromBytes(stream.ToArray(), image.ContentType);
+            ChatCompletionOptions options = new()
             {
-                model = "gpt-4o-mini",
-                messages = new object[] // <--- Трябва да е new object[]
-                {
-                    new
-                    {
-                        role = "system",
-                        content = systemPrompt
-                    },
-                    new
-                    {
-                        role = "user",
-                        content = new object[]
-                        {
-                            new { type = "text", text = "Please extract the data from this receipt." },
-                            new { type = "image_url", image_url = new { url = $"data:{image.ContentType};base64,{base64Image}" } }
-                        }
-                    }
-                },
-                response_format = new { type = "json_object" },
-                max_tokens = 300
+                ResponseFormat = ChatResponseFormat.CreateJsonObjectFormat(),
+                Temperature = 0.0f // Keep it consistent for data extraction
+            };
+            // 2. Create the message using the static factory method CreateImagePart
+            List<ChatMessage> messages = new()
+            {
+                new SystemChatMessage(@"
+            You are a professional receipt analyzer for Bulgarian receipts. 
+            The input images will be in Bulgarian (Cyrillic).
+    
+            RULES FOR 'Title':
+            1. Look for the merchant name at the top (e.g., 'Kaufland', 'Fantastico').
+            2. If no merchant name is visible, categorize the receipt based on the items 
+                (e.g., 'Groceries', 'Gas Station', 'Restaurant').
+            3. Keep the title short (maximum 3-4 words).
+
+            Return a strictly valid JSON object with:
+            - 'Title': Short merchant name (e.g., 'Billa', 'Lidl', 'Shell').
+            - 'Cost': The numerical total amount.
+            - 'Description': A SINGLE STRING containing all products. 
+                Format: '{productName} {productPrice}'. 
+                Every product MUST be on a new line within the string.
+            - 'ExpenseDate': The date in YYYY-MM-DD format.
+    
+            If the receipt is blurry or data is missing, use null."),
+                new UserChatMessage(
+                    ChatMessageContentPart.CreateImagePart(imageData, "image/jpeg"),
+                    ChatMessageContentPart.CreateTextPart("Extract the data from this receipt.")
+                )
             };
 
-            // 4. Изпращаме заявката
-            var response = await client.PostAsJsonAsync("https://api.openai.com/v1/chat/completions", requestBody);
+            // 3. Send to the model
+            ChatCompletion completion = await chatClient.CompleteChatAsync(messages, options);
+            Console.WriteLine($"[ASSISTANT]: {completion.Content[0].Text}");
 
-            if (response.IsSuccessStatusCode)
+
+            string jsonResponse = completion.Content[0].Text;
+
+            // Use JsonSerializer to map the string to your object
+            var jsonOptions = new JsonSerializerOptions
             {
-                var jsonResponse = await response.Content.ReadFromJsonAsync<JsonElement>();
+                PropertyNameCaseInsensitive = true // This handles "title" vs "Title" automatically
+            };
 
-                // OpenAI връща данните в специфична структура: choices[0].message.content
-                string content = jsonResponse.GetProperty("choices")[0].GetProperty("message").GetProperty("content").GetString();
-
-                // 5. Десериализираме чистия JSON в твоя обект
-                var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-                return JsonSerializer.Deserialize<ExpenseFilledFromImageDto>(content, options);
-            }
-
-            throw new Exception($"OpenAI API Error: {response.ReasonPhrase}");
+            ExpenseFilledFromImageDto? mappedExpense = JsonSerializer.Deserialize<ExpenseFilledFromImageDto>(jsonResponse, jsonOptions);
+            return mappedExpense;
         }
     }
 }

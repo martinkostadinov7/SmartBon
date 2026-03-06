@@ -7,7 +7,7 @@ import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { apiFetch } from '../../services/api';
 import * as SecureStore from "expo-secure-store";
 import { Currency } from '../../types/expense';
-
+import * as ImagePicker from 'expo-image-picker';
 const paymentTypeMap: Record<string, number> = {
   Cash: 0,
   Card: 1,
@@ -44,7 +44,55 @@ export default function AddExpense() {
     ];
 
     const [paymentType, setPaymentType] = useState<PaymentType>("Cash");
+const [receiptPhoto, setReceiptPhoto] = useState<ImagePicker.ImagePickerAsset | null>(null);
 
+const takePhoto = async () => {
+  const permission = await ImagePicker.requestCameraPermissionsAsync();
+  if (!permission.granted) return;
+
+  const result = await ImagePicker.launchCameraAsync({
+    allowsEditing: true,
+    quality: 1,
+  });
+
+  if (!result.canceled && result.assets && result.assets.length > 0) {
+    const capturedPhoto = result.assets[0];
+    setReceiptPhoto(capturedPhoto); // За визуализация в интерфейса
+    
+    // ПРЕДАЙ ГИ ДИРЕКТНО ТУК:
+    await sendPhotoToApi(capturedPhoto); 
+  }
+};
+
+// Обнови дефиницията на функцията:
+async function sendPhotoToApi(photoToUpload: ImagePicker.ImagePickerAsset) {
+  try {
+    const formData = new FormData();
+
+    formData.append('image', {
+        uri: photoToUpload.uri,
+        type: photoToUpload.mimeType || 'image/jpeg',
+        name: photoToUpload.fileName || 'receipt.jpg',
+    } as any);
+
+    console.log("Изпращам URI:", photoToUpload.uri);
+
+    const response = await apiFetch(`/expenses/upload-receipt`, {
+        method: "POST",
+        body: formData, 
+    });
+
+    const result = await response.json(); 
+    console.log("Extracted Data:", result);
+    setTitle(result.title || "");
+    setDescription(result.description || "");
+    setCost(String(result.cost) || "");
+    setDate(new Date(result.expenseDate) || new Date());
+    console.log(date);
+  } catch (e) {
+    console.error(e);
+  }
+}
     function handleCloseScreen(){
         setTitle("");
         setDate(new Date());
@@ -112,6 +160,19 @@ export default function AddExpense() {
             body: JSON.stringify(expense),
             });
 
+            if(response.status == 400){
+              let message = await response.json();
+              Alert.alert(
+                "Budget limit",
+                `${message?.message}`,
+                [{ text: "OK" }]
+                );
+                if(goalId) {
+              handleRealiseGoal();
+            }
+            handleCloseScreen();
+
+            }
             if (!response.ok) return;
 
             if(goalId) {
@@ -172,6 +233,12 @@ export default function AddExpense() {
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={{ paddingBottom: 120 }}
       >
+
+        <View style={styles.photoContainer}>
+      <TouchableOpacity style={styles.photoButton} onPress={takePhoto}>
+        <Text style={styles.buttonText}>Scan Receipt</Text>
+      </TouchableOpacity>
+    </View>
         <Text style={styles.text}>Title</Text>
         <TextInput
           style={styles.titleInput}
@@ -447,5 +514,8 @@ export const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: '#000000', // Черен цвят за активния
-  },
+  },photoContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  photoButton: { backgroundColor: '#007AFF', padding: 15, borderRadius: 10 },
+  buttonText: { color: '#fff', fontWeight: 'bold' },
+  preview: { width: 200, height: 300, marginTop: 20, borderRadius: 10 }
 });
