@@ -4,10 +4,12 @@
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <UserSecretsId>9f3dd1d4-a465-4c96-b2c2-640f9fae0824</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="AutoMapper" Version="15.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="6.0.1" />
     <PackageReference Include="Microsoft.Extensions.Identity.Core" Version="9.0.9" />
     <PackageReference Include="OpenAI" Version="2.9.1" />
   </ItemGroup>

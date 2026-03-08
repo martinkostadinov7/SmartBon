@@ -2,6 +2,9 @@
 using Data.Interfaces;
 using Data.Models;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
+using OpenAI; // Base namespace
+using OpenAI.Chat;
 using Services.Interfaces;
 using Shared.ApiExceptions;
 using Shared.DTOs.Expenses;
@@ -9,11 +12,9 @@ using Shared.DTOs.Expenses.Ranges;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
-using OpenAI; // Base namespace
-using OpenAI.Chat;
 namespace Services.Expenses
 {
-    public class ExpenseService(IUserAccessor user, IExpenseRepository expenseRepository, IMapper mapper, IBudgetRepository budgetRepository) : IExpenseService
+    public class ExpenseService(IUserAccessor user, IExpenseRepository expenseRepository, IMapper mapper, IBudgetRepository budgetRepository, IConfiguration _configuration) : IExpenseService
     {
         public async Task<ExpenseReadDto> CreateExpenseAsync(ExpenseCreateDto dto)
         {
@@ -160,7 +161,8 @@ namespace Services.Expenses
 
         public async Task<ExpenseFilledFromImageDto> ExtractExpenseDataAsync(IFormFile image)
         {
-            OpenAIClient client = new("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");
+            string apiKey = _configuration["ApiKeys:OPENAI_API_KEY"];
+            OpenAIClient client = new(apiKey);
 
             ChatClient chatClient = client.GetChatClient("gpt-4o");
 

@@ -90,7 +90,7 @@ useEffect(() => {
 
   
   function handleAddExpense() {
-    router.push("../expenses/addExpense");
+    router.push("../../(modals)/expenses/addExpense");
   }
 
   function handleBudgetView(id: number){

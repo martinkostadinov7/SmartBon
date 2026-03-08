@@ -1,5 +1,5 @@
-import { View, Text, StyleSheet, TextInput, ScrollView, TouchableOpacity, Pressable, Keyboard, Alert } from 'react-native'
-import React, { useCallback, useState } from 'react'
+import { View, Text, StyleSheet, TextInput, ScrollView, TouchableOpacity, Pressable, Keyboard, Alert, ActivityIndicator } from 'react-native'
+import React, { useCallback, useState} from 'react'
 import { useCategories } from "../../context/CategoriesContext";
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { CategoryBox } from '../../components/categoryBox';
@@ -8,6 +8,7 @@ import { apiFetch } from '../../services/api';
 import * as SecureStore from "expo-secure-store";
 import { Currency } from '../../types/expense';
 import * as ImagePicker from 'expo-image-picker';
+import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 const paymentTypeMap: Record<string, number> = {
   Cash: 0,
   Card: 1,
@@ -27,12 +28,13 @@ const currencyFromNumber: Record<number, Currency> = {
 export default function AddExpense() {
   const { categories } = useCategories();
   const { title: prefilledTitle, amount: prefilledAmount, description: prefilledDescription, goalId: goalId } = useLocalSearchParams();
-    const [title, setTitle] = useState(String(prefilledTitle) || "");
+    const [title, setTitle] = useState(String(prefilledTitle) == "undefined" ? "" : String(prefilledTitle));
     const [date, setDate] = useState(new Date());
-    const [cost, setCost] = useState(String(prefilledAmount) || "");
-    const [description, setDescription] = useState(String(prefilledDescription) || "");
+    const [cost, setCost] = useState(String(prefilledAmount) == "undefined" ? "": String(prefilledAmount));
+    const [description, setDescription] = useState(String(prefilledDescription) == "undefined" ? "" : String(prefilledDescription));
     const [selectedCategoryId, setSelectedCategoryId] = useState(-1);
     const [selectedSubcategoryId, setSelectedSubcategoryId] = useState(-1);
+    const [isReceiptDataLoading, setReceiptDataLoading] = useState(false);
     const [userDefaultCurrency, setUserDefaultCurrency] = useState("Unidentified");
     const [selectedCurrency, setSelectedCurrency] = useState(userDefaultCurrency ? userDefaultCurrency : "EUR");
     type PaymentType = "Cash" | "Card" | "Transfer";
@@ -45,7 +47,6 @@ export default function AddExpense() {
 
     const [paymentType, setPaymentType] = useState<PaymentType>("Cash");
 const [receiptPhoto, setReceiptPhoto] = useState<ImagePicker.ImagePickerAsset | null>(null);
-
 const takePhoto = async () => {
   const permission = await ImagePicker.requestCameraPermissionsAsync();
   if (!permission.granted) return;
@@ -75,8 +76,7 @@ async function sendPhotoToApi(photoToUpload: ImagePicker.ImagePickerAsset) {
         name: photoToUpload.fileName || 'receipt.jpg',
     } as any);
 
-    console.log("Изпращам URI:", photoToUpload.uri);
-
+    setReceiptDataLoading(true);
     const response = await apiFetch(`/expenses/upload-receipt`, {
         method: "POST",
         body: formData, 
@@ -88,7 +88,7 @@ async function sendPhotoToApi(photoToUpload: ImagePicker.ImagePickerAsset) {
     setDescription(result.description || "");
     setCost(String(result.cost) || "");
     setDate(new Date(result.expenseDate) || new Date());
-    console.log(date);
+    setReceiptDataLoading(false);
   } catch (e) {
     console.error(e);
   }
@@ -222,63 +222,86 @@ async function sendPhotoToApi(photoToUpload: ImagePicker.ImagePickerAsset) {
     const subcategories = selectedCategory?.subcategories ?? [];
     return (
   <>
-    <View style={{ flex: 1 }}>
-      <TouchableOpacity onPress={handleCloseScreen}>
-        <Text style={styles.arrow}>←</Text>
-      </TouchableOpacity>
+  <View style={styles.overlay}>       
+           <Pressable 
+          style={StyleSheet.absoluteFill} 
+          onPress={() => router.back()} 
+          />   
+          
+            <View 
+              style={[styles.container]} 
+              // Това спира клика да стигне до overlay-а, без да пречи на ScrollView
+              onStartShouldSetResponder={() => true} 
+              onResponderTerminationRequest={() => false}
+              >
+              <View style={styles.header}>
+                <TouchableOpacity onPress={() => router.back()}>
+                  <Text style={styles.headerBtn}>Cancel</Text>
+                </TouchableOpacity>
 
-      <Text style={styles.heading}>Add expense</Text>
-
-      <ScrollView
-        keyboardShouldPersistTaps="handled"
-        contentContainerStyle={{ paddingBottom: 120 }}
-      >
-
-        <View style={styles.photoContainer}>
-      <TouchableOpacity style={styles.photoButton} onPress={takePhoto}>
-        <Text style={styles.buttonText}>Scan Receipt</Text>
-      </TouchableOpacity>
-    </View>
-        <Text style={styles.text}>Title</Text>
+              <Text style={styles.title}>Add Expense</Text>
+                
+  
+              <TouchableOpacity onPress={handleAddExpense}>
+                  <Text style={styles.headerBtn}>Add</Text> 
+              </TouchableOpacity>
+              </View>
+          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ flexGrow: 1, paddingBottom: 40 }}>
+          <TouchableOpacity activeOpacity={1.0}>
+        
+    <View style={[styles.row, {justifyContent:"space-between"}]}>
+      <View style={{width: 100}}>
+        <Text style={styles.label}>Cost</Text>
         <TextInput
-          style={styles.titleInput}
-          onChangeText={newTitle => setTitle(newTitle)}
-          value={title}
-          onBlur={Keyboard.dismiss}
-        />
-
-        <Text style={styles.text}>Cost</Text>
-        <TextInput
-          style={styles.costInput}
+          style={[styles.input, {maxWidth: 100}]}
           onChangeText={newCost => setCost(newCost)}
           value={cost}
           keyboardType="decimal-pad"
           onBlur={Keyboard.dismiss}
         />
+      </View>
 
-        <Text style={styles.text}>Description</Text>
+<View style={styles.row}>
+  {isReceiptDataLoading && (<ActivityIndicator size="large" color="#3077ceff" />)}
+      <TouchableOpacity style={[styles.photoButton, {marginLeft: 10}]} onPress={takePhoto}>
+        <Text style={styles.buttonText}><FontAwesome6 name="camera" size={18}/>  Scan Receipt</Text>
+      </TouchableOpacity>
+</View>
+    </View>
+
+        <Text style={styles.label}>Title</Text>
         <TextInput
-          style={styles.descriptionInput}
+          style={styles.input}
+          onChangeText={newTitle => setTitle(newTitle)}
+          value={title}
+          onBlur={Keyboard.dismiss}
+        />
+
+
+        <Text style={styles.label}>Description</Text>
+        <TextInput
+          style={styles.input}
           onChangeText={newDescription => setDescription(newDescription)}
           value={description}
           multiline
         />
 
-        <Text style={styles.text}>Date</Text>
-        <DateTimePicker
-          style={styles.dateInput}
-          value={date}
-          mode="datetime"
-          onChange={(event, selectedDate) => {
-            if (selectedDate) setDate(selectedDate);
-          }}
-        />
+        <View style={[styles.row, {marginTop: 15}]}>
+          <Text style={[styles.label, {marginRight: 10}]}>Date</Text>
+          <DateTimePicker
+            value={date}
+            mode="datetime"
+            onChange={(event, selectedDate) => {
+              if (selectedDate) setDate(selectedDate);
+            }}
+          />
+        </View>
 
-        <Text style={styles.text}>Category</Text>
+        <Text style={styles.label}>Category</Text>
         <View style={{ overflow: "hidden" }}>
           <ScrollView
             horizontal
-            style={{ marginLeft: 20, marginBottom: 10, marginRight: 20 }}
+            style={{ marginBottom: 10}}
             showsHorizontalScrollIndicator={false}
           >
             {categories.map(category => (
@@ -286,7 +309,9 @@ async function sendPhotoToApi(photoToUpload: ImagePicker.ImagePickerAsset) {
                 key={category.id}
                 name={category.name}
                 icon={category.icon}
-                fontSize={16}
+                fontSize={12}
+                iconSize={30}
+                boxSize={73}
                 color={category.colorHex}
                 selected={selectedCategoryId === category.id}
                 onPress={() => {
@@ -299,8 +324,10 @@ async function sendPhotoToApi(photoToUpload: ImagePicker.ImagePickerAsset) {
                 key={-2}
                 name="Add"
                 icon="+"
+                fontSize={12}
+                iconSize={30}
+                boxSize={73}
                 color={"#FFFFFF"}
-                fontSize={16}
                 selected={false}
                 onPress={handleCategoryAdd}
               />
@@ -308,12 +335,12 @@ async function sendPhotoToApi(photoToUpload: ImagePicker.ImagePickerAsset) {
         </View>
         {selectedCategoryId != -1 && (
             <>
-            <Text style={styles.text}>Subcategory</Text>
+            <Text style={styles.label}>Subcategory</Text>
 
             <View style={{ overflow: "hidden" }}>
                 <ScrollView
                 horizontal
-                style={{ marginLeft: 20, marginBottom: 10, marginRight: 20 }}
+                style={{ marginBottom: 10}}
                 showsHorizontalScrollIndicator={false}
                 >
                 {subcategories.map(subcategory => (
@@ -321,7 +348,9 @@ async function sendPhotoToApi(photoToUpload: ImagePicker.ImagePickerAsset) {
                         key={subcategory.id}
                         name={subcategory.name}
                         icon={subcategory.icon}
-                        fontSize={16}
+                        fontSize={12}
+                        iconSize={30}
+                        boxSize={73}
                         color={subcategory.colorHex}
                         selected={selectedSubcategoryId === subcategory.id}
                         onPress={() => setSelectedSubcategoryId(subcategory.id)}
@@ -332,7 +361,9 @@ async function sendPhotoToApi(photoToUpload: ImagePicker.ImagePickerAsset) {
                     name="Add"
                     icon="+"
                     color={"#FFFFFF"}
-                    fontSize={16}
+                    fontSize={12}
+                    iconSize={30}
+                    boxSize={73}
                     selected={false}
                     onPress={handleSubcategoryAdd}
                 />
@@ -340,7 +371,7 @@ async function sendPhotoToApi(photoToUpload: ImagePicker.ImagePickerAsset) {
             </View>
             </>
         )}
-        <Text style={styles.text}>Currency</Text>
+        <Text style={styles.label}>Currency</Text>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
           <TouchableOpacity
             style={[
@@ -367,8 +398,8 @@ async function sendPhotoToApi(photoToUpload: ImagePicker.ImagePickerAsset) {
           </TouchableOpacity>
         </View>
 
-        <Text style={styles.text}>Payment Type</Text>
-        <View style={{ marginLeft: 20, marginBottom: 10, flexDirection: "row", gap: 10 }}>
+        <Text style={styles.label}>Payment Type</Text>
+        <View style={{ marginBottom: 10, flexDirection: "row", gap: 10 }}>
           {paymentOptions.map(opt => {
             const selected = paymentType === opt.value;
             return (
@@ -390,23 +421,49 @@ async function sendPhotoToApi(photoToUpload: ImagePicker.ImagePickerAsset) {
               </Pressable>
             );
           })}
-        </View>
-        
-      </ScrollView>
     </View>
-
-    <TouchableOpacity style={styles.button} onPress={handleAddExpense}>
-      <Text style={{ color: "white", fontSize: 25 }}>Add expense</Text>
     </TouchableOpacity>
+  </ScrollView>     
+</View>
+</View>
   </>
 );
 
 }
 
 export const styles = StyleSheet.create({
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 10,
+  },
+  title: { fontSize: 20, fontWeight: "600" },
+  headerBtn: { fontSize: 16, color: "#3077ceff" },
+  label: { marginTop: 10, marginBottom: 6, fontSize: 16 },
+  input: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 16,
+  },
+  overlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.4)",
+    justifyContent: "flex-end",
+  },
+  wrapper: { width: "100%" },
+  container: {
+  backgroundColor: "white",
+  padding: 20,
+  borderTopLeftRadius: 16,
+  borderTopRightRadius: 16,
+  height: 650
+},
   currencyPicker:{
     width:70,
-    marginLeft: 15,
     marginTop: 0,
   },
     button: {
@@ -424,7 +481,6 @@ export const styles = StyleSheet.create({
     arrow:{
      color: 'gray', 
      fontSize: 30,
-     marginLeft: 10,
      marginTop: 10,
      marginBottom: 10
   },
@@ -434,58 +490,8 @@ export const styles = StyleSheet.create({
     fontSize: 36
   },
   text: {
-    marginLeft: 20,
     marginBottom: 10,
     fontSize: 24
-  },
-  titleInput: {
-    marginLeft: 20,
-    marginBottom: 10,
-    padding: 5,
-    borderColor: "black",
-    borderWidth: 1,
-    borderRadius: 10,
-    width: 250,
-    height: 30,
-    fontSize: 18
-
-  },
-  costInput: {
-    marginLeft: 20,
-    marginBottom: 10,
-    padding: 5,
-    borderColor: "black",
-    borderWidth: 1,
-    borderRadius: 10,
-    width: 100,
-    height: 30,
-    fontSize: 18,
-    alignSelf: 'flex-start', // Shrinks the width to fit the content
-    minWidth: 40, 
-
-  },
-  dateInput: {
-    marginLeft: 10,
-    marginBottom: 10,
-  },
-  descriptionInput: {
-    marginLeft: 20,
-    marginBottom: 10,
-    padding: 5,
-    borderColor: "black",
-    borderWidth: 1,
-    borderRadius: 10,
-    width: 350,
-    height: 100,  
-    fontSize: 18
-
-  },
-  container: {
-    flexDirection: 'row',
-    backgroundColor: '#F2F2F7', // Светло сиво за фон (iOS системно сиво)
-    borderRadius: 12,
-    padding: 4,
-    marginVertical: 10,
   },
   buttonPicker: {
     marginHorizontal: 15,
@@ -515,7 +521,11 @@ export const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#000000', // Черен цвят за активния
   },photoContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  photoButton: { backgroundColor: '#007AFF', padding: 15, borderRadius: 10 },
+  photoButton: { backgroundColor: "#3077ceff", padding: 15, borderRadius: 10 },
   buttonText: { color: '#fff', fontWeight: 'bold' },
-  preview: { width: 200, height: 300, marginTop: 20, borderRadius: 10 }
+  preview: { width: 200, height: 300, marginTop: 20, borderRadius: 10 },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
 });

@@ -111,7 +111,7 @@ export default function ExpensesScreen() {
   );
 
   function handleAddExpense() {
-    router.push("expenses/addExpense");
+    router.push("../../(modals)/expenses/addExpense");
   }
 
   function handleExpenseView(id: number) {

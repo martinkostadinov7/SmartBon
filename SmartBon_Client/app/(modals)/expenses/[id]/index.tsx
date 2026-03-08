@@ -179,20 +179,34 @@ export default function ExpenseViewScreen() {
 } 
   return (
     <>
-        <Pressable style={styles.overlay} onPress={handleCloseScreen}>
-        <KeyboardAvoidingView
-            style={styles.wrapper}
-        >
-            <Pressable style={[styles.container, {height: screenHeight}]} onPress={() => Keyboard.dismiss()}>
+       <View style={styles.overlay}>       
+                <Pressable 
+               style={StyleSheet.absoluteFill} 
+               onPress={() => router.back()} 
+               />   
+               
+                 <View 
+                   style={[styles.container]} 
+                   // Това спира клика да стигне до overlay-а, без да пречи на ScrollView
+                   onStartShouldSetResponder={() => true} 
+                   onResponderTerminationRequest={() => false}
+                   >
             <View style={styles.header}>
                 <TouchableOpacity onPress={handleCloseScreen}>
                 <Text style={styles.headerBtn}>Cancel</Text>
                 </TouchableOpacity>
 
+                <TouchableOpacity onPress={handleDeleteExpense}>
+                  <Text style={[styles.headerBtn, {color: "red"}]}>Delete</Text>
+                </TouchableOpacity>
+                
                 <TouchableOpacity onPress={isEditing ? handleSaveExpense : () => setIsEditing(true)}>
                  <Text style={styles.headerBtn}>{isEditing ? "Save" : "Edit"}</Text> 
                 </TouchableOpacity>
             </View>
+
+            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ flexGrow: 1, paddingBottom: 40 }}>
+                      <TouchableOpacity activeOpacity={1.0}>
             <View>
               <View style={styles.row}>
                 <CategoryBox 
@@ -207,15 +221,17 @@ export default function ExpenseViewScreen() {
                   onPress={handleChangeCategory}>
                 </CategoryBox>
                 <View style={{flex : 1, justifyContent: "space-between", marginLeft: 12, height: 100}}>
+                  
                   {isEditing ?
                   <TextInput
-                    style={styles.titleInput}
+                    style={[styles.input,{marginBottom: 7}]}
                     onChangeText={newTitle => setTitle(newTitle)}
                     value={title}
                     onBlur={Keyboard.dismiss}
                   /> :
-                  <Text numberOfLines={1} ellipsizeMode="tail" style={[styles.titleInput] }>{title}</Text>}
                   
+                  <Text numberOfLines={1} ellipsizeMode="tail" style={[styles.input,{marginBottom: 7}] }>{title}</Text>}
+
                   {subCategory != null && (
                     <CategoryBox 
                       name={subCategory?.name ?? "Undefined"} 
@@ -231,38 +247,37 @@ export default function ExpenseViewScreen() {
                   )}
                 </View>
               </View>
-              <Text style={{fontSize: 18, marginTop: 10}}>Cost</Text>
+              <Text style={styles.label}>Cost</Text>
 
               {isEditing ?
                   <TextInput
-                    style={styles.costInput}
+                    style={styles.input}
                     onChangeText={newCost => setCost(newCost)}
                     value= {String(cost)}
                     keyboardType="decimal-pad"
                     onBlur={Keyboard.dismiss}
                     multiline={false}
                   /> :
-                  <Text style={[styles.costInput]}>{cost}</Text>
+                  <Text style={[styles.input]}>{cost}</Text>
                   }
 
-              <Text style={{fontSize: 18, borderWidth: 0, marginTop: 10}}>Description</Text>
+              <Text style={styles.label}>Description</Text>
 
               {isEditing ?
                   <TextInput
-                    style={styles.descriptionInput}
+                    style={styles.input}
                     onChangeText={newDescription => setDescription(newDescription)}
                     value={description}
                     multiline
                     onFocus={() => setScreenHeight(685)}
                     onBlur={() => setScreenHeight(685)}
                   /> :
-                  <Text style={[styles.descriptionInput]}>{description}</Text>
+                  <Text style={[styles.input]}>{description}</Text>
                   }
 
-              <Text style={{fontSize: 18, borderWidth: 0, marginTop: 10}}>Date</Text>
+              <Text style={styles.label}>Date</Text>
               {isEditing ? (
                 <DateTimePicker
-                  style={styles.dateInput}
                   value={new Date(date)} // Подсигури се, че е Date обект
                   mode="datetime"
                   display="default"
@@ -271,12 +286,23 @@ export default function ExpenseViewScreen() {
                   }}
                 />
               ) : (
-                <Text style={styles.date}>
-                  {new Date(date).toLocaleString('bg-BG')}
-                </Text>
+                <View style={{
+                    opacity: 0.7
+                }}>
+                    <View pointerEvents="none">
+                        <DateTimePicker
+                            value={date}
+                            mode="datetime"
+                            display="default"
+                            onChange={(event, selectedDate) => {
+                            if (selectedDate) setDate(selectedDate);
+                        }}
+                        />
+                    </View>
+                </View>
               )}
 
-              <Text style={{fontSize: 18, borderWidth: 0}}>Currency</Text>
+              <Text style={styles.label}>Currency</Text>
               {isEditing ? (
               <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                 <TouchableOpacity
@@ -322,7 +348,7 @@ export default function ExpenseViewScreen() {
               )}
 
 
-              <Text style={{fontSize: 18, borderWidth: 0}}>Payment Type</Text>
+              <Text style={styles.label}>Payment Type</Text>
               {isEditing ? (
                 <View style={{ marginTop: 10, flexDirection: "row", gap: 10}}>
                 {paymentOptions.map(opt => {
@@ -367,18 +393,25 @@ export default function ExpenseViewScreen() {
                   </Pressable>
                 </View>
               )}
-              <TouchableOpacity style={styles.button} onPress={handleDeleteExpense}>
-                <Text style={{ color: "white", fontSize: 20 }}>Delete</Text>
-              </TouchableOpacity>
             </View>
-            </Pressable>
-        </KeyboardAvoidingView>
-        </Pressable>
+            </TouchableOpacity>
+          </ScrollView>     
+        </View>
+        </View>
     </>
   )
 }
 
 const styles = StyleSheet.create({
+  label: { marginTop: 10, marginBottom: 6, fontSize: 16 },
+  input: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 16,
+  },
   button: {
     backgroundColor: "rgba(228, 67, 67, 0.85)",
     height: 40,
@@ -399,7 +432,8 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     padding: 20,
     borderTopLeftRadius: 16,
-    borderTopRightRadius: 16
+    borderTopRightRadius: 16,
+    height: 600
   },
   header: {
     flexDirection: "row",
