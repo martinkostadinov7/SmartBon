@@ -5,21 +5,24 @@ import * as SecureStore from "expo-secure-store";
 import { apiFetch } from "../../services/api";
 import { Currency } from "../../types/expense";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
-
+import * as FileSystem from 'expo-file-system/legacy';
+import * as Sharing from 'expo-sharing';
+import { Alert } from 'react-native';
 const currencyFromNumber: Record<number, Currency> = {
   0: "EUR",
-  1: "USD"
+  1: "USD"  
 };
 
 export default function SettingsScreen() {
   const [userName, setUserName] = useState("Unidentified");
   const [userEmail, setUserEmail] = useState("Unidentified");
-  const [isUserPremium, setIsUserPremium] = useState(true);
+  const [isPremium, setIsPremium] = useState(false);
   const [userJoined, setUserJoined] = useState("Unidentified");
   const [userDefaultCurrency, setUserDefaultCurrency] = useState("EUR");
   const [isBudgetLimitAlertEnabled, setIsBudgetLimitAlertEnabled] = useState(true);
   const [isMonthlyAppReportsEnabled, setIsMonthlyAppReportsEnabled] = useState(true);
   const [isMonthlyEmailReportsEnabled, setIsMonthlyEmailReportsEnabled] = useState(true);
+
   useFocusEffect(
   useCallback(() => {
     const fetchProfile = async () => {
@@ -29,7 +32,7 @@ export default function SettingsScreen() {
         const profileData = await response.json()
         setUserName(profileData.name);
         setUserEmail(profileData.email);
-        setIsUserPremium(profileData.isPremium);
+        setIsPremium(profileData.isPremium);
         setUserDefaultCurrency(currencyFromNumber[profileData.defaultCurrency]);
         setUserJoined(formatDate(profileData.createdAt));
       } catch (error) {
@@ -48,10 +51,31 @@ function formatDate(dateString: string) {
 );
 
 
+
+function handlePremiumFeaturePress(message: string){
+  Alert.alert(
+      "Premium feature",
+      `${message} Would you like to upgrade to Premium for unlimited?`,
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Upgrade",
+          style: "default",
+          onPress: async () => {
+            router.push("(modals)/users/managePlan");
+          }
+        }
+      ]
+    );
+}
+
   function handleSignOut(){
    SecureStore.setItem("token", "");
    router.navigate("../../(auth)");
   }
+ async function handleOpenExportExpensesMenu() {
+   router.push("../../(modals)/expenses/exportExpensesMenu");
+}
 return (<>
     <View style={[{padding: 15, backgroundColor: "#3077ceff"}]}>
       <Text style={{fontSize: 32, color: "white"}}>Settings</Text>
@@ -61,8 +85,8 @@ return (<>
     <View style={styles.profileContainer}>
       <Text style={{fontSize: 26}}>{userName}</Text>
       <Text style={{fontSize: 18, marginTop: 5}}>{userEmail}</Text>
-      <View style={[{marginTop: 10, borderRadius: 15, alignItems: "center"} , isUserPremium ? {backgroundColor: "#3077ceff", width: 110} : {backgroundColor: "gray", width: 60}]}>
-        <Text style={{fontSize: 16, color: "white", margin: 5}}>{isUserPremium ? <FontAwesome6 name="crown" size={21} color="yellow" /> : ""}{isUserPremium ? " Premium" : "Free"}</Text>
+      <View style={[{marginTop: 10, borderRadius: 15, alignItems: "center"} , isPremium ? {backgroundColor: "#3077ceff", width: 110} : {backgroundColor: "gray", width: 60}]}>
+        <Text style={{fontSize: 16, color: "white", margin: 5}}>{isPremium ? <FontAwesome6 name="crown" size={21} color="yellow" /> : ""}{isPremium ? " Premium" : "Free"}</Text>
       </View>
 
       <Text style={{fontSize: 16, marginTop: 5}}>Default Currency: {userDefaultCurrency}</Text>
@@ -144,12 +168,12 @@ return (<>
     <View style={{backgroundColor: "white" , borderRadius: 20, marginHorizontal: 15, marginBottom: 15, padding: 15}}>
       <Text style={{fontSize: 20, marginBottom: 20}}>Data</Text>
 
-      <TouchableOpacity style={{borderRadius:10,backgroundColor: "rgba(48, 119, 206, 0.32)", marginBottom: 10}}>
-        <Text style={{margin: 10, fontSize: 17}}><FontAwesome6 name="file-import" size={21} color="black" />   Import data</Text>
+    <TouchableOpacity onPress={isPremium ? handleOpenExportExpensesMenu : () => handlePremiumFeaturePress("Importing expenses is a premium feature!")} style={{borderRadius:10,backgroundColor: isPremium ? "rgba(48, 119, 206, 0.32)" : "rgba(48, 119, 206, 0.13)", marginBottom: 10}}>
+        <Text style={{margin: 10, fontSize: 17, color: isPremium ? "#000000" : "#8c8c8c"}}><FontAwesome6 name= {isPremium ? "file-export" : "lock"} size={21} color="black" />   Import expenses</Text>
       </TouchableOpacity>
       
-      <TouchableOpacity style={{borderRadius:10,backgroundColor: "rgba(48, 119, 206, 0.32)", marginBottom: 10}}>
-        <Text style={{margin: 10, fontSize: 17}}><FontAwesome6 name="file-export" size={21} color="black" />   Export data</Text>
+      <TouchableOpacity onPress={isPremium ? handleOpenExportExpensesMenu : () => handlePremiumFeaturePress("Exporting expenses is a premium feature!")} style={{borderRadius:10,backgroundColor: isPremium ? "rgba(48, 119, 206, 0.32)" : "rgba(48, 119, 206, 0.13)", marginBottom: 10}}>
+        <Text style={{margin: 10, fontSize: 17, color: isPremium ? "#000000" : "#8c8c8c"}}><FontAwesome6 name= {isPremium ? "file-export" : "lock"}  size={21} color="black" />   Export expenses</Text>
       </TouchableOpacity>
     </View>
 

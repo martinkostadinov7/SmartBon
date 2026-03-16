@@ -4,7 +4,6 @@ using Services.Budgets;
 using Services.Categories;
 using Services.Expenses;
 using Services.Goals;
-using Services.Goals;
 using Services.Interfaces;
 using Services.Statistics;
 using Services.Subcategories;
@@ -22,6 +21,8 @@ namespace FeelBack.Api.Extentions
 
             services.AddScoped<IExpenseRepository, ExpenseRepository>();
             services.AddScoped<IExpenseService, ExpenseService>();
+            
+            services.AddScoped<IRecurringExpenseRepository, RecurringExpenseRepository>();
             
             services.AddScoped<ICategoryRepository, CategoryRepository>();
             services.AddScoped<ICategoryService, CategoryService>();

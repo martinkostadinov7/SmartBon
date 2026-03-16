@@ -1,7 +1,7 @@
 ﻿using Shared.Enums;
-namespace Shared.DTOs.Expenses
+namespace Shared.DTOs.Expenses.Recurring
 {
-    public class ExpenseCreateDto
+    public class RecurringExpenseCreateDto
     {
         public required string Title { get; set; }
 
@@ -18,5 +18,7 @@ namespace Shared.DTOs.Expenses
         public PaymentType PaymentType { get; set; }
 
         public Currency Currency { get; set; }
+
+        public RecurringExpenseFrequency Frequency { get; set; }
     }
 }

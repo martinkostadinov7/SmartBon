@@ -1,11 +1,13 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Services.Interfaces;
+using Shared.DTOs;
 using Shared.DTOs.Expenses;
 using Shared.DTOs.Expenses.Ranges;
+using Shared.DTOs.Expenses.Recurring;
+using System.Collections.Generic;
 namespace SmartBon_API.Controllers
 {
-    [Authorize]
     [Route("/api/[controller]")]
     [ApiController]
     public class ExpensesController(IExpenseService expenseService) : ControllerBase
@@ -17,6 +19,19 @@ namespace SmartBon_API.Controllers
             return CreatedAtAction(nameof(GetExpenseById), new { id = result.Id }, result);
         }
 
+        [HttpPost("recurring")]
+        public async Task<ActionResult<ExpenseReadDto>> CreateRecurringExpense(RecurringExpenseCreateDto request)
+        {
+            ExpenseReadDto result = await expenseService.CreateRecurringExpenseAsync(request);
+            return CreatedAtAction(nameof(GetExpenseById), new { id = result.Id }, result);
+        }
+
+        [HttpGet("recurring")]
+        public async Task<ActionResult<List<RecurringExpenseReadDto>>> GetAllRecurringExpenses()
+        {
+            List<RecurringExpenseReadDto> result = await expenseService.GetAllRecurringExpenses();
+            return result;
+        }
 
         [HttpPost("upload-receipt")]
         public async Task<ActionResult<ExpenseFilledFromImageDto>> ExtractExpenseData([FromForm] IFormFile image)
@@ -73,6 +88,17 @@ namespace SmartBon_API.Controllers
         {
             DateRangeDto result = await expenseService.GetDateRangeAsync();
             return Ok(result);
+        }
+
+        [HttpGet("export")]
+        public async Task<ActionResult<ExportFileResultDto>> ExportExpenses([FromQuery] ExpenseQueryParams queryParams)
+        {
+            ExportFileResultDto result = await expenseService.ExportExpensesAsync(queryParams);
+            return File(
+                    result.Content,
+                    result.ContentType,
+                    result.FileName
+                );
         }
     }
 }

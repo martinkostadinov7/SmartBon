@@ -8,6 +8,8 @@ namespace Data
 
         public DbSet<Expense> Expenses { get; set; }
 
+        public DbSet<RecurringExpense> RecurringExpenses { get; set; }
+
         public DbSet<Category> Categories { get; set; }
 
         public DbSet<Subcategory> Subcategories { get; set; }

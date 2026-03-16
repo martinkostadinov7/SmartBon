@@ -3,6 +3,7 @@ using FeelBack.Api.Extentions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
+using Services.Expenses;
 using Services.Interfaces;
 using System.Text;
 
@@ -30,13 +31,13 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 //builder.Host.UseSerilog();
 
 var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
-
+builder.Services.AddHostedService<RecurringExpenseWorker>();
 builder.Services.AddCors(options =>
 {
     options.AddPolicy(name: MyAllowSpecificOrigins,
         policy =>
         {
-            policy.WithOrigins("http://localhost:5173") 
+            policy.AllowAnyOrigin() // Позволява заявки от всяко устройство (Arduino, Телефон, PC)
                   .AllowAnyHeader()
                   .AllowAnyMethod();
         });

@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TextInput, ScrollView, TouchableOpacity, Pressable, Keyboard, Alert, ActivityIndicator } from 'react-native'
+import { View, Text, StyleSheet, TextInput, ScrollView, TouchableOpacity, Pressable, Keyboard, Alert, ActivityIndicator, Switch } from 'react-native'
 import React, { useCallback, useState} from 'react'
 import { useCategories } from "../../context/CategoriesContext";
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -25,6 +25,13 @@ const currencyFromNumber: Record<number, Currency> = {
   1: "USD"
 };
 
+const frequencyFromString: Record<string, number> = {
+  "Daily": 0, 
+  "Weekly": 1,
+  "Monthly": 2,
+  "Yearly": 3
+};
+
 export default function AddExpense() {
   const { categories } = useCategories();
   const { title: prefilledTitle, amount: prefilledAmount, description: prefilledDescription, goalId: goalId } = useLocalSearchParams();
@@ -37,6 +44,10 @@ export default function AddExpense() {
     const [isReceiptDataLoading, setReceiptDataLoading] = useState(false);
     const [userDefaultCurrency, setUserDefaultCurrency] = useState("Unidentified");
     const [selectedCurrency, setSelectedCurrency] = useState(userDefaultCurrency ? userDefaultCurrency : "EUR");
+    const [isRecurring, setIsRecurring] = useState(false);
+    const [selectedFrequency, setSelectedFrequency] = useState<string | null>();
+    const frequencies = ["Daily", "Weekly", "Monthly", "Yearly"];
+    
     type PaymentType = "Cash" | "Card" | "Transfer";
 
     const paymentOptions: { value: PaymentType; label: string }[] = [
@@ -83,7 +94,6 @@ async function sendPhotoToApi(photoToUpload: ImagePicker.ImagePickerAsset) {
     });
 
     const result = await response.json(); 
-    console.log("Extracted Data:", result);
     setTitle(result.title || "");
     setDescription(result.description || "");
     setCost(String(result.cost) || "");
@@ -93,16 +103,16 @@ async function sendPhotoToApi(photoToUpload: ImagePicker.ImagePickerAsset) {
     console.error(e);
   }
 }
-    function handleCloseScreen(){
-        setTitle("");
-        setDate(new Date());
-        setDescription("");
-        setCost("");
-        setPaymentType("Cash");
-        setSelectedCategoryId(-1);
-        setSelectedCategoryId(-1);
-        router.back();
-    }
+  function handleCloseScreen(){
+      setTitle("");
+      setDate(new Date());
+      setDescription("");
+      setCost("");
+      setPaymentType("Cash");
+      setSelectedCategoryId(-1);
+      setSelectedCategoryId(-1);
+      router.back();
+  }
 
  async function handleRealiseGoal(){  
      try {
@@ -139,7 +149,14 @@ async function sendPhotoToApi(photoToUpload: ImagePicker.ImagePickerAsset) {
             [{ text: "OK" }]
             );
         }
-
+          
+        if(isRecurring && !selectedFrequency){
+            Alert.alert(
+            "Input error",
+            "Select frequency for recurring expense!",
+            [{ text: "OK" }]
+            );
+        }
         const expense = {
             Title: title.trim(),
             Description: description.trim(),
@@ -148,10 +165,12 @@ async function sendPhotoToApi(photoToUpload: ImagePicker.ImagePickerAsset) {
             SubcategoryId: selectedSubcategoryId > 0 ? selectedSubcategoryId : null,
             ExpenseDate: date.toISOString(),
             PaymentType: paymentTypeMap[paymentType],
-            Currency: currencyMap[selectedCurrency || "EUR"]
+            Currency: currencyMap[selectedCurrency || "EUR"],
+            Frequency: frequencyFromString[selectedFrequency || "-1"]
         };
 
         try {
+          if(!isRecurring){
             const response = await apiFetch("/Expenses", {
             method: "POST",
             headers: {
@@ -180,7 +199,31 @@ async function sendPhotoToApi(photoToUpload: ImagePicker.ImagePickerAsset) {
             }
 
             handleCloseScreen();
-        } catch (e: any) {
+          }
+          else{
+            const response = await apiFetch("/Expenses/recurring", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(expense),
+            });
+
+            if(response.status == 400){
+              let message = await response.json();
+              Alert.alert(
+                "Budget limit",
+                `${message?.message}`,
+                [{ text: "OK" }]
+                );
+                handleCloseScreen();
+            }
+
+            if (!response.ok) return;
+            handleCloseScreen();
+            }
+          }
+        catch (e: any) {
             console.log("Network/API error:", e?.message ?? e);
         }
     }
@@ -296,6 +339,59 @@ async function sendPhotoToApi(photoToUpload: ImagePicker.ImagePickerAsset) {
             }}
           />
         </View>
+        {!goalId && (
+<>
+        <View style={[styles.row, {marginTop: 5}]}>
+          <Text style={[styles.label, {marginRight: 10}]}>Recurring</Text>
+          <Switch
+            style={{margin:7}}
+            trackColor={{ false: "#b1b1b1", true: "#00ae34" }}
+            thumbColor={"#ffffff"}
+            onValueChange={() => setIsRecurring(previousState => !previousState)}
+            value={isRecurring}
+          />
+        </View>
+{(isRecurring) && 
+(
+<>
+          <Text style={[styles.label, {marginRight: 10}]}>Frequency</Text>
+
+          <View style={styles.row}>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+
+                {frequencies.map((frequency) => {
+                    return (
+                    <TouchableOpacity
+                        key={frequency}
+                        style={{
+                        flexDirection: 'row', // За да подредим текста и иконата в линия
+                        alignItems: 'center',
+                        borderWidth: selectedFrequency === frequency ? 2 : 1,
+                        borderRadius: 10,
+                        marginRight: 7,
+                        paddingVertical: 9,
+                        paddingHorizontal: 12, // Малко повече място отстрани
+                        borderColor: selectedFrequency === frequency ? "black" : "gray",
+                        }}
+                        onPress={() => setSelectedFrequency(frequency)}
+                    >
+                        <Text style={{ 
+                            textAlign: "center", 
+                            fontSize: 14, 
+                            textTransform: 'capitalize',
+                            fontWeight: selectedFrequency === frequency ? 'bold' : 'normal'
+                        }}>
+                        {frequency}
+                        </Text>
+                    </TouchableOpacity>
+                    );
+                })}
+            </ScrollView>
+        </View>
+</>
+)}
+</>
+        )}
 
         <Text style={styles.label}>Category</Text>
         <View style={{ overflow: "hidden" }}>

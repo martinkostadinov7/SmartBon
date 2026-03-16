@@ -188,7 +188,7 @@ const getEndDate = () => {
 }
   function handleRealiseGoal(name: string, amount: number, goalId: number, description: string){
     router.push({
-    pathname: "/(app)/expenses/addExpense", 
+    pathname: "/(modals)/expenses/addExpense", 
     params: { 
       title: name,      
       amount: amount,   
@@ -209,7 +209,6 @@ const getEndDate = () => {
   return date.toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
-    // Only show year if it's not the current year
     year: dateYear !== currentYear ? 'numeric' : undefined 
   });
 };

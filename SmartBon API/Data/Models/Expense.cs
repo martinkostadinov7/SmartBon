@@ -30,7 +30,7 @@ namespace Data.Models
         public User User { get; set; }
         
         public int UserId { get; set; }
-            
+
         private Expense() { }
         public Expense(string title, string? description, decimal cost, int categoryId,
             int? subCategoryId,  DateTime expenseDate, PaymentType paymentType, int userId, Currency currency)

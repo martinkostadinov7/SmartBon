@@ -1,20 +1,23 @@
 ﻿using AutoMapper;
+using CsvHelper;
 using Data.Interfaces;
 using Data.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
-using OpenAI; // Base namespace
+using OpenAI;
 using OpenAI.Chat;
 using Services.Interfaces;
 using Shared.ApiExceptions;
+using Shared.DTOs;
 using Shared.DTOs.Expenses;
 using Shared.DTOs.Expenses.Ranges;
-using System.Net.Http.Headers;
-using System.Net.Http.Json;
+using Shared.DTOs.Expenses.Recurring;
+using System.Globalization;
+using System.Text;
 using System.Text.Json;
 namespace Services.Expenses
 {
-    public class ExpenseService(IUserAccessor user, IExpenseRepository expenseRepository, IMapper mapper, IBudgetRepository budgetRepository, IConfiguration _configuration) : IExpenseService
+    public class ExpenseService(IUserAccessor user, IExpenseRepository expenseRepository, IRecurringExpenseRepository recurringExpenseRepository, IMapper mapper, IBudgetRepository budgetRepository, IConfiguration _configuration) : IExpenseService
     {
         public async Task<ExpenseReadDto> CreateExpenseAsync(ExpenseCreateDto dto)
         {
@@ -23,26 +26,33 @@ namespace Services.Expenses
             expense.UserId = user.Id;
             await expenseRepository.AddAsync(expense);
 
+            await UpdateBudgetsCreate(expense);
+            return mapper.Map<ExpenseReadDto>(expense);
+        }
+
+        public async Task UpdateBudgetsCreate(Expense expense)
+        {
             List<string> budgetNamesAlmost = new List<string>();
             List<string> budgetNamesReached = new List<string>();
             List<Budget> budgets = await budgetRepository.GetAllAsync(user.Id);
             foreach (var budget in budgets)
             {
-                if ((budget.CategoryIds.Contains(expense.CategoryId) || ((expense.SubcategoryId != null) ? budget.SubcategoryIds.Contains(expense.SubcategoryId!.Value) : false)) && 
+                if ((budget.CategoryIds.Contains(expense.CategoryId) || ((expense.SubcategoryId != null) ? budget.SubcategoryIds.Contains(expense.SubcategoryId!.Value) : false)) &&
                     (budget.From <= expense.ExpenseDate && budget.To >= expense.ExpenseDate))
                 {
                     budget.CurrentAmount += expense.Cost;
                     await budgetRepository.UpdateAsync(budget);
+
+                    if (budget.CurrentAmount >= budget.Limit)
+                    {
+                        budgetNamesReached.Add(budget.Name);
+                    }
+                    else if (budget.CurrentAmount >= budget.Limit * 0.8m && budget.CurrentAmount < budget.Limit)
+                    {
+                        budgetNamesAlmost.Add(budget.Name);
+                    }
                 }
 
-                if (budget.CurrentAmount >= budget.Limit)
-                {
-                    budgetNamesReached.Add(budget.Name);
-                }
-                else if (budget.CurrentAmount >= budget.Limit * 0.8m && budget.CurrentAmount < budget.Limit)
-                {
-                    budgetNamesAlmost.Add(budget.Name);
-                }
             }
             if (budgetNamesReached.Any())
             {
@@ -52,7 +62,6 @@ namespace Services.Expenses
             {
                 throw new BadRequestException($"Budget limit for {string.Join(", ", budgetNamesAlmost)} almost reached!");
             }
-            return mapper.Map<ExpenseReadDto>(expense);
         }
 
         public async Task<List<ExpenseReadDto>> GetExpensesAsync()
@@ -162,7 +171,7 @@ namespace Services.Expenses
         public async Task<ExpenseFilledFromImageDto> ExtractExpenseDataAsync(IFormFile image)
         {
             string apiKey = _configuration["ApiKeys:OPENAI_API_KEY"];
-            OpenAIClient client = new(apiKey);
+            OpenAIClient client = new("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");
 
             ChatClient chatClient = client.GetChatClient("gpt-4o");
 
@@ -197,7 +206,7 @@ namespace Services.Expenses
             - 'Description': A SINGLE STRING containing all products. 
                 Format: '{productName} {productPrice}'. 
                 Every product MUST be on a new line within the string.
-            - 'ExpenseDate': The date in YYYY-MM-DD format.
+            - 'ExpenseDate': The date in YYYY-MM-DDTHH:mm:ss format.
     
             If the receipt is blurry or data is missing, use null."),
                 new UserChatMessage(
@@ -221,6 +230,76 @@ namespace Services.Expenses
 
             ExpenseFilledFromImageDto? mappedExpense = JsonSerializer.Deserialize<ExpenseFilledFromImageDto>(jsonResponse, jsonOptions);
             return mappedExpense;
+        }
+
+        public async Task<ExpenseReadDto> CreateRecurringExpenseAsync(RecurringExpenseCreateDto dto)
+        {
+            RecurringExpense recurringExpense = mapper.Map<RecurringExpense>(dto);
+            recurringExpense.UserId = user.Id;
+            recurringExpense.StartDate = dto.ExpenseDate;
+            DateTime period = recurringExpense.StartDate;
+
+            switch (recurringExpense.Frequency)
+            {
+                case Shared.Enums.RecurringExpenseFrequency.Daily:
+                    period = period.AddDays(1);
+                    break;
+                case Shared.Enums.RecurringExpenseFrequency.Weekly:
+                    period = period.AddDays(7);
+                    break;
+                case Shared.Enums.RecurringExpenseFrequency.Monthly:
+                    period = period.AddMonths(1);
+                    break;
+                case Shared.Enums.RecurringExpenseFrequency.Yearly:
+                    period = period.AddYears(1);
+                    break;
+                default:
+                    break;
+            }
+
+            recurringExpense.NextExecutionDate = period;
+            Expense expense = mapper.Map<Expense>(dto);
+            expense.CreatedAt = DateTime.Now;
+            expense.UserId = user.Id;
+            
+            await recurringExpenseRepository.AddAsync(recurringExpense);
+            await expenseRepository.AddAsync(expense);
+
+            await UpdateBudgetsCreate(expense);
+
+            return mapper.Map<ExpenseReadDto>(expense);
+        }
+
+        public async Task<List<RecurringExpenseReadDto>> GetAllRecurringExpenses()
+        {
+            List<RecurringExpense> recurringExpenses = await recurringExpenseRepository.GetAllAsync(user.Id);
+            return mapper.Map<List<RecurringExpenseReadDto>>(recurringExpenses);
+        }
+
+        public async Task<ExportFileResultDto> ExportExpensesAsync(ExpenseQueryParams queryParams)
+        {
+            var expenses = await expenseRepository.GetExpensesFromQueryAsync(user.Id, queryParams);
+            var expensesToExport = mapper.Map<List<ExpenseExportDto>>(expenses);
+            byte[] content; 
+
+            using (var memoryStream = new MemoryStream())
+            {
+                using (var writer = new StreamWriter(memoryStream, Encoding.UTF8))
+                using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
+                {
+                    csv.WriteRecords(expensesToExport);
+                    writer.Flush(); 
+                }
+
+                content = memoryStream.ToArray();
+            }
+
+            return new ExportFileResultDto
+            {
+                Content = content,
+                ContentType = "text/csv",
+                FileName = $"expenses-{DateTime.UtcNow:yyyyMMdd}.csv"
+            };
         }
     }
 }
