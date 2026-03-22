@@ -1,4 +1,5 @@
-﻿using Shared.DTOs.Users;
+﻿using Data.Models;
+using Shared.DTOs.Users;
 
 namespace Services.Interfaces
 {
@@ -6,9 +7,16 @@ namespace Services.Interfaces
     {
         Task<UserInfoDto> GetProfileDataAsync();
 
+        Task<User> GetUserById(int id);
+
         Task<UserInfoDto> EditProfileDataAsync(UserUpdateDto dto);
 
         Task<bool> ChangePassword(PasswordChangeDto dto);
+
         Task<bool> ManagePlan(bool isPremium);
+
+        Task<bool> ToggleMonthlyReport(bool receiveMonthlyReportEmail);
+
+        Task<List<User>> GetAllUsersForMonthlyReportAsync();
     }
 }

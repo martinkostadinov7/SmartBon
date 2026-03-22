@@ -1,6 +1,7 @@
 ﻿using Data.Interfaces;
 using Data.Models;
 using Data.Repositories;
+using Microsoft.AspNet.Identity;
 using Services.Interfaces;
 using Shared.DTOs.Expenses;
 using Shared.DTOs.Expenses.QueryParams;
@@ -352,6 +353,85 @@ namespace Services.Statistics
                 .OrderByDescending(x => x.TotalAmount)
                 .Select(x => x.Date)
                 .FirstOrDefault(); 
+            monthlyReport.MostExpensiveDayAmount = expenses.Where(e => e.ExpenseDate.Date == monthlyReport.MostExpensiveDay.Date).Sum(e => e.Cost);
+            monthlyReport.PreferredPaymentMethod = expenses
+                .GroupBy(e => e.PaymentType)
+                .Select(g => new { PaymentType = g.Key, TotalAmount = g.Sum(e => e.Cost) })
+                .OrderByDescending(x => x.TotalAmount)
+                .Select(x => x.PaymentType)
+                .FirstOrDefault();
+            return monthlyReport;
+        }
+        public async Task<MonthlyReport> GetMonthlyReportAsync(int id)
+        {
+            DateTime now = DateTime.Now;
+            DateTime start = new DateTime(now.Year, now.Month, 1).AddMonths(-1);
+            DateTime end = new DateTime(now.Year, now.Month, 1).AddSeconds(-1);
+
+            ExpenseQueryParams queryParams = new ExpenseQueryParams
+            {
+
+                FilterParams = new ExpenseFilterParams
+                {
+                    StartDate = start,
+                    EndDate = end,
+                },
+                SortParams = new ExpenseSortParams
+                {
+                    Descending = true,
+                    Sortby = SortBy.Cost
+                }
+            };
+
+            List<Expense> expenses = await expenseRepository.GetExpensesFromQueryAsync(id, queryParams);
+
+            DateTime startPrevMonth = new DateTime(now.Year, now.Month, 1).AddMonths(-2);
+            DateTime endPrevMonth = new DateTime(now.Year, now.Month, 1).AddMonths(-1).AddSeconds(-1);
+
+            ExpenseQueryParams queryParamsPrevMonth = new ExpenseQueryParams
+            {
+
+                FilterParams = new ExpenseFilterParams
+                {
+                    StartDate = startPrevMonth,
+                    EndDate = endPrevMonth,
+                },
+                SortParams = new ExpenseSortParams
+                {
+                }
+            };
+            List<Expense> expensesPrevMonth = await expenseRepository.GetExpensesFromQueryAsync(id, queryParamsPrevMonth);
+
+            MonthlyReport monthlyReport = new MonthlyReport();
+
+            if (!expenses.Any())
+            {
+                return monthlyReport;
+            }
+            monthlyReport.MonthName = start.ToString("MMMM", CultureInfo.InvariantCulture);
+            monthlyReport.TotalTransactionsCount = expenses.Count;
+            monthlyReport.TotalCountDifference = expenses.Count - expensesPrevMonth.Count;
+            monthlyReport.TotalSpent = expenses.Sum(e => e.Cost);
+            monthlyReport.TotalSpentDifference = expenses.Sum(e => e.Cost) - expensesPrevMonth.Sum(e => e.Cost);
+            monthlyReport.AverageSpentPerDay = decimal.Round((monthlyReport.TotalSpent / expenses.Count), 2);
+            monthlyReport.NoSpendDaysCount = DateTime.DaysInMonth(start.Year, start.Month) - expenses.Select(e => e.ExpenseDate.Date).Distinct().Count();
+
+            if (!expensesPrevMonth.Any())
+            {
+                monthlyReport.PercentageChange = 100;
+            }
+            else
+            {
+                monthlyReport.PercentageChange = decimal.Round(((monthlyReport.TotalSpent - expensesPrevMonth.Sum(e => e.Cost)) / expensesPrevMonth.Sum(e => e.Cost)) * 100, 2);
+            }
+            monthlyReport.TopCategoryId = expenses.Take(1).Select(e => e.CategoryId).FirstOrDefault();
+            monthlyReport.TopAmount = expenses.Take(1).Select(e => e.Cost).FirstOrDefault();
+            monthlyReport.MostExpensiveDay = expenses
+                .GroupBy(e => e.ExpenseDate.Date)
+                .Select(g => new { Date = g.Key, TotalAmount = g.Sum(e => e.Cost) })
+                .OrderByDescending(x => x.TotalAmount)
+                .Select(x => x.Date)
+                .FirstOrDefault();
             monthlyReport.MostExpensiveDayAmount = expenses.Where(e => e.ExpenseDate.Date == monthlyReport.MostExpensiveDay.Date).Sum(e => e.Cost);
             monthlyReport.PreferredPaymentMethod = expenses
                 .GroupBy(e => e.PaymentType)

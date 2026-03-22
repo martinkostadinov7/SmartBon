@@ -5,9 +5,8 @@ import * as SecureStore from "expo-secure-store";
 import { apiFetch } from "../../services/api";
 import { Currency } from "../../types/expense";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
-import * as FileSystem from 'expo-file-system/legacy';
-import * as Sharing from 'expo-sharing';
 import { Alert } from 'react-native';
+import * as DocumentPicker from 'expo-document-picker';
 const currencyFromNumber: Record<number, Currency> = {
   0: "EUR",
   1: "USD"  
@@ -22,6 +21,47 @@ export default function SettingsScreen() {
   const [isBudgetLimitAlertEnabled, setIsBudgetLimitAlertEnabled] = useState(true);
   const [isMonthlyAppReportsEnabled, setIsMonthlyAppReportsEnabled] = useState(true);
   const [isMonthlyEmailReportsEnabled, setIsMonthlyEmailReportsEnabled] = useState(true);
+
+const importCsvFile = async () => {
+  try {
+    // 1. Отваряне на прозореца за избор на файл
+    const result = await DocumentPicker.getDocumentAsync({
+      type: 'text/comma-separated-values', // Ограничаваме само до CSV
+      copyToCacheDirectory: true,
+    });
+
+    // Проверка дали потребителят е затворил прозореца без да избере файл
+    if (result.canceled) return;
+
+    const file = result.assets[0];
+
+    // 2. Подготовка на данните за изпращане (FormData)
+    const formData = new FormData();
+    
+    // ВАЖНО: Името 'csvFile' трябва да съвпада точно с името на параметъра в C# метода ти!
+    formData.append('csvFile', {
+      uri: file.uri,
+      name: file.name,
+      type: 'text/csv', // или file.mimeType
+    } as any);
+
+    // 3. Изпращане към бекенда
+    const response = await apiFetch(`/expenses/import`, {
+           method: "POST",
+           body: formData, 
+       });
+
+    if (response.ok) {
+      Alert.alert("Success", "Expenses imported successfully!");
+    } else {
+      const errorText = await response.text();
+      Alert.alert("Import Error", errorText);
+    }
+  } catch (error) {
+    Alert.alert("Error", "An error occurred while picking or uploading the file.");
+    console.log(error);
+  }
+};
 
   useFocusEffect(
   useCallback(() => {
@@ -51,7 +91,6 @@ function formatDate(dateString: string) {
 );
 
 
-
 function handlePremiumFeaturePress(message: string){
   Alert.alert(
       "Premium feature",
@@ -67,6 +106,30 @@ function handlePremiumFeaturePress(message: string){
         }
       ]
     );
+}
+
+async function handleToggleMonthlyReport(newValue:boolean){
+  try { 
+      const response = await apiFetch(`/Users/monthlyReport?receiveMonthlyReportEmail=${newValue}`, {
+      method: "POST",
+      headers: {
+          "Content-Type": "application/json",
+      }
+      });
+      if (!response.ok) 
+      {
+          const errorData = await response.json(); 
+          throw new Error(errorData.message || "An unknown error occurred");
+      }
+  } catch (e: any) {
+
+  Alert.alert(
+      "Error",
+      e?.message,
+      [{ text: "OK" }]
+      );
+      console.log("Network/API error:", e?.message.message ?? e);
+  }
 }
 
   function handleSignOut(){
@@ -137,19 +200,6 @@ return (<>
           />
         </TouchableOpacity>
       </View>
-      <View style={{borderRadius:10,backgroundColor: "rgba(48, 119, 206, 0.13)", marginBottom: 10}}>
-        <TouchableOpacity activeOpacity={0.9} style={styles.row} onPress={() => setIsMonthlyAppReportsEnabled(previousState => !previousState)}>
-
-          <Text style={{margin: 10, fontSize: 17}}><FontAwesome6 name="calendar-check" size={21} color="black" />   Monthly in-app reports</Text>
-          <Switch
-              style={{margin:7}}
-              trackColor={{ false: "#b1b1b1", true: "#00ae34" }}
-              thumbColor={"#ffffff"}
-              onValueChange={() => setIsMonthlyAppReportsEnabled(previousState => !previousState)}
-              value={isMonthlyAppReportsEnabled}
-            />
-        </TouchableOpacity>
-      </View>
       
       <View style={{borderRadius:10,backgroundColor: "rgba(48, 119, 206, 0.13)", marginBottom: 10}}>
         <TouchableOpacity activeOpacity={0.9} style={styles.row} onPress={() => setIsMonthlyEmailReportsEnabled(previousState => !previousState)}>
@@ -158,7 +208,7 @@ return (<>
               style={{margin:7}}
               trackColor={{ false: "#b1b1b1", true: "#00ae34" }}
               thumbColor={"#ffffff"}
-              onValueChange={() => setIsMonthlyEmailReportsEnabled(previousState => !previousState)}
+              onValueChange={() => {handleToggleMonthlyReport(!isMonthlyEmailReportsEnabled); setIsMonthlyEmailReportsEnabled(previousState => !previousState); }}
               value={isMonthlyEmailReportsEnabled}
             />
         </TouchableOpacity>
@@ -168,7 +218,7 @@ return (<>
     <View style={{backgroundColor: "white" , borderRadius: 20, marginHorizontal: 15, marginBottom: 15, padding: 15}}>
       <Text style={{fontSize: 20, marginBottom: 20}}>Data</Text>
 
-    <TouchableOpacity onPress={isPremium ? handleOpenExportExpensesMenu : () => handlePremiumFeaturePress("Importing expenses is a premium feature!")} style={{borderRadius:10,backgroundColor: isPremium ? "rgba(48, 119, 206, 0.32)" : "rgba(48, 119, 206, 0.13)", marginBottom: 10}}>
+    <TouchableOpacity onPress={isPremium ? importCsvFile : () => handlePremiumFeaturePress("Importing expenses is a premium feature!")} style={{borderRadius:10,backgroundColor: isPremium ? "rgba(48, 119, 206, 0.32)" : "rgba(48, 119, 206, 0.13)", marginBottom: 10}}>
         <Text style={{margin: 10, fontSize: 17, color: isPremium ? "#000000" : "#8c8c8c"}}><FontAwesome6 name= {isPremium ? "file-export" : "lock"} size={21} color="black" />   Import expenses</Text>
       </TouchableOpacity>
       

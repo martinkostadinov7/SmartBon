@@ -18,8 +18,10 @@ namespace Data.Models
 
         public DateTime CreatedAt { get; set; }
 
+        public bool ReceiveMonthlyReportEmail { get; set; }
+
         private User() { }
-        public User(string email, string passwordHash, string name, bool isPremium, Currency defaultCurrency)
+        public User(string email, string passwordHash, string name, bool isPremium, Currency defaultCurrency, bool receiveMonthlyReportEmail)
         {
             Email = email;
             PasswordHash = passwordHash;
@@ -27,6 +29,7 @@ namespace Data.Models
             Name = name;
             IsPremium = isPremium;
             DefaultCurrency = defaultCurrency;
+            ReceiveMonthlyReportEmail = receiveMonthlyReportEmail;
         }
     }
 }

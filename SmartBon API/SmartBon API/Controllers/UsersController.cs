@@ -39,5 +39,12 @@ namespace SmartBon_API.Controllers
             await userService.ManagePlan(isPremium);
             return Ok();
         }
+
+        [HttpPost("monthlyReport")]
+        public async Task<ActionResult> ToggleMonthlyReport(bool receiveMonthlyReportEmail)
+        {
+            await userService.ToggleMonthlyReport(receiveMonthlyReportEmail);
+            return Ok();
+        }
     }
 }

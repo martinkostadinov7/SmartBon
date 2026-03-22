@@ -10,5 +10,6 @@ namespace Data.Interfaces
         Task<List<Expense>> GetExpensesFromQueryAsync(int userId, ExpenseQueryParams queryParams);
         Task<CostRangeDto> GetCostRangeAsync(int userId);
         Task<DateRangeDto> GetDateRangeAsync(int userId);
+        Task AddRangeAsync(List<Expense> expenses);
     }
 }

@@ -47,7 +47,8 @@ export default function AddExpense() {
     const [isRecurring, setIsRecurring] = useState(false);
     const [selectedFrequency, setSelectedFrequency] = useState<string | null>();
     const frequencies = ["Daily", "Weekly", "Monthly", "Yearly"];
-    
+    const [isPremium, setIsPremium] = useState(false);
+
     type PaymentType = "Cash" | "Card" | "Transfer";
 
     const paymentOptions: { value: PaymentType; label: string }[] = [
@@ -136,6 +137,23 @@ async function sendPhotoToApi(photoToUpload: ImagePicker.ImagePickerAsset) {
         );
         console.log("Network/API error:", e?.message.message ?? e);
     }
+   }
+
+   function handlePremiumFeaturePress(message: string){
+     Alert.alert(
+         "Premium feature",
+         `${message} Would you like to upgrade to Premium for unlimited?`,
+         [
+           { text: "Cancel", style: "cancel" },
+           {
+             text: "Upgrade",
+             style: "default",
+             onPress: async () => {
+               router.push("(modals)/users/managePlan");
+             }
+           }
+         ]
+       );
    }
 
     async function handleAddExpense() {
@@ -238,6 +256,7 @@ async function sendPhotoToApi(photoToUpload: ImagePicker.ImagePickerAsset) {
                const currencyStr = currencyFromNumber[profileData.defaultCurrency];
                 setUserDefaultCurrency(currencyStr);
                 setSelectedCurrency(currencyStr);
+        setIsPremium(profileData.isPremium);
 
              } catch (error) {
                console.error(error);
@@ -341,53 +360,82 @@ async function sendPhotoToApi(photoToUpload: ImagePicker.ImagePickerAsset) {
         </View>
         {!goalId && (
 <>
-        <View style={[styles.row, {marginTop: 5}]}>
-          <Text style={[styles.label, {marginRight: 10}]}>Recurring</Text>
-          <Switch
-            style={{margin:7}}
-            trackColor={{ false: "#b1b1b1", true: "#00ae34" }}
-            thumbColor={"#ffffff"}
-            onValueChange={() => setIsRecurring(previousState => !previousState)}
-            value={isRecurring}
-          />
-        </View>
+{isPremium ? 
+(
+<View style={[styles.row, {marginTop: 5}]}>
+  <FontAwesome6 name= "rotate-right"  size={21} color="black"/>
+  <Text style={[styles.label, {marginRight: 10, marginLeft: 10}]}>Recurring</Text>
+  <Switch
+    style={{margin:7}}
+    trackColor={{ false: "#b1b1b1", true: "#00ae34" }}
+    thumbColor={"#ffffff"}
+    onValueChange={() => setIsRecurring(previousState => !previousState)}
+    value={isRecurring}
+  />
+</View>
+) : 
+(
+    <Pressable 
+  onPress={() => handlePremiumFeaturePress("Recurring expenses is a premium feature!")} 
+  style={({ pressed }) => [
+    { opacity: pressed ? 0.5 : 0.7 }, 
+  ]}
+>
+  <View style={[styles.row, { marginTop: 5 }]}>
+    <FontAwesome6 name="lock" size={21} color="black" />
+    <Text style={[styles.label, { marginRight: 10, marginLeft: 10 }]}>
+      Recurring
+    </Text>
+    
+    <View pointerEvents="none">
+      <Switch
+        style={{ margin: 7 }}
+        trackColor={{ false: "#b1b1b1", true: "#00ae34" }}
+        thumbColor={"#ffffff"}
+        value={isRecurring}
+      />
+    </View>
+  </View>
+</Pressable>
+)}
+
+
 {(isRecurring) && 
 (
 <>
-          <Text style={[styles.label, {marginRight: 10}]}>Frequency</Text>
+  <Text style={[styles.label, {marginRight: 10}]}>Frequency</Text>
+  <View style={styles.row}>
+    <ScrollView horizontal showsHorizontalScrollIndicator={false}>
 
-          <View style={styles.row}>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-
-                {frequencies.map((frequency) => {
-                    return (
-                    <TouchableOpacity
-                        key={frequency}
-                        style={{
-                        flexDirection: 'row', // За да подредим текста и иконата в линия
-                        alignItems: 'center',
-                        borderWidth: selectedFrequency === frequency ? 2 : 1,
-                        borderRadius: 10,
-                        marginRight: 7,
-                        paddingVertical: 9,
-                        paddingHorizontal: 12, // Малко повече място отстрани
-                        borderColor: selectedFrequency === frequency ? "black" : "gray",
-                        }}
-                        onPress={() => setSelectedFrequency(frequency)}
-                    >
-                        <Text style={{ 
-                            textAlign: "center", 
-                            fontSize: 14, 
-                            textTransform: 'capitalize',
-                            fontWeight: selectedFrequency === frequency ? 'bold' : 'normal'
-                        }}>
-                        {frequency}
-                        </Text>
-                    </TouchableOpacity>
-                    );
-                })}
-            </ScrollView>
-        </View>
+        {frequencies.map((frequency) => {
+            return (
+            <TouchableOpacity
+                key={frequency}
+                style={{
+                flexDirection: 'row', // За да подредим текста и иконата в линия
+                alignItems: 'center',
+                borderWidth: selectedFrequency === frequency ? 2 : 1,
+                borderRadius: 10,
+                marginRight: 7,
+                paddingVertical: 9,
+                paddingHorizontal: 12, // Малко повече място отстрани
+                borderColor: selectedFrequency === frequency ? "black" : "gray",
+                }}
+                onPress={() => setSelectedFrequency(frequency)}
+            >
+                <Text style={{ 
+                    textAlign: "center", 
+                    fontSize: 14, 
+                    textTransform: 'capitalize',
+                    fontWeight: selectedFrequency === frequency ? 'bold' : 'normal'
+                }}>
+                {frequency}
+                </Text>
+            </TouchableOpacity>
+            );
+        })}
+    </ScrollView>
+</View>
 </>
 )}
 </>

@@ -12,12 +12,13 @@ using Shared.DTOs;
 using Shared.DTOs.Expenses;
 using Shared.DTOs.Expenses.Ranges;
 using Shared.DTOs.Expenses.Recurring;
+using Shared.Enums;
 using System.Globalization;
 using System.Text;
 using System.Text.Json;
 namespace Services.Expenses
 {
-    public class ExpenseService(IUserAccessor user, IExpenseRepository expenseRepository, IRecurringExpenseRepository recurringExpenseRepository, IMapper mapper, IBudgetRepository budgetRepository, IConfiguration _configuration) : IExpenseService
+    public class ExpenseService(IUserAccessor user, IExpenseRepository expenseRepository, IRecurringExpenseRepository recurringExpenseRepository, IMapper mapper, IBudgetRepository budgetRepository, IConfiguration _configuration, ICategoryRepository categoryRepository, ISubcategoryRepository subcategoryRepository) : IExpenseService
     {
         public async Task<ExpenseReadDto> CreateExpenseAsync(ExpenseCreateDto dto)
         {
@@ -278,8 +279,13 @@ namespace Services.Expenses
 
         public async Task<ExportFileResultDto> ExportExpensesAsync(ExpenseQueryParams queryParams)
         {
+            User loggedUser = await user.GetUserAsync();
+            if (!loggedUser.IsPremium)
+            {
+                throw new BadRequestException("Exporting data is a remium feature!");
+            }
             var expenses = await expenseRepository.GetExpensesFromQueryAsync(user.Id, queryParams);
-            var expensesToExport = mapper.Map<List<ExpenseExportDto>>(expenses);
+            var expensesToExport = mapper.Map<List<ExpenseExportImportDto>>(expenses);
             byte[] content; 
 
             using (var memoryStream = new MemoryStream())
@@ -300,6 +306,104 @@ namespace Services.Expenses
                 ContentType = "text/csv",
                 FileName = $"expenses-{DateTime.UtcNow:yyyyMMdd}.csv"
             };
+        }
+
+        public async Task<bool> ImportExpensesAsync(IFormFile csvFile)
+        {
+            User loggedUser = await user.GetUserAsync();
+            if (!loggedUser.IsPremium)
+            {
+                throw new BadRequestException("Importing data is a remium feature!");
+            }
+            if (csvFile == null || csvFile.Length == 0)
+            {
+                throw new BadRequestException("File is invalid!");
+            }
+
+            List<Expense> expenses = new List<Expense>();
+            using (var reader = new StreamReader(csvFile.OpenReadStream()))
+            {
+                string csvContent = await reader.ReadToEndAsync();
+                List<Category> categories = await categoryRepository.GetAllAsync(user.Id);
+                List<string> categoryNames = categories.Select(c => c.Name).ToList();
+
+                List<Subcategory> subcategories = categories.SelectMany(c => c.Subcategories).ToList();
+                List<string> subcategoryNames = subcategories.Select(c => c.Name).ToList();
+
+                List<string> expensesStrings = csvContent.Split(Environment.NewLine).Skip(1).ToList();
+                int lineNumber = 1;
+
+                foreach (var expenseString in expensesStrings)
+                {
+                    lineNumber++;
+                    if (string.IsNullOrWhiteSpace(expenseString)) continue;
+
+                    var properties = expenseString.Split(',');
+
+                    if (properties.Length < 8)
+                        throw new Exception($"Error on line {lineNumber}: Invalid row format. Expected 8 columns, but found {properties.Length}.");
+
+                    var dto = new ExpenseExportImportDto();
+
+                    dto.Title = properties[0]?.Trim();
+                    if (string.IsNullOrEmpty(dto.Title))
+                        throw new Exception($"Error on line {lineNumber}: Title is required.");
+
+                    if (!decimal.TryParse(properties[1], CultureInfo.InvariantCulture, out decimal cost))
+                        throw new Exception($"Error on line {lineNumber}: Invalid amount (Cost). Make sure to use '.' as a decimal separator.");
+                    dto.Cost = cost;
+
+                    dto.Description = properties[2]?.Trim();
+
+                    string? catName = properties[3]?.Trim();
+                    if (string.IsNullOrEmpty(catName))
+                        throw new Exception($"Error on line {lineNumber}: Category name is required.");
+
+                    Category? category = categories.FirstOrDefault(c => c.Name == catName);
+                    if (category == null)
+                        throw new Exception($"Error on line {lineNumber}: Category '{catName}' does not exist.");
+
+                    dto.CategoryName = catName;
+
+                    string? subCatName = properties[4]?.Trim();
+                    if (!string.IsNullOrEmpty(subCatName))
+                    {
+                        bool existsInThisCategory = category.Subcategories.Any(s => s.Name == subCatName);
+                        if (!existsInThisCategory)
+                            throw new Exception($"Error on line {lineNumber}: Subcategory '{subCatName}' does not belong to category '{catName}'.");
+
+                        dto.SubcategoryName = subCatName;
+                    }
+
+                    Subcategory? subcategory = subcategories.FirstOrDefault(c => c.Name == subCatName);
+
+                    string? dateString = properties[5]?.Trim();
+                    string expectedFormat = "MM/dd/yyyy HH:mm:ss";
+
+                    if (!DateTime.TryParseExact(dateString, expectedFormat, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime date))
+                    {
+                        throw new Exception($"Error on line {lineNumber}: Invalid date format '{dateString}'. Please use exactly '{expectedFormat}'.");
+                    }
+                    dto.ExpenseDate = date;
+
+                    if (!Enum.TryParse<PaymentType>(properties[6], true, out var pType))
+                        throw new Exception($"Error on line {lineNumber}: Invalid Payment Type '{properties[6]}'. Available types: {string.Join(", ", Enum.GetNames(typeof(PaymentType)))}.");
+                    dto.PaymentType = pType;
+
+                    if (!Enum.TryParse<Currency>(properties[7], true, out var curr))
+                        throw new Exception($"Error on line {lineNumber}: Invalid Currency '{properties[7]}'. Available currencies: {string.Join(", ", Enum.GetNames(typeof(Currency)))}.");
+                    dto.Currency = curr;
+
+                    Expense expense = mapper.Map<Expense>(dto);
+                    expense.CreatedAt = DateTime.Now;
+                    expense.UserId = user.Id;
+                    expense.CategoryId = category.Id;
+                    expense.SubcategoryId = subcategory?.Id;
+                    expenses.Add(expense);
+                }
+            }
+            await expenseRepository.AddRangeAsync(expenses);
+            return true;
         }
     }
 }

@@ -6,7 +6,7 @@ using Microsoft.Extensions.Hosting;
 using Services.Interfaces;
 using Shared.Enums;
 
-namespace Services.Expenses
+namespace Services.BackgroundTasks
 {
     public class RecurringExpenseWorker(IServiceScopeFactory scopeFactory) : BackgroundService
     {
@@ -34,8 +34,8 @@ namespace Services.Expenses
                         List<Budget> budgets = await budgetRepository.GetAllAsync();
                         foreach (var budget in budgets)
                         {
-                            if ((budget.CategoryIds.Contains(expense.CategoryId) || ((expense.SubcategoryId != null) && budget.SubcategoryIds.Contains(expense.SubcategoryId!.Value))) &&
-                                (budget.From <= expense.ExpenseDate && budget.To >= expense.ExpenseDate))
+                            if ((budget.CategoryIds.Contains(expense.CategoryId) || expense.SubcategoryId != null && budget.SubcategoryIds.Contains(expense.SubcategoryId!.Value)) &&
+                                budget.From <= expense.ExpenseDate && budget.To >= expense.ExpenseDate)
                             {
                                 budget.CurrentAmount += expense.Cost;
                                 await budgetRepository.UpdateAsync(budget);

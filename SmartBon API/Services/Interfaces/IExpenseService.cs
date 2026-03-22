@@ -20,5 +20,6 @@ namespace Services.Interfaces
         Task<DateRangeDto> GetDateRangeAsync();
         Task<ExpenseFilledFromImageDto> ExtractExpenseDataAsync(IFormFile image);
         Task<ExportFileResultDto> ExportExpensesAsync(ExpenseQueryParams queryParams);
+        Task<bool> ImportExpensesAsync(IFormFile csvFile);
     }
 }

@@ -3,7 +3,7 @@ using FeelBack.Api.Extentions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
-using Services.Expenses;
+using Services.BackgroundTasks;
 using Services.Interfaces;
 using System.Text;
 
@@ -23,6 +23,9 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("SmartBonDb"));
 });
 
+builder.Services
+    .AddFluentEmail("info@smartbon.com")
+    .AddSmtpSender("sandbox.smtp.mailtrap.io", 2525, "467a581ce000d4", "ac377e93188010");
 
 //Log.Logger = new LoggerConfiguration()
 //    .ReadFrom.Configuration(builder.Configuration)
@@ -32,12 +35,13 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 builder.Services.AddHostedService<RecurringExpenseWorker>();
+builder.Services.AddHostedService<EmailSendingWorker>();
 builder.Services.AddCors(options =>
 {
     options.AddPolicy(name: MyAllowSpecificOrigins,
         policy =>
         {
-            policy.AllowAnyOrigin() // Позволява заявки от всяко устройство (Arduino, Телефон, PC)
+            policy.AllowAnyOrigin()
                   .AllowAnyHeader()
                   .AllowAnyMethod();
         });

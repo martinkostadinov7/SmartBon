@@ -1,23 +1,14 @@
-﻿using Services.Interfaces;
+﻿using Data.Models;
+using Services.Interfaces;
 using Shared.ApiExceptions;
-using System.Security.Claims;
 
-public class HttpContextUserAccessor : IUserAccessor
+public class HttpContextUserAccessor(IUserService userService, IHttpContextAccessor httpContextAccessor) : IUserAccessor
 {
-    private readonly IHttpContextAccessor _httpContextAccessor;
-
-    public HttpContextUserAccessor(IHttpContextAccessor httpContextAccessor)
-    {
-        _httpContextAccessor = httpContextAccessor;
-    }
-
-    public ClaimsPrincipal? User => _httpContextAccessor.HttpContext?.User;
-
     public int Id
     {
         get
         {
-            var idStr = _httpContextAccessor.HttpContext?.User?.FindFirst("Id")?.Value;
+            var idStr = httpContextAccessor.HttpContext?.User?.FindFirst("Id")?.Value;
             if (!int.TryParse(idStr, out var id))
             {
                 throw new BadRequestException("Invalid token!");
@@ -26,5 +17,8 @@ public class HttpContextUserAccessor : IUserAccessor
              return id;
         }
     }
-
+    public async Task<User> GetUserAsync()
+    {
+        return await userService.GetUserById(Id);
+    }
 }

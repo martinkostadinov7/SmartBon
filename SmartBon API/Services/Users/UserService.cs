@@ -6,6 +6,7 @@ using Services.Interfaces;
 using Shared.ApiExceptions;
 using Shared.DTOs.Users;
 using Shared.Enums;
+
 namespace Services.Users
 {
     public class UserService(IUserAccessor user, IUserRepository userRepo, IMapper mapper) : IUserService
@@ -68,6 +69,25 @@ namespace Services.Users
             userFromDb.IsPremium = isPremium;
             await userRepo.UpdateAsync(userFromDb);
             return true;
+        }
+
+        public async Task<List<User>> GetAllUsersForMonthlyReportAsync()
+        {
+            List<User> users = await userRepo.GetAllAsync();
+            return users.Where(u => u.ReceiveMonthlyReportEmail == true && u.IsPremium == true).ToList();
+        }
+
+        public async Task<bool> ToggleMonthlyReport(bool receiveMonthlyReportEmail)
+        {
+            User userFromDb = await userRepo.GetByIdAsync(user.Id) ?? throw new NotFoundException("User was not found");
+            userFromDb.ReceiveMonthlyReportEmail = receiveMonthlyReportEmail;
+            await userRepo.UpdateAsync(userFromDb);
+            return true;
+        }
+
+        public async Task<User> GetUserById(int id)
+        {
+            return await userRepo.GetByIdAsync(id) ?? throw new NotFoundException("User not found!");
         }
     }
 }

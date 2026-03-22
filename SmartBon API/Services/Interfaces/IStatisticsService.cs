@@ -11,5 +11,6 @@ namespace Services.Interfaces
         public Task<PaymentTypePieChart> GetPaymentTypePieChartAsync(ExpenseQueryParams expenseQueryParams);
         public Task<DaysBarChart> GetDaysBarChartAsync();
         public Task<MonthlyReport> GetMonthlyReportAsync();
+        public Task<MonthlyReport> GetMonthlyReportAsync(int id);
     }
 }

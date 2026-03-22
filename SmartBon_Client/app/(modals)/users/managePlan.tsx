@@ -148,7 +148,7 @@ export default function ChangeCategory() {
                         <FontAwesome6 name="tags" size={21} color="black" /><Text style={{fontSize: 16}}>  Custom Categories: Total control.</Text>
                     </View>
                     <View style={styles.row}>
-                        <FontAwesome6 name="arrows-rotate" size={21} color="black" /><Text style={{fontSize: 16}}>  Recurring Bills: Auto-track subs.</Text>
+                        <FontAwesome6 name="rotate-right" size={21} color="black" /><Text style={{fontSize: 16}}>  Recurring Bills: Auto-track subs.</Text>
                     </View>
                     <View style={styles.row}>
                         <FontAwesome6 name="file-export" size={21} color="black" /><Text style={{fontSize: 16}}>  CSV Export/Import: Manage data.</Text>

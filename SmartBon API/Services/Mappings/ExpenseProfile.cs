@@ -7,9 +7,15 @@ public class ExpenseProfile : Profile
     public ExpenseProfile()
     {
         CreateMap<Expense, ExpenseReadDto>();
-        CreateMap<Expense, ExpenseExportDto>()
+        CreateMap<Expense, ExpenseExportImportDto>()
             .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category.Name))
             .ForMember(dest => dest.SubcategoryName, opt => opt.MapFrom(src => src.Subcategory.Name));
+
+        CreateMap<ExpenseExportImportDto, Expense>()
+           .ForMember(dest => dest.CategoryId, opt => opt.Ignore())
+           .ForMember(dest => dest.SubcategoryId, opt => opt.Ignore())
+            .ForMember(dest => dest.Category, opt => opt.Ignore())
+           .ForMember(dest => dest.Subcategory, opt => opt.Ignore());
 
         CreateMap<ExpenseCreateDto, Expense>();
         CreateMap<ExpenseUpdateDto, Expense>();
@@ -19,12 +25,8 @@ public class ExpenseProfile : Profile
 
         CreateMap<RecurringExpense, RecurringExpenseReadDto>();
         CreateMap<RecurringExpense, Expense>()
-            // Игнорираме Id-то, за да може БД да генерира ново за всеки разход
             .ForMember(dest => dest.Id, opt => opt.Ignore())
-            // Казваме на коя дата отговаря разхода (обикновено датата на изпълнение)
             .ForMember(dest => dest.ExpenseDate, opt => opt.MapFrom(src => src.NextExecutionDate))
-            // Игнорираме навигационните свойства, за да не се опитва AutoMapper 
-            // да ги пресъздава (EF ще се погрижи за тях чрез ID-тата)
             .ForMember(dest => dest.Category, opt => opt.Ignore())
             .ForMember(dest => dest.Subcategory, opt => opt.Ignore())
             .ForMember(dest => dest.User, opt => opt.Ignore())

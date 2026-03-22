@@ -1,11 +1,9 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Services.Interfaces;
 using Shared.DTOs;
 using Shared.DTOs.Expenses;
 using Shared.DTOs.Expenses.Ranges;
 using Shared.DTOs.Expenses.Recurring;
-using System.Collections.Generic;
 namespace SmartBon_API.Controllers
 {
     [Route("/api/[controller]")]
@@ -99,6 +97,13 @@ namespace SmartBon_API.Controllers
                     result.ContentType,
                     result.FileName
                 );
+        }
+
+        [HttpPost("import")]
+        public async Task<ActionResult<ExportFileResultDto>> ImportExpenses([FromForm] IFormFile csvFile)
+        {
+            await expenseService.ImportExpensesAsync(csvFile);
+            return Ok();
         }
     }
 }

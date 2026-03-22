@@ -1,7 +1,7 @@
 ﻿using Shared.Enums;
 namespace Shared.DTOs.Expenses
 {
-    public class ExpenseExportDto
+    public class ExpenseExportImportDto
     {
         public string Title { get; set; }
 

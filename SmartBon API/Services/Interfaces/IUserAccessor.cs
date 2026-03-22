@@ -1,4 +1,5 @@
-﻿using System.Security.Claims;
+﻿using Data.Models;
+using System.Security.Claims;
 
 namespace Services.Interfaces
 {
@@ -6,6 +7,6 @@ namespace Services.Interfaces
     {
         int Id { get; }
 
-        ClaimsPrincipal? User { get; }
+        Task<User> GetUserAsync();
     }
 }

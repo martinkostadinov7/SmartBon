@@ -10,6 +10,12 @@ namespace Data.Repositories
 {
     public class ExpenseRepository(AppDbContext context) : EFRepository<Expense>(context), IExpenseRepository
     {
+        public async Task AddRangeAsync(List<Expense> expenses)
+        {
+            _dbSet.AddRange(expenses);
+            _context.SaveChanges();
+        }
+
         public async Task<List<Expense>> GetAllAsync(int userId)
         {
             IQueryable<Expense> query = _dbSet.AsQueryable();
