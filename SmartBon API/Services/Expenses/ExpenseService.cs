@@ -18,7 +18,7 @@ using System.Text;
 using System.Text.Json;
 namespace Services.Expenses
 {
-    public class ExpenseService(IUserAccessor user, IExpenseRepository expenseRepository, IRecurringExpenseRepository recurringExpenseRepository, IMapper mapper, IBudgetRepository budgetRepository, IConfiguration _configuration, ICategoryRepository categoryRepository, ISubcategoryRepository subcategoryRepository) : IExpenseService
+    public class ExpenseService(IUserRepository userRepo, IUserAccessor user, IExpenseRepository expenseRepository, IRecurringExpenseRepository recurringExpenseRepository, IMapper mapper, IBudgetRepository budgetRepository, IConfiguration _configuration, ICategoryRepository categoryRepository, ISubcategoryRepository subcategoryRepository) : IExpenseService
     {
         public async Task<ExpenseReadDto> CreateExpenseAsync(ExpenseCreateDto dto)
         {
@@ -171,6 +171,12 @@ namespace Services.Expenses
 
         public async Task<ExpenseFilledFromImageDto> ExtractExpenseDataAsync(IFormFile image)
         {
+            User loggedUser = await userRepo.GetByIdAsync(user.Id) ?? throw new BadRequestException("Üser not found");
+            if (!loggedUser.IsPremium && loggedUser.ReceiptScansCount >= 5)
+            {
+                throw new BadRequestException("Reached maximum receipt scans!");
+            }
+
             string apiKey = _configuration["ApiKeys:OPENAI_API_KEY"];
             OpenAIClient client = new("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");
 
@@ -179,16 +185,14 @@ namespace Services.Expenses
             if (image == null || image.Length == 0)
                 throw new BadRequestException("No file uploaded.");
 
-            // 1. Process the stream to BinaryData
             using var stream = new MemoryStream();
             await image.CopyToAsync(stream);
             var imageData = BinaryData.FromBytes(stream.ToArray(), image.ContentType);
             ChatCompletionOptions options = new()
             {
                 ResponseFormat = ChatResponseFormat.CreateJsonObjectFormat(),
-                Temperature = 0.0f // Keep it consistent for data extraction
+                Temperature = 0.0f
             };
-            // 2. Create the message using the static factory method CreateImagePart
             List<ChatMessage> messages = new()
             {
                 new SystemChatMessage(@"
@@ -216,20 +220,21 @@ namespace Services.Expenses
                 )
             };
 
-            // 3. Send to the model
             ChatCompletion completion = await chatClient.CompleteChatAsync(messages, options);
             Console.WriteLine($"[ASSISTANT]: {completion.Content[0].Text}");
 
 
             string jsonResponse = completion.Content[0].Text;
 
-            // Use JsonSerializer to map the string to your object
             var jsonOptions = new JsonSerializerOptions
             {
-                PropertyNameCaseInsensitive = true // This handles "title" vs "Title" automatically
+                PropertyNameCaseInsensitive = true
             };
 
             ExpenseFilledFromImageDto? mappedExpense = JsonSerializer.Deserialize<ExpenseFilledFromImageDto>(jsonResponse, jsonOptions);
+            loggedUser.ReceiptScansCount++;
+            await userRepo.UpdateAsync(loggedUser);
+
             return mappedExpense;
         }
 

@@ -194,7 +194,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     paddingHorizontal: 12,
     paddingVertical: 10,
-    fontSize: 16,
+    fontSize: 1
   },
   iconButton: {
     borderWidth: 1,

@@ -404,7 +404,7 @@ namespace Services.Statistics
 
             MonthlyReport monthlyReport = new MonthlyReport();
 
-            if (!expenses.Any())
+            if (expenses.Count == 0)
             {
                 return monthlyReport;
             }
@@ -416,7 +416,7 @@ namespace Services.Statistics
             monthlyReport.AverageSpentPerDay = decimal.Round((monthlyReport.TotalSpent / expenses.Count), 2);
             monthlyReport.NoSpendDaysCount = DateTime.DaysInMonth(start.Year, start.Month) - expenses.Select(e => e.ExpenseDate.Date).Distinct().Count();
 
-            if (!expensesPrevMonth.Any())
+            if (expensesPrevMonth.Count == 0)
             {
                 monthlyReport.PercentageChange = 100;
             }

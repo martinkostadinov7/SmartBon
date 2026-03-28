@@ -31,6 +31,10 @@ namespace Data.Repositories
 
         public async Task<CostRangeDto> GetCostRangeAsync(int userId)
         {
+            if (!_dbSet.Where(e => e.UserId == userId).Any())
+            {
+                return new CostRangeDto {  Lowest = 0, Highest = 0};
+            }
             decimal lowest = await _dbSet
                 .Where(e => e.UserId == userId)
                 .MinAsync(e => e.Cost);
@@ -48,6 +52,10 @@ namespace Data.Repositories
 
         public async Task<DateRangeDto> GetDateRangeAsync(int userId)
         {
+            if (!_dbSet.Where(e => e.UserId == userId).Any())
+            {
+                return new DateRangeDto { Earliest = DateTime.Now, Latest = DateTime.Now};
+            }
             DateTime earliest = await _dbSet
                 .Where(e => e.UserId == userId)
                 .MinAsync(e => e.ExpenseDate);

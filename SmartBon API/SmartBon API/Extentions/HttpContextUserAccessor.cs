@@ -1,8 +1,9 @@
-﻿using Data.Models;
+﻿using Data.Interfaces;
+using Data.Models;
 using Services.Interfaces;
 using Shared.ApiExceptions;
 
-public class HttpContextUserAccessor(IUserService userService, IHttpContextAccessor httpContextAccessor) : IUserAccessor
+public class HttpContextUserAccessor(IUserRepository userRepo, IHttpContextAccessor httpContextAccessor) : IUserAccessor
 {
     public int Id
     {
@@ -19,6 +20,6 @@ public class HttpContextUserAccessor(IUserService userService, IHttpContextAcces
     }
     public async Task<User> GetUserAsync()
     {
-        return await userService.GetUserById(Id);
+        return await userRepo.GetByIdAsync(Id) ?? throw new NotFoundException("User not found!");
     }
 }

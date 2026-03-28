@@ -186,33 +186,42 @@ return (<>
     </View>
 
     <View style={{backgroundColor: "white" , borderRadius: 20, marginHorizontal: 15, marginBottom: 15, padding: 15}}>
-      <Text style={{fontSize: 20, marginBottom: 20}}>Alerts & Reports</Text>
-
-      <View style={{borderRadius:10,backgroundColor: "rgba(48, 119, 206, 0.13)", marginBottom: 10}}>
-        <TouchableOpacity activeOpacity={0.9} style={styles.row} onPress={() => setIsBudgetLimitAlertEnabled(previousState => !previousState)}>
-          <Text style={{margin: 10, fontSize: 17}}><FontAwesome6 name="triangle-exclamation" size={21} color="black" />   Budget limit alert</Text>
-          <Switch
-            style={{margin:7}}
-            trackColor={{ false: "#b1b1b1", true: "#00ae34" }}
-            thumbColor={"#ffffff"}
-            onValueChange={() => setIsBudgetLimitAlertEnabled(previousState => !previousState)}
-            value={isBudgetLimitAlertEnabled}
-          />
-        </TouchableOpacity>
-      </View>
+      <Text style={{fontSize: 20, marginBottom: 20}}>Email receiving</Text>
       
-      <View style={{borderRadius:10,backgroundColor: "rgba(48, 119, 206, 0.13)", marginBottom: 10}}>
-        <TouchableOpacity activeOpacity={0.9} style={styles.row} onPress={() => setIsMonthlyEmailReportsEnabled(previousState => !previousState)}>
-          <Text style={{margin: 10, fontSize: 17}}><FontAwesome6 name="envelope-open-text" size={21} color="black" />   Monthly email reports</Text>
-          <Switch
-              style={{margin:7}}
-              trackColor={{ false: "#b1b1b1", true: "#00ae34" }}
-              thumbColor={"#ffffff"}
-              onValueChange={() => {handleToggleMonthlyReport(!isMonthlyEmailReportsEnabled); setIsMonthlyEmailReportsEnabled(previousState => !previousState); }}
-              value={isMonthlyEmailReportsEnabled}
-            />
-        </TouchableOpacity>
-      </View>
+
+      <TouchableOpacity 
+  onPress={isPremium ? handleOpenExportExpensesMenu : () => handlePremiumFeaturePress("Receiving monthly reports by email is a premium feature!")} 
+  style={[
+    styles.row, 
+    {
+      borderRadius: 10, 
+      backgroundColor: isPremium ? "rgba(48, 119, 206, 0.32)" : "rgba(48, 119, 206, 0.13)", 
+      marginBottom: 10
+    }
+  ]}
+>
+  <Text style={{margin: 10, fontSize: 17, color: isPremium ? "#000000" : "#8c8c8c"}}><FontAwesome6 name= {isPremium ? "envelope-open-text" : "lock"} size={21} color="black" />   Monthly reports</Text>
+
+
+  <Switch
+    style={{ margin: 7 }}
+    trackColor={{ false: "#b1b1b1", true: "#00ae34" }}
+    thumbColor={"#ffffff"}
+    // Важно: Тук е поправката на логиката
+    onValueChange={() => {
+      if (isPremium) {
+        const nextState = !isMonthlyEmailReportsEnabled;
+        setIsMonthlyEmailReportsEnabled(nextState);
+        handleToggleMonthlyReport(nextState);
+      } else {
+        handlePremiumFeaturePress("Receiving monthly reports by email is a premium feature!");
+      }
+    }}
+    // Деактивираме суича визуално, ако не е премиум
+    disabled={!isPremium} 
+    value={isMonthlyEmailReportsEnabled}
+  />      
+</TouchableOpacity>
     </View>
 
     <View style={{backgroundColor: "white" , borderRadius: 20, marginHorizontal: 15, marginBottom: 15, padding: 15}}>

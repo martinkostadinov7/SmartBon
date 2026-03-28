@@ -1,4 +1,4 @@
-import { View, ScrollView, StyleSheet, Text, TouchableOpacity, TextInput, Keyboard, Pressable, Dimensions, FlatList } from "react-native";
+import { View, ScrollView, StyleSheet, Text, TouchableOpacity, TextInput, Keyboard, Pressable, Dimensions, FlatList, ActivityIndicator } from "react-native";
 import React, { useCallback, useEffect, useState } from "react";
 import { router, useFocusEffect } from "expo-router";
 import { useCategories } from "../../context/CategoriesContext";
@@ -35,26 +35,35 @@ const currencyMap: Record<string, number | null> = {
 };
 export default function ExpensesScreen() {
   const { categories } = useCategories();
+  
+  // Данни
   const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [isExpensesLoading, setIsExpensesLoading] = useState(true); // Първоначално зареждане
+  const [isLoadingNextPage, setIsLoadingNextPage] = useState(false); // За pagination
+  
+  // Филтри и Сортиране
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<Number[]>([]);
   const [selectedSubcategoryIds, setSelectedSubcategoryIds] = useState<Number[]>([]);
-  const [filterIconColor, setFilterIconColor] = useState("#3077ceff");
-  const [sortIconColor, setSortIconColor] = useState("#3077ceff");
-  const [isFilterScreenOpened, setIsFilterScreenOpened] = useState(false);
-  const [isSortScreenOpened, setIsSortScreenOpened] = useState(false);
-  const [dateRange, setDateRange] = useState<[Date, Date]>([new Date(), new Date()]);
+  const [selectedPaymentTypes, setSelectedPaymentType] = useState<("Cash" | "Card" | "Transfer")[]>([]);
+  const [selectedCurrency, setSelectedCurrency] = useState("");
   const [search, setSearch] = useState("");
-  const [earliestDate, setEarliestDate] = useState(new Date());
-  const [latestDate, setLatestDate] = useState(new Date());
+  const [dateRange, setDateRange] = useState<[Date, Date]>([new Date(), new Date()]);
+  const [costRange, setCostRange] = useState([0, 9999.99]);
+  
+  // Статистически данни от DB
   const [lowestCost, setLowestCost] = useState(0);
   const [highestCost, setHighestCost] = useState(0);
+  const [earliestDate, setEarliestDate] = useState(new Date());
+  const [latestDate, setLatestDate] = useState(new Date());
+
+  // UI Стейт
+  const [isFilterScreenOpened, setIsFilterScreenOpened] = useState(false);
+  const [isSortScreenOpened, setIsSortScreenOpened] = useState(false);
   const [selectedSortBy, setSelectedSortBy] = useState("Date");
   const [selectedOrder, setSelectedOrder] = useState("Descending");
-  const [selectedCurrency, setSelectedCurrency] = useState("");
-
-  let afterValue = "";
-  let afterDate = "";
-  const [costRange, setCostRange] = useState([0, 9999.99]); // Начална и крайна цена
+  const [filterIconColor, setFilterIconColor] = useState("#3077ceff");
+  const [sortIconColor, setSortIconColor] = useState("#3077ceff");
+const [hasMore, setHasMore] = useState(true);
   let subcategories: Subcategory[] = [];
 
   type PaymentType = "Cash" | "Card" | "Transfer";
@@ -65,57 +74,13 @@ export default function ExpensesScreen() {
   { value: "Transfer", label: "Transfer" },
   ];
 
-  const [selectedPaymentTypes, setSelectedPaymentType] = useState<PaymentType[]>([]);
-
   if (selectedCategoryIds.length === 1) {
     const selectedCategory = categories.find(c => c.id === selectedCategoryIds[0]);
     subcategories = selectedCategory?.subcategories ?? [];
   }
 
-  const loadExpenses = useCallback(async () => {
-    setRangesFromDb();
-    fetchData();
-  }, []);
-
-  async function setRangesFromDb(){
-    const costResponse = await apiFetch("/Expenses/costRange");
-    if (!costResponse.ok) {
-      throw new Error("Failed to load cost range");
-    }
-    const costData = await costResponse.json();
-    setLowestCost(costData.lowest);
-    setHighestCost(costData.highest);
-    setCostRange([costData.lowest, costData.highest]);
-
-    const dateResponse = await apiFetch("/Expenses/dateRange");
-    if (!dateResponse.ok) {
-      throw new Error("Failed to load date range");
-    }
-    const dataData = await dateResponse.json();
-    const parseDate = (dateString: string) => {
-    const fixedString = dateString.includes('.') 
-        ? dateString.split('.')[0] + '.' + dateString.split('.')[1].substring(0, 3) + 'Z'
-        : dateString;
-    return new Date(fixedString);
-    };
-    setEarliestDate(parseDate(dataData.earliest));
-    setLatestDate(new Date());
-    setDateRange([parseDate(dataData.earliest), new Date()]);
-  }
-
-  useFocusEffect(
-    useCallback(() => {
-      loadExpenses();
-      handleClearParams();
-    }, [loadExpenses])
-  );
-
   function handleAddExpense() {
     router.push("../../(modals)/expenses/addExpense");
-  }
-
-  function handleExpenseView(id: number) {
-    router.push(`(modals)/expenses/${id}`);
   }
   function handleClearSortParams(){
     setSelectedOrder("Descending");
@@ -160,14 +125,47 @@ export default function ExpensesScreen() {
     }
   }
 
-  async function updateExpensesFromQuery(){
-    if (selectedCategoryIds.length > 1) {
-      setSelectedSubcategoryIds([]);
+  const parseDate = (dateString: string) => {
+    const fixedString = dateString.includes('.') 
+        ? dateString.split('.')[0] + '.' + dateString.split('.')[1].substring(0, 3) + 'Z'
+        : dateString;
+    return new Date(fixedString);
+  };
+
+  const formatCost = (amount: number, currencyCode: string) => {
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency: currencyCode }).format(amount);
+  };
+
+  const setRangesFromDb = async () => {
+    try {
+      const [costRes, dateRes] = await Promise.all([
+        apiFetch("/Expenses/costRange"),
+        apiFetch("/Expenses/dateRange")
+      ]);
+
+      if (costRes.ok) {
+        const costData = await costRes.json();
+        setLowestCost(costData.lowest);
+        setHighestCost(costData.highest);
+        setCostRange([costData.lowest, costData.highest]);
+      }
+
+      if (dateRes.ok) {
+        const dateData = await dateRes.json();
+        const start = parseDate(dateData.earliest);
+        setEarliestDate(start);
+        setDateRange([start, new Date()]);
+      }
+    } catch (e) {
+      console.error("Error setting ranges:", e);
     }
+  };
+
+  const updateExpensesFromQuery = async (isInitial = false) => {
+    if (isInitial) setIsExpensesLoading(true);
+    setHasMore(true); // Нулираме флага при всяка нова филтрация
     const query = new URLSearchParams({
       "Search": search,
-      "AfterValue": "",
-      "AfterDate": "",
       "PageSize": "10",
       "FilterParams.StartDate": dateRange[0].toISOString(),
       "FilterParams.EndDate": dateRange[1].toISOString(),
@@ -177,163 +175,84 @@ export default function ExpensesScreen() {
       "SortParams.SortBy": String(sortByMap[selectedSortBy]),  
     });
 
-    selectedCategoryIds.forEach(id => {
-        query.append("FilterParams.CategoryIds", id.toString());
-    });
+    selectedCategoryIds.forEach(id => query.append("FilterParams.CategoryIds", id.toString()));
+    selectedSubcategoryIds.forEach(id => query.append("FilterParams.SubcategoryIds", id.toString()));
+    selectedPaymentTypes.forEach(pt => query.append("FilterParams.PaymentTypes", String(paymentTypeMap[pt])));
+    if(selectedCurrency) query.append("FilterParams.Currency", String(currencyMap[selectedCurrency]));
 
-    selectedSubcategoryIds.forEach(id => {
-        query.append("FilterParams.SubcategoryIds", id.toString());
-    });
-
-    selectedPaymentTypes.forEach(paymentType => {
-        query.append("FilterParams.PaymentTypes", String(paymentTypeMap[paymentType]));
-    });
-
-    
-    if(selectedCurrency != ""){
-      query.append("FilterParams.Currency", String(currencyMap[selectedCurrency]));
-    }
-
-    
-    const response = await apiFetch(`/Expenses?${query.toString()}`, {
-        method: "GET",
-        headers: {
-            "Content-Type": "application/json",
-        }
-    });
-
-    if (!response.ok) {
-      throw new Error("Failed to load expenses");
-    }
-    await response.json().then(setExpenses); 
-  }
-
-const [isLoading, setIsLoading] = useState(false);
-
-async function loadNextPage() {
-  if (isLoading || expenses.length === 0) return; // Предотвратява дублиране
-
-  setIsLoading(true);
-  const lastExpense = expenses[expenses.length - 1];
-  
-  let currentAfterValue = "";
-  if (selectedSortBy === "Title") currentAfterValue = lastExpense.title;
-  else if (selectedSortBy === "Cost") currentAfterValue = String(lastExpense.cost.toLocaleString('bg-BG'));
-  else if (selectedSortBy === "Date") currentAfterValue = new Date(lastExpense.expenseDate + "Z").toISOString();;
-
-  const currentAfterDate = new Date(lastExpense.expenseDate + "Z").toISOString();
-
-  const query = new URLSearchParams({
-    "Search": search,
-    "AfterValue": currentAfterValue,
-    "AfterDate": currentAfterDate,
-    "PageSize": "10", 
-    "FilterParams.StartDate": dateRange[0].toISOString(),
-    "FilterParams.EndDate": dateRange[1].toISOString(),
-    "FilterParams.FromCost": String(costRange[0]),
-    "FilterParams.ToCost": String(costRange[1]),
-    "SortParams.Descending": selectedOrder === "Descending" ? "true" : "false",
-    "SortParams.SortBy": String(sortByMap[selectedSortBy]),
-  });
-
-    selectedCategoryIds.forEach(id => {
-          query.append("FilterParams.CategoryIds", id.toString());
-      });
-
-      selectedSubcategoryIds.forEach(id => {
-          query.append("FilterParams.SubcategoryIds", id.toString());
-      });
-
-      selectedPaymentTypes.forEach(paymentType => {
-          query.append("FilterParams.PaymentTypes", String(paymentTypeMap[paymentType]));
-      });
-
-    if(selectedCurrency != ""){
-      query.append("FilterParams.Currency", String(currencyMap[selectedCurrency]));
-    }
-
-  try {
-    const response = await apiFetch(`/Expenses?${query.toString()}`);
-    if (response.ok) {
-      const newExpenses = await response.json();
-      if (newExpenses.length > 0) {
-        setExpenses(prev => [...prev, ...newExpenses]);
+    try {
+      const response = await apiFetch(`/Expenses?${query.toString()}`);
+      if (response.ok) {
+        const data = await response.json();
+        setExpenses(data);
+        if (data.length < 10) setHasMore(false);
       }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsExpensesLoading(false);
     }
-  } catch (e) {
-    console.error(e);
-  } finally {
-    setIsLoading(false);
-  }
-}
+  };
 
-  const fetchData = async () => {
-    if (selectedCategoryIds.length > 1) {
-      setSelectedSubcategoryIds([]);
-    }
-    
+  const loadNextPage = async () => {
+if (isLoadingNextPage || !hasMore || expenses.length === 0) return;    
+setIsLoadingNextPage(true);
+
+    const lastExpense = expenses[expenses.length - 1];
+    let afterValue = "";
+    if (selectedSortBy === "Title") afterValue = lastExpense.title;
+    else if (selectedSortBy === "Cost") afterValue = String(lastExpense.cost.toLocaleString("bg-BG"));
+    else afterValue = new Date(lastExpense.expenseDate + "Z").toISOString();
+
     const query = new URLSearchParams({
-      "Search": "",
-      "AfterValue": "",
-      "AfterDate": "",
+      "Search": search,
+      "AfterValue": afterValue,
+      "AfterDate": new Date(lastExpense.expenseDate + "Z").toISOString(),
       "PageSize": "10",
       "FilterParams.StartDate": dateRange[0].toISOString(),
       "FilterParams.EndDate": dateRange[1].toISOString(),
-      "FilterParams.FromCost": String(costRange[0]), 
-      "FilterParams.ToCost": String(costRange[1]),
-      "SortParams.Descending": "true",  
-      "SortParams.SortBy": "Date",  
+      "SortParams.Descending": selectedOrder === "Descending" ? "true" : "false",
+      "SortParams.SortBy": String(sortByMap[selectedSortBy]),
     });
 
-    selectedCategoryIds.forEach(id => {
-        query.append("FilterParams.CategoryIds", id.toString());
-    });
-
-    selectedSubcategoryIds.forEach(id => {
-        query.append("FilterParams.SubcategoryIds", id.toString());
-    });
-
-    selectedPaymentTypes.forEach(paymentType => {
-        query.append("FilterParams.PaymentTypes", String(paymentTypeMap[paymentType]));
-    });
-
-    if(selectedCurrency != ""){
-      query.append("FilterParams.Currency", String(currencyMap[selectedCurrency]));
+    // Добавяне на масивите към куерито (същата логика като горе)
+    selectedCategoryIds.forEach(id => query.append("FilterParams.CategoryIds", id.toString()));
+    selectedSubcategoryIds.forEach(id => query.append("FilterParams.SubcategoryIds", id.toString()));
+    selectedPaymentTypes.forEach(pt => query.append("FilterParams.PaymentTypes", String(paymentTypeMap[pt])));
+    console.log(query.toString());
+    try {
+      const response = await apiFetch(`/Expenses?${query.toString()}`);
+      if (response.ok) {
+        const newExpenses = await response.json();
+        if (newExpenses.length === 0) {
+        setHasMore(false); // Край на данните
+      } else {
+        setExpenses(prev => [...prev, ...newExpenses]);
+        // Ако новата порция е по-малка от 10, също спираме следващи заявки
+        if (newExpenses.length < 10) setHasMore(false);
+      }}
+    } finally {
+      setIsLoadingNextPage(false);
     }
+  };
 
-    const response = await apiFetch(`/Expenses?${query.toString()}`, {
-        method: "GET",
-        headers: {
-            "Content-Type": "application/json",
-        }
-    });
+  useEffect(() => {
+  setRangesFromDb();
+}, []);
 
-    if (!response.ok) {
-      throw new Error("Failed to load expenses");
-    }
-    await response.json().then(setExpenses); 
-  }
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
-    updateExpensesFromQuery();
+      updateExpensesFromQuery();
     }, 500);
-
     return () => clearTimeout(delayDebounceFn);
-}, [selectedCategoryIds, selectedSubcategoryIds,selectedPaymentTypes ,search, dateRange, costRange, selectedOrder, selectedSortBy, selectedCurrency]);
-
-const formatCost = (amount: number, currencyCode: string) => {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: currencyCode,
-  }).format(amount);
-};
+  }, [selectedCategoryIds, selectedSubcategoryIds, selectedPaymentTypes, search, dateRange, costRange, selectedOrder, selectedSortBy, selectedCurrency]);
 
   return (<>
   <View >
     <View style={[styles.row, {padding: 15, backgroundColor: "#3077ceff"}]}>
       <Text style={{fontSize: 32, color: "white"}}>Expenses</Text>
     </View>
-    <View style={[styles.row, {marginLeft: 15, marginTop: 15, width: 65}]}>
+    <View style={[styles.row, {marginLeft: 15, marginVertical: 15, width: 65}]}>
         <TouchableOpacity onPress={handleToggleFilterScreen}>
           <FontAwesome6 name="filter" size={30} color={filterIconColor}/>
         </TouchableOpacity>
@@ -342,192 +261,196 @@ const formatCost = (amount: number, currencyCode: string) => {
         </TouchableOpacity>
       </View>
     {isFilterScreenOpened && (
-      <Pressable style={styles.filterScreen}
-      onPress={() => Keyboard.dismiss()}>
-         <View style={styles.header}>
-            <TouchableOpacity onPress={handleToggleFilterScreen}>
-            <Text style={[styles.headerBtn, {}]}>{"▲"}</Text>
-            </TouchableOpacity>
+      <ScrollView style={styles.filterScreen}>
+        <Pressable 
+        onPress={() => Keyboard.dismiss()}>
+          <View style={styles.header}>
+              <TouchableOpacity onPress={handleToggleFilterScreen}>
+              <Text style={[styles.headerBtn, {}]}>{"Hide ▲"}</Text>
+              </TouchableOpacity>
 
-            <TouchableOpacity onPress={handleClearParams}>
-              <Text style={[styles.headerBtn, {color: "red"}]}>Clear</Text> 
-            </TouchableOpacity>
-        </View>
-        <View style={styles.row}>
-          <Text style={{fontSize: 18}}>Search:</Text>
-          <TextInput
-            style={styles.searchInput}
-            onChangeText={newSearch => setSearch(newSearch)}
-            value={search}
-            onBlur={Keyboard.dismiss}
-          />
+              <TouchableOpacity onPress={handleClearParams}>
+                <Text style={[styles.headerBtn, {color: "red"}]}>Clear</Text> 
+              </TouchableOpacity>
+          </View>
+          <View style={styles.row}>
+            <Text style={{fontSize: 18}}>Search:</Text>
+            <TextInput
+              style={styles.searchInput}
+              onChangeText={newSearch => setSearch(newSearch)}
+              value={search}
+              onBlur={Keyboard.dismiss}
+            />
 
-        </View>
+          </View>
 
-        <Text style={{fontSize: 18, marginBottom: 5}}>Category</Text>
-        <View style={{ overflow: "hidden" }}>
-          <ScrollView
-            horizontal
-            style={{marginBottom: 10}}
-            showsHorizontalScrollIndicator={false}
-          >
-            {categories.map(category => (
-              <CategoryBox
-                key={category.id}
-                name={category.name}
-                icon={category.icon}
+          <Text style={{fontSize: 18, marginBottom: 5}}>Category</Text>
+          <View style={{ overflow: "hidden" }}>
+            <ScrollView
+              horizontal
+              style={{marginBottom: 10}}
+              showsHorizontalScrollIndicator={false}
+            >
+              {categories.map(category => (
+                <CategoryBox
+                  key={category.id}
+                  name={category.name}
+                  icon={category.icon}
+                  fontSize={12}
+                  iconSize={30}
+                  boxSize={73}
+                  color={category.colorHex}
+                  selected={selectedCategoryIds.includes(category.id)}
+                  onPress={() => {
+                    selectedCategoryIds.includes(category.id) ? 
+                    setSelectedCategoryIds(prev => prev.filter(num => num !== category.id)) :
+                    setSelectedCategoryIds(prevCategories => [...prevCategories, category.id]);
+                  }}
+                />
+              ))}
+            </ScrollView>
+          </View>
+          {selectedCategoryIds.length === 1 && ( <>
+            <Text style={{fontSize: 18, marginBottom: 5}}>Subcategory</Text>
+            <View style={{ overflow: "hidden" }}>
+              <ScrollView
+              horizontal
+              style={{marginBottom: 10}}
+              showsHorizontalScrollIndicator={false}
+              >
+              {subcategories.map(subcategory => (
+                <CategoryBox
+                key={subcategory.id}
+                name={subcategory.name}
+                icon={subcategory.icon}
                 fontSize={12}
                 iconSize={30}
                 boxSize={73}
-                color={category.colorHex}
-                selected={selectedCategoryIds.includes(category.id)}
-                onPress={() => {
-                  selectedCategoryIds.includes(category.id) ? 
-                  setSelectedCategoryIds(prev => prev.filter(num => num !== category.id)) :
-                  setSelectedCategoryIds(prevCategories => [...prevCategories, category.id]);
+                color={subcategory.colorHex}
+                selected={selectedSubcategoryIds.includes(subcategory.id)}
+                onPress={() => {selectedSubcategoryIds.includes(subcategory.id) ?
+                  setSelectedSubcategoryIds(prev => prev.filter(num => num !== subcategory.id)) :
+                  setSelectedSubcategoryIds(prevSubcategories => [...prevSubcategories, subcategory.id])
                 }}
-              />
-            ))}
-          </ScrollView>
-        </View>
-        {selectedCategoryIds.length === 1 && ( <>
-          <Text style={{fontSize: 18, marginBottom: 5}}>Subcategory</Text>
-          <View style={{ overflow: "hidden" }}>
-            <ScrollView
-            horizontal
-            style={{marginBottom: 10}}
-            showsHorizontalScrollIndicator={false}
-            >
-            {subcategories.map(subcategory => (
-              <CategoryBox
-              key={subcategory.id}
-              name={subcategory.name}
-              icon={subcategory.icon}
-              fontSize={12}
-              iconSize={30}
-              boxSize={73}
-              color={subcategory.colorHex}
-              selected={selectedSubcategoryIds.includes(subcategory.id)}
-              onPress={() => {selectedSubcategoryIds.includes(subcategory.id) ?
-                setSelectedSubcategoryIds(prev => prev.filter(num => num !== subcategory.id)) :
-                setSelectedSubcategoryIds(prevSubcategories => [...prevSubcategories, subcategory.id])
+                />
+              ))}
+            </ScrollView>
+          </View>
+        </> )}
+        <Text style={{ fontSize: 18, marginBottom: 5 }}>Date Interval</Text>
+        <View style={styles.row}>
+            <DateTimePicker
+              style={styles.dateInput}
+              value={dateRange[0]}
+              mode="date" 
+              onChange={(event, selectedDate) => {
+                if (selectedDate) setDateRange([selectedDate, dateRange[1]]);
               }}
-              />
-            ))}
-          </ScrollView>
+            />
+            <Text style={{ fontSize: 18, marginBottom: 5 }}>-</Text>
+            <DateTimePicker
+              style={styles.dateInput}
+              value={dateRange[1]}
+              mode="date" 
+              onChange={(event, selectedDate) => {
+                if (selectedDate) setDateRange([dateRange[0], selectedDate]);
+              }}
+            />
         </View>
-      </> )}
-      <Text style={{ fontSize: 18, marginBottom: 5 }}>Date Interval</Text>
-      <View style={styles.row}>
-          <DateTimePicker
-            style={styles.dateInput}
-            value={dateRange[0]}
-            mode="date" 
-            onChange={(event, selectedDate) => {
-              if (selectedDate) setDateRange([selectedDate, dateRange[1]]);
-            }}
+        <Text style={{ fontSize: 18, marginBottom: 5 }}>Cost Range</Text>
+        <View style={styles.row}>
+          <TextInput
+            style={styles.costInput}
+            onChangeText={newCost => setCostRange([Number(newCost), costRange[1]])}
+            value={String(costRange[0])}
+            keyboardType="decimal-pad"
+            onBlur={Keyboard.dismiss}
           />
           <Text style={{ fontSize: 18, marginBottom: 5 }}>-</Text>
-          <DateTimePicker
-            style={styles.dateInput}
-            value={dateRange[1]}
-            mode="date" 
-            onChange={(event, selectedDate) => {
-              if (selectedDate) setDateRange([dateRange[0], selectedDate]);
-            }}
+          <TextInput
+            style={styles.costInput}
+            onChangeText={newCost => setCostRange([costRange[0], Number(newCost)])}
+            value={String(costRange[1])}
+            keyboardType="decimal-pad"
+            onBlur={Keyboard.dismiss}
           />
-      </View>
-      <Text style={{ fontSize: 18, marginBottom: 5 }}>Cost Range</Text>
-      <View style={styles.row}>
-        <TextInput
-          style={styles.costInput}
-          onChangeText={newCost => setCostRange([Number(newCost), costRange[1]])}
-          value={String(costRange[0])}
-          keyboardType="decimal-pad"
-          onBlur={Keyboard.dismiss}
-        />
-        <Text style={{ fontSize: 18, marginBottom: 5 }}>-</Text>
-        <TextInput
-          style={styles.costInput}
-          onChangeText={newCost => setCostRange([costRange[0], Number(newCost)])}
-          value={String(costRange[1])}
-          keyboardType="decimal-pad"
-          onBlur={Keyboard.dismiss}
-        />
-      </View>
-      <MultiSlider
-        values={[costRange[0], costRange[1]]}
-        sliderLength={Dimensions.get('window').width - 60} // Динамична ширина
-        onValuesChange={(values) => setCostRange(values)}
-        min={lowestCost}
-        max={highestCost}
-        step={5}
-        allowOverlap={false}
-        snapped
-        selectedStyle={{ backgroundColor: 'rgb(16, 85, 221)' }} // Твоят син цвят
-        markerStyle={{ backgroundColor: 'white', borderWidth: 2, marginLeft: 15, borderColor: 'rgb(16, 85, 221)' }}
-      />
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-          <TouchableOpacity
-            style={[
-              styles.buttonPicker, 
-              selectedCurrency === "EUR" && styles.activeButton
-            ]}
-            onPress={() => selectedCurrency == "EUR" ? setSelectedCurrency("") : setSelectedCurrency("EUR")}
-          >
-            <Text style={selectedCurrency === "EUR" ? styles.activeText : styles.textPicker}>
-              EUR
-            </Text>
-          </TouchableOpacity>
-
-           <TouchableOpacity
-            style={[
-              styles.buttonPicker, 
-              selectedCurrency === "USD" && styles.activeButton
-            ]}
-            onPress={() => selectedCurrency == "USD" ? setSelectedCurrency("") :  setSelectedCurrency("USD")}
-          >
-            <Text style={selectedCurrency === "USD" ? styles.activeText : styles.textPicker}>
-              USD
-            </Text>
-          </TouchableOpacity>
         </View>
+        <MultiSlider
+          values={[costRange[0], costRange[1]]}
+          sliderLength={Dimensions.get('window').width - 60} // Динамична ширина
+          onValuesChange={(values) => setCostRange(values)}
+          min={lowestCost}
+          max={highestCost}
+          step={5}
+          allowOverlap={false}
+          snapped
+          selectedStyle={{ backgroundColor: 'rgb(16, 85, 221)' }} // Твоят син цвят
+          markerStyle={{ backgroundColor: 'white', borderWidth: 2, marginLeft: 30, borderColor: 'rgb(16, 85, 221)' }}
+        />
+        <Text style={{ fontSize: 18, marginBottom: 5 }}>Currency</Text>
 
-      <Text style={{ fontSize: 18, marginBottom: 5 }}>Payment Type</Text>
-      <View style={{marginBottom: 10, flexDirection: "row", gap: 10 }}>
-        {paymentOptions.map(opt => {
-          const selected = selectedPaymentTypes.includes(opt.value);
-          return (
-            <Pressable
-              key={opt.value}
-              onPress={() => {selectedPaymentTypes.includes(opt.value) ?
-                setSelectedPaymentType(prev => prev.filter(num => num !== opt.value)) :
-                setSelectedPaymentType(prevPaymentTypes => [...prevPaymentTypes, opt.value])
-              }}
-              style={{
-                paddingVertical: 8,
-                paddingHorizontal: 14,
-                borderRadius: 20,
-                borderWidth: 1.5,
-                borderColor: "#3077ceff",
-                backgroundColor: selected ? "#3077ceff" : "white",
-              }}
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+            <TouchableOpacity
+              style={[
+                styles.buttonPicker, 
+                selectedCurrency === "EUR" && styles.activeButton
+              ]}
+              onPress={() => selectedCurrency == "EUR" ? setSelectedCurrency("") : setSelectedCurrency("EUR")}
             >
-              <Text style={{ fontSize: 16, color: selected ? "white" : "#3077ceff" }}>
-                {opt.label}
+              <Text style={selectedCurrency === "EUR" ? styles.activeText : styles.textPicker}>
+                EUR
               </Text>
-            </Pressable>
-          );
-        })}
-      </View>
-    </Pressable>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[
+                styles.buttonPicker, 
+                selectedCurrency === "USD" && styles.activeButton
+              ]}
+              onPress={() => selectedCurrency == "USD" ? setSelectedCurrency("") :  setSelectedCurrency("USD")}
+            >
+              <Text style={selectedCurrency === "USD" ? styles.activeText : styles.textPicker}>
+                USD
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+        <Text style={{ fontSize: 18, marginBottom: 5 }}>Payment Type</Text>
+        <View style={{marginBottom: 10, flexDirection: "row", gap: 10 }}>
+          {paymentOptions.map(opt => {
+            const selected = selectedPaymentTypes.includes(opt.value);
+            return (
+              <Pressable
+                key={opt.value}
+                onPress={() => {selectedPaymentTypes.includes(opt.value) ?
+                  setSelectedPaymentType(prev => prev.filter(num => num !== opt.value)) :
+                  setSelectedPaymentType(prevPaymentTypes => [...prevPaymentTypes, opt.value])
+                }}
+                style={{
+                  paddingVertical: 8,
+                  paddingHorizontal: 14,
+                  borderRadius: 20,
+                  borderWidth: 1.5,
+                  borderColor: "#3077ceff",
+                  backgroundColor: selected ? "#3077ceff" : "white",
+                }}
+              >
+                <Text style={{ fontSize: 16, color: selected ? "white" : "#3077ceff" }}>
+                  {opt.label}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+      </Pressable>
+    </ScrollView>
     )}
     {isSortScreenOpened && (
-      <Pressable style={styles.filterScreen}
+      <Pressable style={[styles.filterScreen, {height: 230}]}
       onPress={() => Keyboard.dismiss()}>
         <View style={styles.header}>
             <TouchableOpacity onPress={handleToggleSortScreen}>
-            <Text style={styles.headerBtn}>{"▲"}</Text>
+            <Text style={styles.headerBtn}>{"Hide ▲"}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity onPress={handleClearSortParams}>
@@ -621,40 +544,49 @@ const formatCost = (amount: number, currencyCode: string) => {
       </Pressable>
     )}
 
-<FlatList
-  data={expenses} // Масивът с данни
-  keyExtractor={(item) => item.id.toString()} // Уникален ключ за всеки елемент
-  style={styles.expensesContainer}
-  onEndReached={loadNextPage}
-  // Затваря филтъра при докосване на списъка
-  onTouchEndCapture={() => {
-    setIsFilterScreenOpened(false); 
-    setFilterIconColor("white");
-  }}
-
-  renderItem={({ item: expense }) => {
-    const category = categories.find(c => c.id === expense.categoryId);
-    const subcategory = category?.subcategories.find(sc => sc.id === expense.subcategoryId);
-
-    return (
-      <ExpenseCard
-        key={expense.id}
-        title={expense.title}
-        amount={formatCost(expense.cost, currencyFromNumber[expense.currency])}
-        date={String(expense.expenseDate)}
-        categoryName={category?.name ?? "Unknown"}
-        categoryEmoji={category?.icon ?? "❌"}
-        categoryColor={category?.colorHex ?? "#FFFFFF"}
-        subcategoryEmoji={subcategory?.icon}
-        subcategoryText={subcategory?.name}
-        subcategoryColor={subcategory?.colorHex ?? "#FFFFFF"}
-        onPress={() => handleExpenseView(expense.id)}
-      />
-    );
-  }}
-  
-  contentContainerStyle={{ paddingBottom: 75 }}
-/>
+{/* Списък с разходи */}
+        {isExpensesLoading ? (
+          <View style={styles.centerContainer}>
+            <ActivityIndicator size="large" color="#3077ceff" />
+            <Text style={{ marginTop: 10 }}>Loading expenses...</Text>
+          </View>
+        ) : (
+          <FlatList
+            data={expenses}
+            keyExtractor={(item) => item.id.toString()}
+            style={styles.expensesContainer}
+            onEndReached={loadNextPage}
+            onEndReachedThreshold={0.3}
+            onTouchStart={() => { if(isFilterScreenOpened) { handleToggleFilterScreen()} if(isSortScreenOpened) { handleToggleSortScreen()}}}
+            renderItem={({ item: expense }) => {
+              const category = categories.find(c => c.id === expense.categoryId);
+              const subcategory = category?.subcategories.find(sc => sc.id === expense.subcategoryId);
+              return (
+                <ExpenseCard
+                  key={expense.id}
+                  title={expense.title}
+                  amount={formatCost(expense.cost, currencyFromNumber[expense.currency])}
+                  date={new Date(expense.expenseDate).toISOString()}
+                  categoryName={category?.name ?? "Unknown"}
+                  categoryEmoji={category?.icon ?? "💰"}
+                  categoryColor={category?.colorHex ?? "#eee"}
+                  subcategoryEmoji={subcategory?.icon}
+                  subcategoryText={subcategory?.name}
+                  subcategoryColor={subcategory?.colorHex}
+                  onPress={() => router.push(`(modals)/expenses/${expense.id}`)}
+                />
+              );
+            }}
+            ListEmptyComponent={
+              <View style={styles.centerContainer}>
+                <FontAwesome6 name="ghost" size={50} color="#ccc" />
+                <Text style={styles.emptyText}>No expenses found.</Text>
+              </View>
+            }
+            ListFooterComponent={isLoadingNextPage ? <ActivityIndicator style={{ marginVertical: 20 }} /> : null}
+            contentContainerStyle={{ paddingBottom: 100 }}
+          />
+        )}
   </View>
     <AddButton
     onPress={handleAddExpense}/>
@@ -664,38 +596,27 @@ const formatCost = (amount: number, currencyCode: string) => {
 
 
 const styles = StyleSheet.create({
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 10,
-  },
-  headerBtn: { fontSize: 16, color: "#3077ceff" },
-  row:{
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  filterScreen:{
-    padding: 15,
-    borderWidth: 3,
-    borderRadius: 10,
-    margin: 5,
-    backgroundColor: "#efefef"
-  },
-  searchInput: {
-    marginBottom: 10,
-    padding: 5,
-    borderColor: "black",
-    borderWidth: 2,
-    borderRadius: 10,
-    width: 280,
-    height: 30,
-    fontSize: 18,
-    backgroundColor: "white"
-  },
+   row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  filterScreen: { padding: 15, backgroundColor: "white", borderBottomWidth: 1, borderColor: '#ddd', height: 500},
+  header: { flexDirection: "row", justifyContent: "space-between", marginBottom: 15 },
+  headerBtn: { fontSize: 16, fontWeight: '600', color: "#3077ceff" },
+  filterLabel: { fontSize: 16, fontWeight: 'bold', marginBottom: 8, marginTop: 5 },
+  expensesContainer: { paddingHorizontal: 10, marginTop: 5 },
+  centerContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 40 },
+  emptyText: { fontSize: 18, color: '#555', marginTop: 10, fontWeight: 'bold' },
+  emptySubText: { color: '#888', textAlign: 'center' },
   dateInput: {
     marginBottom: 10,
+  },
+   searchInput: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 16,
+    width: 290,
+    marginBottom: 10
   },
   costInput: {
     marginBottom: 10,
@@ -710,9 +631,6 @@ const styles = StyleSheet.create({
     minWidth: 40, 
     backgroundColor: "white"
 
-  },
-  expensesContainer: {
-    margin: 10
   },
   card: {
     backgroundColor: "#fff",
@@ -778,4 +696,5 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#000000', // Черен цвят за активния
   },
+ 
 });

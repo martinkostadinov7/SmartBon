@@ -103,7 +103,7 @@ namespace Data
                 new User("m.kostadinov07@gmail.com", hasher.HashPassword(null!, "192837465Aqs"), "Martin Kostadinov", true, Currency.EUR, true),
                 new User("temp@example.com", hasher.HashPassword(null!, "123456789"), "Temp User", false, Currency.USD, true)
             };
-            db.Users.AddRange(users);
+            db.Users.AddRange(users);   
             db.SaveChanges();
 
         }

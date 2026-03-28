@@ -21,6 +21,22 @@ interface LineChartData {
   datasets: LineChartDataset[]; 
 }
 
+interface MonthlyReportData {
+  monthName: string;
+  totalTransactionsCount: number;
+  totalCountDifference: number;
+  totalSpent: number;
+  totalSpentDifference: number;
+  percentageChange: number;
+  noSpendDaysCount: number;
+  averageSpentPerDay: number;
+  topCategoryId: number;
+  topAmount: number;
+  mostExpensiveDay: Date;
+  mostExpensiveDayAmount: number;
+  preferredPaymentMethod: number;
+}
+
 interface ChartData {
   name: string,
   population: number,
@@ -44,7 +60,8 @@ export default function StatisticsScreen() {
   const [paymentTypePieChartData, setPaymentTypePieChartData] = useState<PaymentTypePieChartResponse | null>(null);
   const [еxpensesLineChartData, setExpensesLineChartData] = useState<LineChartData | null>(null);
   const [daysBarChartData, setDaysBarChartData] = useState<LineChartData | null>(null);
-
+  const [monthlyReportData, setMonthlyReportData] = useState<MonthlyReportData | null>(null);
+  const [isMonthlyReportCardOpen, setIsMonthlyReportCardOpen] = useState(false);
 const [categoriesDateRange, setCategoriesDateRange] = useState<[Date, Date]>(() => {
   const end = new Date();
   const start = new Date();
@@ -145,10 +162,25 @@ const query = new URLSearchParams({
   async function loadDaysBarChartData(){
     const daysBarChartDataResponse = await apiFetch(`/statistics/daysBarChart`);
       if (!daysBarChartDataResponse.ok) {
-        throw new Error("Failed to load expenses line charts");
+        throw new Error("Failed to load days bar charts");
       }
       await daysBarChartDataResponse.json().then(setDaysBarChartData);
   }
+
+  async function loadMonthlyReportData(){
+    const monthlyReportResponse = await apiFetch(`/statistics/monthlyReport`);
+      if (!monthlyReportResponse.ok) {
+        throw new Error("Failed to load monthly report");
+      }
+      await monthlyReportResponse.json().then(setMonthlyReportData);
+  }
+
+  const formatCost = (amount: number, currencyCode: string) => {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: currencyCode,
+  }).format(amount);
+};
 
     const loadData = useCallback(async () => {
   await Promise.all([
@@ -156,13 +188,15 @@ const query = new URLSearchParams({
     loadExpenseLineChartData(),
     loadCategoriesGraphData(),
     loadPaymentTypePieChartData(),
-    loadDaysBarChartData()
   ]);
 }, [expensesDateRange, categoriesDateRange, paymentTypeDateRange]);
 
     useFocusEffect(
       useCallback(() => {
         loadData();
+        
+    loadDaysBarChartData(),
+    loadMonthlyReportData()
       }, [loadData])
     );
 
@@ -173,9 +207,77 @@ const query = new URLSearchParams({
 
     <ScrollView style={{padding: 10}}>
 
+{!monthlyReportData ? (
+  <View style={styles.card}><Text>Loading report...</Text></View>
+) : (
+  <View style={styles.card}>
+    <View style={styles.header}>
+      <Text style={styles.title}>Report for {monthlyReportData.monthName}</Text>
+      <View style={[
+        styles.badge, 
+        (monthlyReportData.percentageChange ?? 0) > 0 ? styles.badgeRed : styles.badgeGreen
+      ]}>
+        <Text style={styles.badgeText}>
+          {(monthlyReportData.percentageChange ?? 0) > 0 ? '↑' : '↓'} 
+          {Math.abs(monthlyReportData.percentageChange ?? 0)}%
+        </Text>
+      </View>
+    </View>
+
+    <View style={styles.divider} />
+
+    <View style={styles.mainStatContainer}>
+      <Text style={styles.label}>Total Spent</Text>
+      <Text style={styles.totalAmount}>
+        {formatCost(Number(monthlyReportData.totalSpent?.toFixed(2) ?? "0.00"), userDefaultCurrency)}
+      </Text>
+      <Text style={styles.subLabel}>
+        {(monthlyReportData.totalSpentDifference ?? 0) > 0 ? '+' : ''}
+        {formatCost(monthlyReportData.totalSpentDifference ?? 0, userDefaultCurrency)} vs previous month
+      </Text>
+    </View>
+
+    <View style={styles.grid}>
+      <View style={styles.gridItem}>
+        <Text style={styles.gridLabel}>Transactions</Text>
+        <Text style={styles.gridValue}>{monthlyReportData.totalTransactionsCount ?? 0}</Text>
+      </View>
+      <View style={styles.gridItem}>
+        <Text style={styles.gridLabel}>No-Spend Days</Text>
+        <Text style={styles.gridValue}>{monthlyReportData.noSpendDaysCount ?? 0}</Text>
+      </View>
+      <View style={styles.gridItem}>
+        <Text style={styles.gridLabel}>Daily Average</Text>
+        <Text style={styles.gridValue}>
+          {formatCost(Number(monthlyReportData.averageSpentPerDay?.toFixed(2) ?? "0.00"), userDefaultCurrency)}
+        </Text>
+      </View>
+      <View style={styles.gridItem}>
+        <Text style={styles.gridLabel}>Preferred Payment</Text>
+        <Text style={styles.gridValue}>
+          {monthlyReportData.preferredPaymentMethod === 1 ? 'Card' : 'Cash'}
+        </Text>
+      </View>
+    </View>
+
+    <View style={styles.highlightBox}>
+      <Text style={styles.highlightTitle}>Most Expensive Day</Text>
+      <Text style={styles.highlightValue}>
+        {monthlyReportData.mostExpensiveDay 
+          ? new Date(monthlyReportData.mostExpensiveDay).toLocaleDateString('en-US') 
+          : 'N/A'}
+        <Text style={{ fontWeight: '400' }}>
+          {' — '}{formatCost(Number(monthlyReportData.mostExpensiveDayAmount?.toFixed(2) ?? "0.00"), userDefaultCurrency)}
+        </Text>
+      </Text>
+    </View>
+  </View>
+)}
+
     <Text style={{fontSize: 20, marginBottom: 10, fontWeight: '700'}}>Expenses</Text>
     <View style={styles.row}>
       <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+
       {ranges.map((range) => {
           return (
           <TouchableOpacity
@@ -390,5 +492,99 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+  },
+  card: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#1a1a1a',
+  },
+  badge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  badgeRed: { backgroundColor: '#FFE5E5' },
+  badgeGreen: { backgroundColor: '#E5FFEA' },
+  badgeText: { fontWeight: '600', fontSize: 12 },
+  divider: {
+    height: 1,
+    backgroundColor: '#f0f0f0',
+    marginVertical: 5,
+  },
+  mainStatContainer: {
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  label: {
+    color: '#666',
+    fontSize: 14,
+  },
+  totalAmount: {
+    fontSize: 32,
+    fontWeight: '800',
+    color: '#2D3436',
+    marginVertical: 4,
+  },
+  subLabel: {
+    fontSize: 12,
+    color: '#999',
+  },
+  grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
+  gridItem: {
+    width: '48%',
+    backgroundColor: '#F8F9FA',
+    padding: 12,
+    borderRadius: 12,
+    marginBottom: 10,
+  },
+  gridLabel: {
+    fontSize: 11,
+    color: '#888',
+    marginBottom: 4,
+    textTransform: 'uppercase',
+  },
+  gridValue: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#333',
+  },
+  highlightBox: {
+    marginTop: 10,
+    padding: 15,
+    backgroundColor: '#F0F3FF',
+    borderRadius: 12,
+    borderLeftWidth: 4,
+    borderLeftColor: '#4834DF',
+  },
+  highlightTitle: {
+    fontSize: 12,
+    color: '#4834DF',
+    fontWeight: '600',
+    marginBottom: 2,
+  },
+  highlightValue: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#2D3436',
   },
 });

@@ -13,5 +13,7 @@ namespace Shared.DTOs.Users
         public Currency DefaultCurrency { get; set; }
 
         public DateTime CreatedAt { get; set; }
+
+        public int ReceiptScansCount { get; set; }
     }
 }

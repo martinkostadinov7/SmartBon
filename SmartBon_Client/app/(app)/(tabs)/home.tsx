@@ -225,8 +225,8 @@ const getEndDate = () => {
           </TouchableOpacity>
         </View>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          {
-            budgets.map(budget => {
+          {budgets.length > 0 ?  
+          (budgets.map(budget => {
               let budgetCategories = categories.filter(category => 
               budget.categoryIds.includes(category.id)
             );
@@ -263,8 +263,18 @@ const getEndDate = () => {
                 } } 
                 reloadComponent={function (): void {
                   setReload(prev => !prev);
-                } } />)})
-          }
+                } } />)})) : 
+          (<TouchableOpacity onPress={handleBudgetCreate} style={{marginBottom: 10,
+            borderColor: "gray",
+            borderRadius: 16,
+            borderStyle: "dashed",
+            borderWidth: 2,
+            width: 300,
+            height: 100,
+            justifyContent: "center",
+            alignItems: "center"}}>
+            <FontAwesome6 name="plus" size={26} color="black" />
+            </TouchableOpacity>)}
         </ScrollView>
       </View>
       <View>
@@ -275,8 +285,8 @@ const getEndDate = () => {
           </TouchableOpacity>
         </View>
         <ScrollView horizontal>
-          {
-            goals.map(goal => (
+          {goals.length > 0 ? 
+          (goals.map(goal => (
             <GoalCard 
                 key={goal.id}
                 id={goal.id}
@@ -299,13 +309,22 @@ const getEndDate = () => {
                 reloadComponent={function (): void {
                   setReload(prev => !prev);
                 } } 
-                realised={!goal.isActive}/>))
-          }
+                realised={!goal.isActive}/>))) : 
+          (<TouchableOpacity onPress={handleGoalCreate} style={{marginBottom: 10,
+            borderColor: "gray",
+            borderRadius: 16,
+            borderStyle: "dashed",
+            borderWidth: 2,
+            width: 300,
+            height: 100,
+            justifyContent: "center",
+            alignItems: "center"}}>
+            <FontAwesome6 name="plus" size={26} color="black" />
+            </TouchableOpacity>)}
         </ScrollView>
       </View>
 
 <View style={{}}>
-  {/* Показваме информацията над графиката, ако има избран ден */}
   <View style={[styles.row, {marginVertical: 10,}]}>
     <Text  style={{fontSize: 20, fontWeight: '700'}}>Heatmap</Text>
 
@@ -372,7 +391,8 @@ const getEndDate = () => {
 </View>
 
       <Text style={{fontSize: 20, marginVertical: 10, fontWeight: '700'}}>Recent expenses</Text>
-      {recentExpenses.map(expense => {
+      {recentExpenses.length > 0 ? 
+      (recentExpenses.map(expense => {
         const category = categories.find(c => c.id === expense.categoryId);
         const subcategory = categories
           .find(c => c.id === expense.categoryId)
@@ -392,7 +412,12 @@ const getEndDate = () => {
             onPress={() => handleExpenseView(expense.id)}
           />
         );
-      })}
+      })) : 
+      (<View style={{ height: 100, justifyContent: 'center', alignItems: 'center' }}>
+        <Text>No expenses added yet.</Text>
+        <Text>Use the + button to add a new expense</Text>
+      </View>)}
+      
     </ScrollView>
     <AddButton
       onPress={handleAddExpense}

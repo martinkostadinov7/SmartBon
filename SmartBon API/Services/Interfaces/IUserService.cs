@@ -7,8 +7,6 @@ namespace Services.Interfaces
     {
         Task<UserInfoDto> GetProfileDataAsync();
 
-        Task<User> GetUserById(int id);
-
         Task<UserInfoDto> EditProfileDataAsync(UserUpdateDto dto);
 
         Task<bool> ChangePassword(PasswordChangeDto dto);

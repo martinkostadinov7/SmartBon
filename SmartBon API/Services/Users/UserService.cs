@@ -66,6 +66,10 @@ namespace Services.Users
         public async Task<bool> ManagePlan(bool isPremium)
         {
             User userFromDb = await userRepo.GetByIdAsync(user.Id) ?? throw new NotFoundException($"User was not found");
+            if (userFromDb.IsPremium && !isPremium)
+            {
+                userFromDb.ReceiptScansCount = 0;
+            }
             userFromDb.IsPremium = isPremium;
             await userRepo.UpdateAsync(userFromDb);
             return true;
@@ -85,9 +89,5 @@ namespace Services.Users
             return true;
         }
 
-        public async Task<User> GetUserById(int id)
-        {
-            return await userRepo.GetByIdAsync(id) ?? throw new NotFoundException("User not found!");
-        }
     }
 }

@@ -114,7 +114,7 @@ export default function ExportExpensesMenu() {
           "Search": search,
           "AfterValue": "",
           "AfterDate": "",
-          "PageSize": "10",
+          "PageSize": "",
           "FilterParams.StartDate": dateRange[0].toISOString(),
           "FilterParams.EndDate": dateRange[1].toISOString(),
           "FilterParams.FromCost": String(costRange[0]), 
@@ -140,7 +140,7 @@ export default function ExportExpensesMenu() {
           query.append("FilterParams.Currency", String(currencyMap[selectedCurrency]));
         }
     
-        console.log()
+        console.log(query.toString());
         try {
         const response = await apiFetch(`/expenses/export?${query.toString()}`);
 

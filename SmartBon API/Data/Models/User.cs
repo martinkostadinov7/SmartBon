@@ -20,6 +20,8 @@ namespace Data.Models
 
         public bool ReceiveMonthlyReportEmail { get; set; }
 
+        public int ReceiptScansCount { get; set; } = 0;
+
         private User() { }
         public User(string email, string passwordHash, string name, bool isPremium, Currency defaultCurrency, bool receiveMonthlyReportEmail)
         {
@@ -30,6 +32,7 @@ namespace Data.Models
             IsPremium = isPremium;
             DefaultCurrency = defaultCurrency;
             ReceiveMonthlyReportEmail = receiveMonthlyReportEmail;
+            ReceiptScansCount = 0;
         }
     }
 }
