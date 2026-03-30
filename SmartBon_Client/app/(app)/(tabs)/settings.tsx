@@ -139,6 +139,49 @@ async function handleToggleMonthlyReport(newValue:boolean){
  async function handleOpenExportExpensesMenu() {
    router.push("../../(modals)/expenses/exportExpensesMenu");
 }
+
+ async function handleDeleteData() {
+    // 1. Always ask for confirmation before deleting everything!
+    Alert.alert(
+        "Reset All Data",
+        "This will permanently delete all your expenses, budgets, and goals. Are you sure?",
+        [
+            { text: "Cancel", style: "cancel" },
+            { 
+                text: "Delete Everything", 
+                style: "destructive", 
+                onPress: async () => await executeDelete() 
+            }
+        ]
+    );
+}
+
+// Separate the logic to keep the UI interaction clean
+async function executeDelete() {
+    try {
+        const response = await apiFetch(`/Users/deleteAllData`, {
+            method: "DELETE",
+            headers: {
+                "Content-Type": "application/json",
+            }
+        });
+
+        if (!response.ok) {
+            // Check if the body is empty before calling .json() to avoid crashes
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.message || "Failed to delete data.");
+        }
+
+        Alert.alert("Success", "All your data has been cleared.");
+
+    } catch (e) {
+        const errorMessage = e instanceof Error ? e.message : "An unknown error occurred";
+        
+        Alert.alert("Error", errorMessage);
+        console.error("Delete All Data Error:", e);
+    }
+}
+
 return (<>
     <View style={[{padding: 15, backgroundColor: "#3077ceff"}]}>
       <Text style={{fontSize: 32, color: "white"}}>Settings</Text>
@@ -239,7 +282,7 @@ return (<>
     <View style={{backgroundColor: "rgba(228, 67, 67, 0.33)" , borderRadius: 20, marginHorizontal: 15, marginBottom: 15, padding: 15}}>
       <Text style={{fontSize: 20, marginBottom: 20}}>Danger Zone</Text>
 
-      <TouchableOpacity style={{borderRadius:10,backgroundColor: "rgba(228, 67, 67, 0.85)", marginBottom: 10}}>
+      <TouchableOpacity onPress={(handleDeleteData)} style={{borderRadius:10,backgroundColor: "rgba(228, 67, 67, 0.85)", marginBottom: 10}}>
         <Text style={{margin: 10, fontSize: 17}}><FontAwesome6 name="trash-can" size={21} color="black" />   Delete data</Text>
       </TouchableOpacity>
       

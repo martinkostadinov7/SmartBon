@@ -6,6 +6,14 @@ namespace Data.Repositories
 {
     public class RecurringExpenseRepository(AppDbContext context) : EFRepository<RecurringExpense>(context), IRecurringExpenseRepository
     {
+        public async Task<bool> DeleteAllAsync(int userId)
+        {
+            int rowsAffected = await _dbSet
+                .Where(e => e.UserId == userId)
+                .ExecuteDeleteAsync();
+
+            return rowsAffected >= 0;
+        }
         public async Task<List<RecurringExpense>> GetAllPendingAsync()
         {
             IQueryable<RecurringExpense> query = _dbSet.AsQueryable();

@@ -7,6 +7,5 @@ namespace Shared.DTOs.Categories
 
         public string Icon{ get; set; }
         public string ColorHex { get; set; }
-
     }
 }

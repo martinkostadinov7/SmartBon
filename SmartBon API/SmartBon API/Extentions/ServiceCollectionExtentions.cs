@@ -3,6 +3,7 @@ using Data.Repositories;
 using FluentValidation;
 using Services.Budgets;
 using Services.Categories;
+using Services.Data;
 using Services.EmailSending;
 using Services.Expenses;
 using Services.Goals;
@@ -45,6 +46,8 @@ namespace FeelBack.Api.Extentions
             services.AddScoped<IStatisticsService, StatisticsService>();
 
             services.AddScoped<IEmailSendingService, EmailSendingService>();
+
+            services.AddScoped<IDataService, DataService>();
             
             return services;
         }

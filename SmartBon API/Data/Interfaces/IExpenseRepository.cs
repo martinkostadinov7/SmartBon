@@ -11,5 +11,6 @@ namespace Data.Interfaces
         Task<CostRangeDto> GetCostRangeAsync(int userId);
         Task<DateRangeDto> GetDateRangeAsync(int userId);
         Task AddRangeAsync(List<Expense> expenses);
+        Task<bool> DeleteAllAsync(int userId);
     }
 }

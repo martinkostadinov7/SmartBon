@@ -8,7 +8,7 @@ namespace SmartBon_API.Controllers
     [Authorize]
     [Route("/api/[controller]")]
     [ApiController]
-    public class UsersController(IUserService userService) : ControllerBase
+    public class UsersController(IUserService userService, IDataService dataService) : ControllerBase
     {
         [HttpGet("me")]
         public async Task<ActionResult<UserInfoDto>> GetProfileData()
@@ -44,6 +44,13 @@ namespace SmartBon_API.Controllers
         public async Task<ActionResult> ToggleMonthlyReport(bool receiveMonthlyReportEmail)
         {
             await userService.ToggleMonthlyReport(receiveMonthlyReportEmail);
+            return Ok();
+        }
+
+        [HttpDelete("deleteAllData")]
+        public async Task<ActionResult> DeleteAllData()
+        {
+            await dataService.DeleteAllData();
             return Ok();
         }
     }

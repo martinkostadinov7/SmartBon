@@ -7,6 +7,14 @@ namespace Data.Repositories
 {
     public class GoalRepository(AppDbContext context) : EFRepository<Goal>(context), IGoalRepository
     {
+        public async Task<bool> DeleteAllAsync(int userId)
+        {
+            int rowsAffected = await _dbSet
+                .Where(e => e.UserId == userId)
+                .ExecuteDeleteAsync();
+
+            return rowsAffected >= 0;
+        }
         public async Task<List<Goal>> GetAllAsync(int userId, bool? isActive = true)
         {
             IQueryable<Goal> query = _dbSet.AsQueryable().Include(g => g.Contributions);

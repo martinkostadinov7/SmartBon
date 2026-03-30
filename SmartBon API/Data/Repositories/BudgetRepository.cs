@@ -18,5 +18,14 @@ namespace Data.Repositories
 
             return budgets;
         }
+
+        public async Task<bool> DeleteAllAsync(int userId)
+        {
+            int rowsAffected = await _dbSet
+                .Where(e => e.UserId == userId)
+                .ExecuteDeleteAsync();
+
+            return rowsAffected >= 0;
+        }
     }
 }

@@ -16,6 +16,15 @@ namespace Data.Repositories
             _context.SaveChanges();
         }
 
+        public async Task<bool> DeleteAllAsync(int userId)
+        {
+            int rowsAffected = await _dbSet
+                .Where(e => e.UserId == userId)
+                .ExecuteDeleteAsync();
+
+            return rowsAffected >= 0;
+        }
+
         public async Task<List<Expense>> GetAllAsync(int userId)
         {
             IQueryable<Expense> query = _dbSet.AsQueryable();

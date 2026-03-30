@@ -41,5 +41,14 @@ namespace Data.Repositories
 
             return await query.SingleOrDefaultAsync(x => EF.Property<int>(x, "Id") == id);
         }
+
+        public async Task<bool> DeleteAllAsync(int userId)
+        {
+            int rowsAffected = await _dbSet
+                .Where(e => e.UserId == userId && !e.IsPredefined)
+                .ExecuteDeleteAsync();
+
+            return rowsAffected >= 0;
+        }
     }
 }
