@@ -17,5 +17,7 @@ namespace Services.Interfaces
         Task<bool> ToggleMonthlyReport(bool receiveMonthlyReportEmail);
 
         Task<List<User>> GetAllUsersForMonthlyReportAsync();
+
+        Task<bool> DeleteAccount();
     }
 }

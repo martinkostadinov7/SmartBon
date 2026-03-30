@@ -53,5 +53,12 @@ namespace SmartBon_API.Controllers
             await dataService.DeleteAllData();
             return Ok();
         }
+
+        [HttpDelete("deleteAccount")]
+        public async Task<ActionResult> DeleteAccount()
+        {
+            await userService.DeleteAccount();
+            return Ok();
+        }
     }
 }

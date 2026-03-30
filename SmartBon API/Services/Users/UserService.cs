@@ -9,7 +9,7 @@ using Shared.Enums;
 
 namespace Services.Users
 {
-    public class UserService(IUserAccessor user, IUserRepository userRepo, IMapper mapper) : IUserService
+    public class UserService(IUserAccessor user, IUserRepository userRepo, IMapper mapper, IDataService dataService) : IUserService
     {
         public async Task<UserInfoDto> EditProfileDataAsync(UserUpdateDto dto)
         {
@@ -86,6 +86,13 @@ namespace Services.Users
             User userFromDb = await userRepo.GetByIdAsync(user.Id) ?? throw new NotFoundException("User was not found");
             userFromDb.ReceiveMonthlyReportEmail = receiveMonthlyReportEmail;
             await userRepo.UpdateAsync(userFromDb);
+            return true;
+        }
+
+        public async Task<bool> DeleteAccount()
+        {
+            await dataService.DeleteAllData();
+            await userRepo.DeleteAsync(await user.GetUserAsync());
             return true;
         }
     }

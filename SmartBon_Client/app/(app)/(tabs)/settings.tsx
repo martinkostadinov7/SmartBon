@@ -140,6 +140,47 @@ async function handleToggleMonthlyReport(newValue:boolean){
    router.push("../../(modals)/expenses/exportExpensesMenu");
 }
 
+async function handleDeleteAccount() {
+    Alert.alert(
+        "Delete Account",
+        "This action is permanent. All your data and your profile will be gone forever.",
+        [
+            { text: "Cancel", style: "cancel" },
+            { 
+                text: "Delete My Account", 
+                style: "destructive", 
+                onPress: async () => {
+                    const success = await executeAccountDeletion();
+                    if (success) {
+                        // Reset your navigation stack to the Login screen
+                        // navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
+                    }
+                } 
+            }
+        ]
+    );
+}
+
+async function executeAccountDeletion() {
+    try {
+        const response = await apiFetch(`/Users/deleteAccount`, {
+            method: "DELETE"
+        });
+
+        if (!response.ok) throw new Error("Could not delete account.");
+
+        await SecureStore.deleteItemAsync("token"); 
+        handleSignOut();
+        Alert.alert("Account Deleted", "We're sorry to see you go.");
+        return true;
+    } catch (e) {
+        const errorMessage = e instanceof Error ? e.message : "An unknown error occurred";
+        
+        Alert.alert("Error", errorMessage);
+        console.error("Delete All Data Error:", e);
+    }
+}
+
  async function handleDeleteData() {
     // 1. Always ask for confirmation before deleting everything!
     Alert.alert(
@@ -286,7 +327,7 @@ return (<>
         <Text style={{margin: 10, fontSize: 17}}><FontAwesome6 name="trash-can" size={21} color="black" />   Delete data</Text>
       </TouchableOpacity>
       
-      <TouchableOpacity style={{borderRadius:10,backgroundColor: "rgba(228, 67, 67, 0.85)", marginBottom: 10}}>
+      <TouchableOpacity onPress={(handleDeleteAccount)} style={{borderRadius:10,backgroundColor: "rgba(228, 67, 67, 0.85)", marginBottom: 10}}>
         <Text style={{margin: 10, fontSize: 17}}><FontAwesome6 name="user-slash" size={21} color="black" />   Delete account</Text>
       </TouchableOpacity>
     </View>
