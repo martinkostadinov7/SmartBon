@@ -1,5 +1,7 @@
 ﻿using Data;
 using FeelBack.Api.Extentions;
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
@@ -17,6 +19,7 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IUserAccessor, HttpContextUserAccessor>();
 
 builder.Services.AddApplicationAutoMapper();
+builder.Services.AddApplicationValidators();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
@@ -27,6 +30,12 @@ builder.Services
     .AddFluentEmail("info@smartbon.com")
     .AddSmtpSender("sandbox.smtp.mailtrap.io", 2525, "467a581ce000d4", "ac377e93188010");
 
+builder.Services.AddControllers(options =>
+{
+    options.Filters.Add<AsyncValidationFilter>();
+});
+
+// Важно: Трябва да имаш регистрирани валидаторите си
 //Log.Logger = new LoggerConfiguration()
 //    .ReadFrom.Configuration(builder.Configuration)
 //    .CreateLogger();

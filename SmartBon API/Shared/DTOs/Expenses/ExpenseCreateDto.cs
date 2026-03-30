@@ -3,7 +3,7 @@ namespace Shared.DTOs.Expenses
 {
     public class ExpenseCreateDto
     {
-        public required string Title { get; set; }
+        public string Title { get; set; }
 
         public string? Description { get; set; }
 

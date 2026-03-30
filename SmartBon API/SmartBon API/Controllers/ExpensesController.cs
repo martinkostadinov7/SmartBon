@@ -50,7 +50,7 @@ namespace SmartBon_API.Controllers
         public async Task<ActionResult<ExpenseReadDto>> GetExpenseById(int id)
         {
             ExpenseReadDto result = await expenseService.GetExpenseByIdAsync(id);
-            return Ok(result);  
+            return Ok(result);      
         }
 
         [HttpDelete("{id}")]

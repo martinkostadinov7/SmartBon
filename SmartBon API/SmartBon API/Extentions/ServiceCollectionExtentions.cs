@@ -1,5 +1,6 @@
 ﻿using Data.Interfaces;
 using Data.Repositories;
+using FluentValidation;
 using Services.Budgets;
 using Services.Categories;
 using Services.EmailSending;
@@ -10,6 +11,7 @@ using Services.Statistics;
 using Services.Subcategories;
 using Services.Users;
 using Services.UserServices;
+using Services.Validation.Expenses;
 namespace FeelBack.Api.Extentions
 {
     public static class ServiceCollectionExtensions
@@ -55,6 +57,13 @@ namespace FeelBack.Api.Extentions
                 cfg.AddMaps(typeof(ExpenseProfile));
                 cfg.AddMaps(typeof(CategoryProfile));
             });
+
+            return services;
+        }
+
+        public static IServiceCollection AddApplicationValidators(this IServiceCollection services)
+        {
+            services.AddValidatorsFromAssemblyContaining<ExpenseCreateValidator>();
 
             return services;
         }

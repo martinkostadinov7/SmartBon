@@ -3,14 +3,14 @@ namespace Shared.DTOs.Users
 {
     public class UserRegisterDto
     {
-        public required string Email { get; set; }
+        public string Email { get; set; }
 
-        public required string Password { get; set; }
+        public string Password { get; set; }
 
-        public required string Name { get; set; }
+        public string Name { get; set; }
 
-        public required bool IsPremium { get; set; }
+        public bool IsPremium { get; set; }
 
-        public required Currency DefaultCurrency { get; set; }
+        public Currency DefaultCurrency { get; set; }
     }
 }

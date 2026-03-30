@@ -88,6 +88,5 @@ namespace Services.Users
             await userRepo.UpdateAsync(userFromDb);
             return true;
         }
-
     }
 }

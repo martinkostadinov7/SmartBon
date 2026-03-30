@@ -1,4 +1,5 @@
 ﻿using Data.Models;
+using FluentEmail.Core;
 using Shared.DTOs.Users;
 
 namespace Services.Interfaces
