@@ -29,8 +29,8 @@ namespace Services.BackgroundTasks
                     {
                         Expense expense = mapper.Map<Expense>(recurring);
                         expense.Id = 0;
-                        expense.ExpenseDate = DateTime.Now;
-
+                        expense.ExpenseDate = recurring.NextExecutionDate;
+                        expense.RecurringExpenseId = recurring.Id;
                         List<Budget> budgets = await budgetRepository.GetAllAsync();
                         foreach (var budget in budgets)
                         {

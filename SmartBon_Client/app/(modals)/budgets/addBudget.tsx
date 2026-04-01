@@ -12,11 +12,11 @@ import {
 import { router, useFocusEffect } from "expo-router";
 import EmojiPickerModal from "../../components/emojiPicker";
 import { apiFetch } from "../../services/api";
-import { useCategories } from "../../context/CategoriesContext";
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { CategoryBox } from "../../components/categoryBox";
 import { Subcategory } from "../../types/subcategory";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
+import { Category } from "../../types/category";
 
 const dateRangeFromString: Record<string, number> = {
   "Daily": 0,
@@ -39,7 +39,8 @@ export default function AddBudgetModal() {
   const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
   const [selectedDateRange, setSelectedDateRange] = useState("");
   const [isPremium, setIsPremium] = useState(false);
-  const { categories } = useCategories();
+    const [categories, setCategories] = useState<Category[]>([]);
+
     const ranges = ["Weekly", "Monthly", "Yearly", "Daily", "Custom"];
 const premiumRanges = ['Daily', 'Custom'];
 
@@ -83,10 +84,19 @@ const formatDate = (dateString: string | Date): string => {
   });
 };
 
+async function loadCategories(){
+   const response = await apiFetch(`/Categories`);
+    if (!response.ok) throw new Error("Failed");
+    const data = await response.json();
+    setCategories(data);
+}
+
     useFocusEffect(
         useCallback(() => {
         const fetchProfile = async () => {
             try {
+loadCategories();
+
             const response = await apiFetch(`/Users/me`);
             if (!response.ok) throw new Error("Failed");
             const profileData = await response.json();

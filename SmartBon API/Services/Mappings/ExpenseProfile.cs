@@ -22,6 +22,8 @@ public class ExpenseProfile : Profile
 
         CreateMap<RecurringExpenseCreateDto, RecurringExpense>();
         CreateMap<RecurringExpenseCreateDto, Expense>();
+        
+        CreateMap<RecurringExpenseUpdateDto, RecurringExpense>();
 
         CreateMap<RecurringExpense, RecurringExpenseReadDto>();
         CreateMap<RecurringExpense, Expense>()

@@ -1,12 +1,9 @@
 ﻿using Shared.Enums;
-
 namespace Shared.DTOs.Expenses.Recurring
 {
-    public class RecurringExpenseReadDto
+    public class RecurringExpenseUpdateDto
     {
-        public int Id { get; set; }
-
-        public string Title { get; set; }
+        public required string Title { get; set; }
 
         public string? Description { get; set; }
 
@@ -22,10 +19,7 @@ namespace Shared.DTOs.Expenses.Recurring
 
         public RecurringExpenseFrequency Frequency { get; set; }
 
-        public DateTime StartDate { get; set; }
-
         public DateTime NextExecutionDate { get; set; }
 
-        public List<ExpenseReadDto> Expenses { get; set; } = new List<ExpenseReadDto>();
     }
 }

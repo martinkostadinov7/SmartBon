@@ -1,6 +1,5 @@
 import { View, Text, StyleSheet, TextInput, ScrollView, TouchableOpacity, Pressable, Keyboard, Alert, ActivityIndicator, Switch } from 'react-native'
 import React, { useCallback, useState} from 'react'
-import { useCategories } from "../../context/CategoriesContext";
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { CategoryBox } from '../../components/categoryBox';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
@@ -9,6 +8,7 @@ import * as SecureStore from "expo-secure-store";
 import { Currency } from '../../types/expense';
 import * as ImagePicker from 'expo-image-picker';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
+import { Category } from '../../types/category';
 const paymentTypeMap: Record<string, number> = {
   Cash: 0,
   Card: 1,
@@ -33,7 +33,8 @@ const frequencyFromString: Record<string, number> = {
 };
 
 export default function AddExpense() {
-  const { categories } = useCategories();
+  const [categories, setCategories] = useState<Category[]>([]);
+
   const { title: prefilledTitle, amount: prefilledAmount, description: prefilledDescription, goalId: goalId } = useLocalSearchParams();
     const [title, setTitle] = useState(String(prefilledTitle) == "undefined" ? "" : String(prefilledTitle));
     const [date, setDate] = useState(new Date());
@@ -246,10 +247,20 @@ async function sendPhotoToApi(photoToUpload: ImagePicker.ImagePickerAsset) {
         }
     }
 
+async function loadCategories(){
+   const response = await apiFetch(`/Categories`);
+    if (!response.ok) throw new Error("Failed");
+    const data = await response.json();
+    setCategories(data);
+}
+    
     useFocusEffect(
          useCallback(() => {
            const fetchProfile = async () => {
              try {
+
+              loadCategories();
+              
                const response = await apiFetch(`/Users/me`);
                if (!response.ok) throw new Error("Failed");
                const profileData = await response.json();

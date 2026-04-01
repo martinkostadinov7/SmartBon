@@ -22,6 +22,10 @@ namespace Data.Models
 
         public int ReceiptScansCount { get; set; } = 0;
 
+        public string RefreshToken { get; set; } = null;
+
+        public DateTime RefreshTokenExpiryTime { get; set; } = DateTime.Now;
+
         private User() { }
         public User(string email, string passwordHash, string name, bool isPremium, Currency defaultCurrency, bool receiveMonthlyReportEmail)
         {

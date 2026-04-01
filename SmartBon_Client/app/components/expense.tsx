@@ -1,6 +1,7 @@
   import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 
   export function ExpenseCard({
+    recurringFrequency = "",
     title,
     amount,
     date,
@@ -58,7 +59,9 @@
 
         <View style={styles.right}>
           <Text style={styles.amount}>{amount}</Text>
-          <Text style={styles.date}>{formatDate(date)}</Text>
+          {recurringFrequency.length > 0 ? 
+          (<Text style={styles.date}>{recurringFrequency}</Text>): 
+          (<Text style={styles.date}>{formatDate(date)}</Text>)}
         </View>
       </TouchableOpacity>
     );
@@ -66,6 +69,7 @@
 
 
   type ExpenseCardProps = {
+    recurringFrequency?: string;
     title: string;
     amount: string;
     date: string; 

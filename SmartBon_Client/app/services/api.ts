@@ -1,34 +1,75 @@
 import * as SecureStore from "expo-secure-store";
 import { API_URL } from "../config/api";
+import { router } from "expo-router";
 
 export async function apiFetch(
   endpoint: string,
   options: RequestInit = {}
 ) {
-  const token = await SecureStore.getItemAsync("token");
+  // 1. Взимаме текущия Access Token
+  let token = await SecureStore.getItemAsync("token");
 
-  // 1. Използваме вградения Headers клас, който се справя с всички формати
   const headers = new Headers(options.headers);
 
-  // 2. Добавяме Content-Type САМО ако НЕ изпращаме FormData
-  // Важно: Проверяваме дали body съществува и дали е FormData
+  // 2. Обработка на Content-Type (твоята логика)
   if (!(options.body instanceof FormData)) {
     if (!headers.has("Content-Type")) {
       headers.set("Content-Type", "application/json");
     }
   } else {
-    // Ако е FormData, ТРЯБВА да премахнем Content-Type, 
-    // за да може fetch да генерира правилния multipart хедър с boundary
     headers.delete("Content-Type");
   }
 
-  // 3. Добавяме токена
+  // 3. Добавяме токена в хедърите
   if (token) {
     headers.set("Authorization", `Bearer ${token}`);
   }
 
-  return fetch(`${API_URL}${endpoint}`, {
+  // Първи опит за заявка
+  let response = await fetch(`${API_URL}${endpoint}`, {
     ...options,
     headers: headers,
   });
+
+  // 4. АКО ТОКЕНЪТ Е ИЗТЕКЪЛ (401 Unauthorized)
+  if (response.status === 401) {
+    const refreshToken = await SecureStore.getItemAsync("refreshToken");
+
+    if (refreshToken) {
+      try {
+        // Опитваме да вземем нов Access Token от бекенда
+        const refreshResponse = await fetch(`${API_URL}/Auth/refresh`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ refreshToken: refreshToken }),
+        });
+
+        if (refreshResponse.ok) {
+          // Бекендът ти трябва да върне { token: "...", refreshToken: "..." }
+          const newData = await refreshResponse.json();
+          
+          // Записваме новата двойка токени
+          await SecureStore.setItemAsync("token", newData.token);
+          await SecureStore.setItemAsync("refreshToken", newData.refreshToken);
+
+          // Обновяваме хедъра на оригиналната заявка
+          headers.set("Authorization", `Bearer ${newData.token}`);
+
+          // 5. ПОВТАРЯМЕ ОРИГИНАЛНАТА ЗАЯВКА
+          return fetch(`${API_URL}${endpoint}`, {
+            ...options,
+            headers: headers,
+          });
+        }
+      } catch (error) {
+        console.error("Failed to refresh token", error);
+      }
+    }
+
+    await SecureStore.deleteItemAsync("token");
+    await SecureStore.deleteItemAsync("refreshToken");
+    router.replace("/login");
+  }
+
+  return response;
 }

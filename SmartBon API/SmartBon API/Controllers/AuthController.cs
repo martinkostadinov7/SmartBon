@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Services.Interfaces;
 using Shared;
 using Shared.DTOs.Users;
@@ -17,9 +18,9 @@ namespace SmartBon_API.Controllers
         }
 
         [HttpPost("login")]
-        public ActionResult<JsonWebToken> Login(UserLoginDto request)
+        public async Task<ActionResult<JsonWebToken>> Login(UserLoginDto request)
         {
-            var token = authService.Login(request);
+            var token = await authService.Login(request);
 
             return Ok(token);
         }
@@ -29,6 +30,12 @@ namespace SmartBon_API.Controllers
         {
             var token = await authService.RegisterAsync(request);
             return Ok(token);
+        }
+
+        [HttpPost("refresh")]
+        public async Task<ActionResult<LoginTokensDto>> Refresh([FromBody] string refreshToken)
+        {
+            return await authService.RefreshTokens(refreshToken);
         }
     }
 }

@@ -39,5 +39,11 @@ namespace Data.Repositories
 
             return expenses;
         }
+        public async Task<RecurringExpense?> GetRecurringExpenseByIdAsync(int id)
+        {
+            var query = _dbSet.AsQueryable().Include(c => c.Expenses);
+
+            return await query.SingleOrDefaultAsync(x => EF.Property<int>(x, "Id") == id);
+        }
     }
 }

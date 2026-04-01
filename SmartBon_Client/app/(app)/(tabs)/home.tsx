@@ -1,7 +1,6 @@
 import { Alert, Dimensions, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import React, { useCallback, useEffect, useState } from "react";
 import { router, useFocusEffect } from "expo-router";
-import { useCategories } from "../../context/CategoriesContext";
 import { Currency, Expense } from "../../types/expense";
 import { ExpenseCard } from "../../components/expense";
 import { AddButton } from "../../components/addButton";
@@ -12,6 +11,7 @@ import { Goal } from "../../types/goal";
 import { GoalCard } from "../../components/goalCard";
 import { ContributionGraph } from "react-native-chart-kit";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
+import { Category } from "../../types/category";
 
 const currencyFromNumber: Record<number, Currency> = {
   0: "EUR",
@@ -34,7 +34,8 @@ interface ContributionGraphResponse {
 }
 
 export default function HomeScreen() {
-  const { categories } = useCategories();
+    const [categories, setCategories] = useState<Category[]>([]);
+  
   const [recentExpenses, setRecentExpenses] = useState<Expense[]>([]);
   const [budgets, setBudgets] = useState<Budget[]>([]);
   const [goals, setGoals] = useState<Goal[]>([]);
@@ -50,7 +51,16 @@ useEffect(() => {
     loadData();
 }, [reload]);
 
+async function loadCategories(){
+   const response = await apiFetch(`/Categories`);
+    if (!response.ok) throw new Error("Failed");
+    const data = await response.json();
+    setCategories(data);
+}
+
   const loadData =  useCallback(async () => {
+loadCategories();
+
     const userResponse = await apiFetch(`/Users/me`);
     if (!userResponse.ok) throw new Error("Failed");
     const profileData = await userResponse.json();

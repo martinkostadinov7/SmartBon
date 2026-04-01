@@ -1,4 +1,4 @@
-﻿using Shared.Enums;
+﻿    using Shared.Enums;
 namespace Data.Models
 {
     public class Expense : IEntity
@@ -31,9 +31,12 @@ namespace Data.Models
         
         public int UserId { get; set; }
 
+        public RecurringExpense? RecurringExpense { get; set; }
+        public int? RecurringExpenseId { get; set; }
+
         private Expense() { }
         public Expense(string title, string? description, decimal cost, int categoryId,
-            int? subCategoryId,  DateTime expenseDate, PaymentType paymentType, int userId, Currency currency)
+            int? subCategoryId,  DateTime expenseDate, PaymentType paymentType, int userId, Currency currency, int? recurringExpenseId = null)
         {
             Title = title;
             Description = description;
@@ -45,6 +48,7 @@ namespace Data.Models
             UserId = userId;
             CreatedAt = DateTime.Now;
             Currency = currency;
+            RecurringExpenseId = recurringExpenseId;
         }
     }
 }

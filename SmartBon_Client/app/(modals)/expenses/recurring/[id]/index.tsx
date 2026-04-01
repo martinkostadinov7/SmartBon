@@ -1,13 +1,14 @@
 import { View, Text, Pressable, KeyboardAvoidingView, StyleSheet, TouchableOpacity, Modal, TextInput, Keyboard, Alert, Platform, ScrollView} from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { router, useLocalSearchParams } from 'expo-router';
-import { Currency, Expense, PaymentType } from '../../../types/expense';
-import { CategoryBox } from '../../../components/categoryBox';
+import { Currency, Expense, PaymentType } from '../../../../types/expense';
+import { CategoryBox } from '../../../../components/categoryBox';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { apiFetch } from '../../../services/api';
-import { Category } from '../../../types/category';
-import { Subcategory } from '../../../types/subcategory';
-import { useExpenseStore } from '../../../services/store';
+import { apiFetch } from '../../../../services/api';
+import { ExpenseCard } from '../../../../components/expense';
+import { Category } from '../../../../types/category';
+import { useExpenseStore } from '../../../../services/store';
+import { Subcategory } from '../../../../types/subcategory';
 
 const paymentTypeFromNumber: Record<number, PaymentType> = {
   0: "Cash",
@@ -30,36 +31,81 @@ const currencyFromNumber: Record<number, Currency> = {
   0: "EUR",
   1: "USD"
 };
+
+const frequencyFromNumber: Record<number, string> = {
+  0: "Daily",
+  1: "Weekly",
+  2: "Monthly",
+  3: "Yearly"
+};
+
+const frequencyFromString: Record<string, number> = {
+  "Daily": 0,
+  "Weekly": 1,
+  "Monthly": 2,
+  "Yearly" : 3
+};
 export default function ExpenseViewScreen() {
-    const { id } = useLocalSearchParams<{ id: string}>();
+const { id } = useLocalSearchParams<{ id: string}>();
     const tempCategoryId = useExpenseStore((state) => state.tempCategoryId);
     const tempSubcategoryId = useExpenseStore((state) => state.tempSubcategoryId);
-    const { clearTempData } = useExpenseStore();
-    const [expense, setExpense] = useState<Expense | null>(null);
-      const [categories, setCategories] = useState<Category[]>([]);
+    const { clearTempData } = useExpenseStore();    const [expense, setExpense] = useState<Expense | null>(null);
+    const [categories, setCategories] = useState<Category[]>([]);
     const [title, setTitle] = useState("");
-    const [date, setDate] = useState(new Date());
+    const [startDate, setStartDate] = useState(new Date());
+    const [nextExecutionDate, setNextExecutionDate] = useState(new Date());
     const [cost, setCost] = useState("");
     const [description, setDescription] = useState("");
     const [isEditing, setIsEditing] = useState(false);
     const [categoryId, setCategoryId] = useState(-1);
     const [screenHeight, setScreenHeight] = useState(685);
+    const [selectedFrequency, setFrequency] = useState("");
     const [selectedCurrency, setSelectedCurrency] = useState("EUR");
-    const [category, setCategory] = useState<Category>();
-    const [subcategory, setSubcategory] = useState<Subcategory | null>();
+    const [expenses, setExpenses] = useState<Expense[]>([]);
     const paymentOptions: { value: PaymentType; label: string }[] = [
     { value: "Cash", label: "Cash" },
     { value: "Card", label: "Card" },
     { value: "Transfer", label: "Transfer" },
     ];
-
+ const [category, setCategory] = useState<Category>();
+    const [subcategory, setSubcategory] = useState<Subcategory | null>();
     const [paymentType, setPaymentType] = useState<PaymentType>("Cash");
     const currentPaymentLabel = paymentOptions.find(p => p.value === paymentType)?.label ?? paymentType;
 
-useEffect(() => {
+    const frequencies = ["Daily", "Weekly", "Monthly", "Yearly"];
+
+async function loadCategories(){
+   const response = await apiFetch(`/Categories`);
+    if (!response.ok) throw new Error("Failed");
+    const data = await response.json();
+    setCategories(data);
+}
+
+   useEffect(() => {(async () => {
+
+    loadCategories();
+      const response = await apiFetch(`/Expenses/recurring/${id}`);
+      if (!response.ok) {
+        throw new Error("Failed to load recurring expense");
+      }
+      const expense = await response.json();
+      setExpense(expense);
+      setTitle(expense?.title ?? "undefined");
+      setFrequency(frequencyFromNumber[expense?.frequency]);
+      setStartDate(new Date(expense?.startDate) ?? new Date());
+      setNextExecutionDate(new Date(expense?.nextExecutionDate) ?? new Date());
+      setCost(String(expense?.cost));
+      setDescription(expense?.description ?? null);
+      setPaymentType(paymentTypeFromNumber[expense?.paymentType]);
+      setSelectedCurrency(currencyFromNumber[expense?.currency]);
+      setExpenses(expense?.expenses);
+    })();
+   }, [id, expenses]);
+
+    useEffect(() => {
   (async () => {
-    const expResponse = await apiFetch(`/Expenses/${id}`);
-      const expenseData = await expResponse.json();
+    const expResponse = await apiFetch(`/Expenses/recurring/${id}`);
+      const expense = await expResponse.json();
 
       let allCategories = categories;
       if (categories.length === 0) {
@@ -68,21 +114,24 @@ useEffect(() => {
         setCategories(allCategories);
       }
 
-      const currentCategoryId = tempCategoryId ? Number(tempCategoryId) : (expenseData?.categoryId || -1);
-      const currentSubcategoryId = tempSubcategoryId ? Number(tempSubcategoryId) : (expenseData?.subcategoryId || -1);
+      const currentCategoryId = tempCategoryId ? Number(tempCategoryId) : (expense?.categoryId || -1);
+      const currentSubcategoryId = tempSubcategoryId ? Number(tempSubcategoryId) : (expense?.subcategoryId || -1);
 
       const foundCategory = allCategories.find(c => c.id === currentCategoryId);
       const foundSubcategory = foundCategory?.subcategories.find(s => s.id === currentSubcategoryId) || null;
 
-      setExpense(expenseData);
-      setTitle(expenseData?.title ?? "");
+      setExpense(expense);
       setCategory(foundCategory);
       setSubcategory(foundSubcategory);
-      setDate(new Date(expenseData?.expenseDate) ?? new Date());
-      setCost(String(expenseData?.cost));
-      setDescription(expenseData?.description ?? null);
-      setPaymentType(paymentTypeFromNumber[expenseData?.paymentType]);
-      setSelectedCurrency(currencyFromNumber[expenseData?.currency])
+      setTitle(expense?.title ?? "undefined");
+      setFrequency(frequencyFromNumber[expense?.frequency]);
+      setStartDate(new Date(expense?.startDate) ?? new Date());
+      setNextExecutionDate(new Date(expense?.nextExecutionDate) ?? new Date());
+      setCost(String(expense?.cost));
+      setDescription(expense?.description ?? null);
+      setPaymentType(paymentTypeFromNumber[expense?.paymentType]);
+      setSelectedCurrency(currencyFromNumber[expense?.currency]);
+      setExpenses(expense?.expenses);
   })();
 }, [id]);
 
@@ -109,20 +158,23 @@ useEffect(() => {
     }
   }
 }, [tempCategoryId, tempSubcategoryId, categories]);
-
     function handleChangeCategory(): void {
-      router.push("../categories/changeCategory");
+      router.push("../../categories/changeCategory");
     }
 
     function handleChangeSubcategory(): void {
-      console.log(category?.id);
       router.push({
-          pathname: "../categories/changeSubcategory",
+          pathname: "../../categories/changeSubcategory",
           params: { 
               categoryId: category?.id
           }
       });
     }
+
+
+     function handleExpenseView(id: number){
+        router.push(`/(modals)/expenses/${id}`);
+      }
 
     async function handleSaveExpense(){
       const normalizedCost = cost.replace(",", ".").trim();
@@ -136,21 +188,25 @@ useEffect(() => {
           );
       }
 
-      const offset = date.getTimezoneOffset() * 60000; 
+const offset = nextExecutionDate.getTimezoneOffset() * 60000; 
 
-const localISOTime = new Date(date.getTime() - offset).toISOString().slice(0, -1); 
+// 2. Създаваме "фалшива" UTC дата, която съвпада с нашия локален час
+const localISOTime = new Date(nextExecutionDate.getTime() - offset).toISOString().slice(0, -1); 
+// Резултат: "2026-03-31T13:00:00.000" (без "Z" накрая)
       const expenseToUpdate = {
           Title: title.trim(),
           Description: description ? description.trim() : null,
           Cost: costNumber,
           CategoryId: category?.id,
-          SubcategoryId: subcategory?.id,
-          ExpenseDate: localISOTime,
+          SubcategoryId: subcategory?.id ? subcategory.id : null,
           PaymentType: paymentTypeMap[paymentType],
-          Currency: currencyMap[selectedCurrency]
+          Currency: currencyMap[selectedCurrency],
+          Frequency: frequencyFromString[selectedFrequency],
+          NextExecutionDate: localISOTime
       };
+
       try {
-          const response = await apiFetch(`/Expenses/${id}`, {
+          const response = await apiFetch(`/Expenses/recurring/${id}`, {
           method: "PUT",
           headers: {
               "Content-Type": "application/json",
@@ -175,15 +231,22 @@ const localISOTime = new Date(date.getTime() - offset).toISOString().slice(0, -1
       }
     }
 
+const formatCost = (amount: number, currencyCode: string) => {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: currencyCode, // Тук подаваш директно "EUR", "BGN" или "USD"
+  }).format(amount);
+};
+
     function handleCloseScreen(){
-      clearTempData();
+        clearTempData();
       router.back();
     }
     
       async function handleDeleteExpense() {
   Alert.alert(
-    "Delete Expense",
-    "Are you sure you want to delete this record?",
+    "Delete recurring Expense",
+    "Are you sure you want to delete this recurring expense?",
     [
       { text: "Cancel", style: "cancel" },
       {
@@ -192,7 +255,7 @@ const localISOTime = new Date(date.getTime() - offset).toISOString().slice(0, -1
         onPress: async () => {
           try {
             // 1. Изпращаме само ЕДНА заявка
-            const response = await apiFetch(`/Expenses/${id}`, {
+            const response = await apiFetch(`/Expenses/recurring/${id}`, {
               method: "DELETE",
               headers: {
                 "Content-Type": "application/json",
@@ -315,33 +378,107 @@ const localISOTime = new Date(date.getTime() - offset).toISOString().slice(0, -1
                   <Text style={[styles.input]}>{description}</Text>
                   }
 
-              <Text style={styles.label}>Date</Text>
+                <Text style={[styles.label, {marginBottom: 10}]}>Frequency</Text>
+                {isEditing ? 
+                (<>
+<ScrollView horizontal showsHorizontalScrollIndicator={false}>
+
+      {frequencies.map((frequency) => {
+          return (
+          <TouchableOpacity
+              key={frequency}
+              style={{
+              flexDirection: 'row', // За да подредим текста и иконата в линия
+              alignItems: 'center',
+              borderWidth: selectedFrequency === frequency ? 2 : 1,
+              borderRadius: 10,
+              marginRight: 7,
+              paddingVertical: 9,
+              paddingHorizontal: 12,
+              borderColor: selectedFrequency === frequency ? "black" : "gray",
+              }}
+              onPress={() => setFrequency(frequency)}
+          >
+              <Text style={{ 
+                  textAlign: "center", 
+                  fontSize: 14, 
+                  textTransform: 'capitalize',
+                  fontWeight: selectedFrequency === frequency ? 'bold' : 'normal'
+              }}>
+              {frequency}
+              </Text>
+              
+          </TouchableOpacity>
+          );
+      })}
+  </ScrollView>
+                </>) : 
+                (<>
+                <View style={[styles.row, {justifyContent: "flex-start"}]}>
+                    {frequencies.map((frequency) => (
+                    <View
+                        key={frequency}
+                        style={{
+                        flexDirection: 'row', // За да подредим текста и иконата в линия
+                        alignItems: 'center',
+                        borderWidth: selectedFrequency === frequency ? 2 : 1,
+                        borderRadius: 10,
+                        marginRight: 7,
+                        paddingVertical: 9,
+                        paddingHorizontal: 12,
+                        borderColor: selectedFrequency === frequency ? "black" : "gray",
+                        }}
+                    >
+                        <Text style={{ textAlign: "center", fontSize: 14, textTransform: 'capitalize', color: selectedFrequency === frequency ? "black" : "#8c8c8c", fontWeight: selectedFrequency === frequency ? 700 : 400}}>
+                        {frequency}
+                        </Text>
+                    </View>
+                    ))}
+                </View>
+                </>)}
+
+              <Text style={styles.label}>Start date</Text>
+              <View style={{opacity: 0.7}}>
+                <View pointerEvents="none">
+                    <DateTimePicker
+                    themeVariant="light"
+                        value={startDate}
+                        mode="datetime"
+                        display="default"
+                        onChange={(event, selectedDate) => {
+                        if (selectedDate) setStartDate(selectedDate);
+                    }}
+                    />
+                </View>
+              </View>
+              <Text style={styles.label}>Next execution date</Text>
+
               {isEditing ? (
                 <DateTimePicker
-                  themeVariant="light"
-                  value={new Date(date)} // Подсигури се, че е Date обект
+                themeVariant="light" // Това ще форсира светъл режим на самия пикър
+  textColor="black"
+                  value={new Date(nextExecutionDate)} // Подсигури се, че е Date обект
                   mode="datetime"
                   display="default"
                   onChange={(event, selectedDate) => {
-                    if (selectedDate) setDate(selectedDate);
+                    if (selectedDate) setNextExecutionDate(selectedDate);
                   }}
                 />
               ) : (
-                <View style={{
-                    opacity: 0.7
-                }}>
-                    <View pointerEvents="none">
-                        <DateTimePicker
-                            themeVariant="light"
-                            value={date}
-                            mode="datetime"
-                            display="default"
-                            onChange={(event, selectedDate) => {
-                            if (selectedDate) setDate(selectedDate);
-                        }}
-                        />
-                    </View>
+            <View style={{opacity: 0.7}}>
+                <View pointerEvents="none">
+                    <DateTimePicker
+                    themeVariant="light"
+                        style={styles.dateInput}
+                        value={nextExecutionDate}
+                        mode="datetime"
+                        display="default"
+                        onChange={(event, selectedDate) => {
+                        if (selectedDate) setNextExecutionDate(selectedDate);
+                    }}
+                    />
                 </View>
+            </View>
               )}
 
               <Text style={styles.label}>Currency</Text>
@@ -436,7 +573,40 @@ const localISOTime = new Date(date.getTime() - offset).toISOString().slice(0, -1
                 </View>
               )}
             </View>
+            {isEditing ? 
+            (<></>) : 
+            (<>
+            <Text style={{fontSize: 20, marginVertical: 10, fontWeight: '700'}}>Expenses</Text>
+                  {expenses.length > 0 ? 
+                  (expenses.map(expense => {
+                    const category = categories.find(c => c.id === expense.categoryId);
+                    const subcategory = categories
+                      .find(c => c.id === expense.categoryId)
+                      ?.subcategories.find(sc => sc.id === expense.subcategoryId);
+                    return (
+                      <ExpenseCard
+                        key={expense.id}
+                        title={expense.title}
+                        amount={formatCost(expense.cost, currencyFromNumber[expense.currency])}
+                        date={String(expense.expenseDate)}
+                        categoryName= {category?.name ?? "Unknown"}
+                        categoryEmoji={category?.icon ?? "❌"}
+                        categoryColor={category?.colorHex ?? "x"}
+                        subcategoryEmoji={subcategory?.icon}
+                        subcategoryText={subcategory?.name}
+                        subcategoryColor={subcategory?.colorHex ?? "#ff7575"}
+                        onPress={() => handleExpenseView(expense.id)}
+                      />
+                    );
+                  })) : 
+                  (<View style={{ height: 100, justifyContent: 'center', alignItems: 'center' }}>
+                <Text>No expenses added yet.</Text>
+            </View>
+            )}
+        </>
+        )}
             </TouchableOpacity>
+            
           </ScrollView>     
         </View>
         </View>
@@ -475,7 +645,7 @@ const styles = StyleSheet.create({
     padding: 20,
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16,
-    height: 600
+    height: 700
   },
   header: {
     flexDirection: "row",

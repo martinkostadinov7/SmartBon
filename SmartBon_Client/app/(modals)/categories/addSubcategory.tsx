@@ -14,15 +14,16 @@ import {
 import { router, useLocalSearchParams } from "expo-router";
 import EmojiPickerModal from "../../components/emojiPicker";
 import { apiFetch } from "../../services/api";
-import { useCategories } from "../../context/CategoriesContext";
 import { CategoryBox } from "../../components/categoryBox";
+import { Category } from "../../types/category";
 
 export default function AddCategoryModal() {
   const [name, setName] = useState("Subcategory");
   const [icon, setIcon] = useState("📌");
   const [isEmojiOpen, setIsEmojiOpen] = useState(false);
   const { categoryId } = useLocalSearchParams<{ categoryId?: string }>();
-  const { reloadCategories } = useCategories();
+    const [categories, setCategories] = useState<Category[]>([]);
+
   const colors = [
     "#EF9A9A", // Soft Red
     "#FFAB91", // Soft Deep Orange
@@ -46,6 +47,13 @@ export default function AddCategoryModal() {
   ]
   const [selectedColor, setSelectedColor] = useState(colors[0]);
   
+async function loadCategories(){
+   const response = await apiFetch(`/Categories`);
+    if (!response.ok) throw new Error("Failed");
+    const data = await response.json();
+    setCategories(data);
+}
+
   async function handleAddSubcategory(){
 
     if(!name){
@@ -72,7 +80,7 @@ export default function AddCategoryModal() {
         body: JSON.stringify(subcategory),
         });
         if (!response.ok) return;
-        reloadCategories()
+        loadCategories()
         router.back();
         } catch (e: any) {
             console.log("Network/API error:", e?.message ?? e);

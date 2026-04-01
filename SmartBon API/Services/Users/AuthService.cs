@@ -1,6 +1,8 @@
 ﻿using Data.Interfaces;
 using Data.Models;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using Services.Interfaces;
@@ -9,13 +11,21 @@ using Shared.ApiExceptions;
 using Shared.DTOs.Users;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace Services.UserServices
 {       
-    public class AuthService(IUserRepository userRepo, IConfiguration configuration) : IAuthService
+    public class AuthService(IUserRepository userRepo, IConfiguration configuration) : IAuthService         
     {
-        public JsonWebToken Login(UserLoginDto userToLogin)
+        public string GenerateRefreshToken()
+        {
+            var randomNumber = new byte[64];
+            using var rng = RandomNumberGenerator.Create();
+            rng.GetBytes(randomNumber);
+            return Convert.ToBase64String(randomNumber);
+        }
+        public async Task<LoginTokensDto> Login(UserLoginDto userToLogin)
         {
             User? user = userRepo.GetByEmail(userToLogin.Email);
 
@@ -24,10 +34,42 @@ namespace Services.UserServices
                 throw new UnauthorizedException("Invlid credentials!");
             }
 
-            return CreateToken(user);
+            var refreshToken = GenerateRefreshToken();
+
+            user.RefreshToken = refreshToken;
+            user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(30);
+            await userRepo.UpdateAsync(user);
+
+            var jwt = CreateJwtToken(user);
+            LoginTokensDto loginTokensDto = new LoginTokensDto();
+            loginTokensDto.JsonWebToken = jwt;
+            loginTokensDto.RefreshToken = refreshToken;
+            return loginTokensDto;
         }
 
-        public async Task<JsonWebToken> RegisterAsync(UserRegisterDto userToRegister)
+        public async Task<LoginTokensDto> RefreshTokens(string refreshToken)
+        {
+            if (refreshToken == null) throw new BadRequestException("Invalid client request");
+
+            var user = await userRepo.GetByRefreshToken(refreshToken);
+            if (user == null || user.RefreshTokenExpiryTime <= DateTime.UtcNow)
+            {
+                throw new UnauthorizedException("Refresh token expired or invalid");
+            }
+
+            var newAccessToken = CreateJwtToken(user);
+            var newRefreshToken = GenerateRefreshToken();
+
+            user.RefreshToken = newRefreshToken;
+            user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(30);
+;
+            LoginTokensDto loginTokensDto = new LoginTokensDto();
+            loginTokensDto.JsonWebToken = newAccessToken;
+            loginTokensDto.RefreshToken = newRefreshToken;
+            return loginTokensDto;
+        }
+
+        public async Task<LoginTokensDto> RegisterAsync(UserRegisterDto userToRegister)
         {
             User? userFromDb = userRepo.GetByEmail(userToRegister.Email);
             
@@ -38,13 +80,20 @@ namespace Services.UserServices
 
             string hashedPassword = new PasswordHasher<User>().HashPassword(user, userToRegister.Password);
             user.PasswordHash = hashedPassword;
-            //to do email legit checker + password checker
+            var refreshToken = GenerateRefreshToken();
+            var jwt = CreateJwtToken(user);
+
+            user.RefreshToken = refreshToken;
+            user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(30);
             await userRepo.AddAsync(user);
 
-            return CreateToken(user);
+            LoginTokensDto loginTokensDto = new LoginTokensDto();
+            loginTokensDto.JsonWebToken = jwt;
+            loginTokensDto.RefreshToken = refreshToken;
+            return loginTokensDto;
         }
 
-        private JsonWebToken CreateToken(User user) //todo refresh token
+        private JsonWebToken CreateJwtToken(User user) 
         {
             var claims = new List<Claim>
             {

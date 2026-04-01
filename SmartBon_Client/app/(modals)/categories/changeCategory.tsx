@@ -1,21 +1,33 @@
 import { View, Text, ScrollView, Pressable, KeyboardAvoidingView, StyleSheet, TouchableOpacity, Alert } from 'react-native'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { CategoryBox } from '../../components/categoryBox';
-import { useCategories } from "../../context/CategoriesContext";
 import { router } from 'expo-router';
+import { Category } from '../../types/category';
+import { apiFetch } from '../../services/api';
+import { useExpenseStore } from '../../services/store';
 export default function ChangeCategory() {
-    const { categories, setTempCategory } = useCategories();
- 
+      const [categories, setCategories] = useState<Category[]>([]);
     const [selectedCategoryId, setSelectedCategoryId] = useState(-1);
     const [selectedSubcategoryId, setSelectedSubcategoryId] = useState(-1);
-
+const setTempCategoryId = useExpenseStore((state) => state.setTempCategoryId);
+const setTempSubcategoryId = useExpenseStore((state) => state.setTempSubcategoryId);
+const {clearTempData} = useExpenseStore();
+async function loadCategories(){
+   const response = await apiFetch(`/Categories`);
+    if (!response.ok) throw new Error("Failed");
+    const data = await response.json();
+    setCategories(data);
+}
+useEffect(() => {
+    loadCategories();
+}, []);
     function handleCloseScreen(){
-        setSelectedCategoryId(-1);
-        setSelectedSubcategoryId(-1);
+        clearTempData();
         router.back();
     }
     function handleSave(){
-        setTempCategory({ cid: selectedCategoryId, sid: selectedSubcategoryId });
+        setTempCategoryId(selectedCategoryId);
+        setTempSubcategoryId(selectedSubcategoryId);
         router.back();
     }
 

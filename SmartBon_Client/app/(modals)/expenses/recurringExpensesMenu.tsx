@@ -2,9 +2,9 @@ import { View, Text, ScrollView, Pressable, KeyboardAvoidingView, StyleSheet, To
 import React, { useCallback, useState } from 'react'
 import { router, useFocusEffect } from 'expo-router';
 import { apiFetch } from '../../services/api';
-import { Budget } from '../../types/budget';
-import { BudgetCard } from '../../components/budgetCard';
-import { Currency } from '../../types/expense';
+import { Currency, Expense } from '../../types/expense';
+import { ExpenseCard } from '../../components/expense';
+import { RecurringExpense } from '../../types/recurringExpense';
 import { Category } from '../../types/category';
 
 const currencyFromNumber: Record<number, Currency> = {
@@ -12,28 +12,24 @@ const currencyFromNumber: Record<number, Currency> = {
   1: "USD"
 };
 
-export default function ArchivedBudgets() {
-    const [budgets, setBudgets] = useState<Budget[]>([]);
+const frequencyFromNumber: Record<number, string> = {
+  0: "Daily",
+  1: "Weekly",
+  2: "Monthly",
+  3: "Yearly"
+};
+
+export default function ChangeCategory() {
+    const [recurringExpenses, setRecurringExpenses] = useState<RecurringExpense[]>([]);
   const [userDefaultCurrency, setUserDefaultCurrency] = useState("EUR");
-  const [categories, setCategories] = useState<Category[]>([]);
+        const [categories, setCategories] = useState<Category[]>([]);
+
       const formatCost = (amount: number, currencyCode: string) => {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: currencyCode, // Тук подаваш директно "EUR", "BGN" или "USD"
   }).format(amount);
 };
-function getProgressBarColorBudget(percentage: number): string {
-    // Ограничаваме процента между 0 и 100
-    const clamped = Math.min(Math.max(percentage, 0), 100);
-
-    // Изчисляваме Hue (Хю):
-    // При 0% искаме 120 (зелено), при 100% искаме 0 (червено).
-    // Формула: 120 - (процент * 1.2)
-    const hue = 120 - (clamped * 1.2);
-
-    // Връщаме HSL стринг с фиксирана наситеност и светлина за пастелен ефект
-    return `hsl(${hue}, 100%, 60%)`;
-  }
 const formatDate = (dateString: string | Date): string => {
   const date = new Date(dateString);
   
@@ -51,11 +47,11 @@ const formatDate = (dateString: string | Date): string => {
 };
 
 
-  function handleBudgetView(id: number){
-    router.push(`/(modals)/budgets/${id}`);
+  function handleRecurringExpenseView(id: number){
+    router.push(`/(modals)/expenses/recurring/${id}`);
   }
 
-async function loadCategories(){
+  async function loadCategories(){
    const response = await apiFetch(`/Categories`);
     if (!response.ok) throw new Error("Failed");
     const data = await response.json();
@@ -64,15 +60,14 @@ async function loadCategories(){
 
     useFocusEffect(
       useCallback(() => {
-        const fetchBudgets = async () => {
+        const fetchRecurringExpenses = async () => {
           try {
-loadCategories();
 
-            const response = await apiFetch(`/Budgets/archived`);
+            loadCategories();
+            const response = await apiFetch(`/expenses/recurring`);
             if (!response.ok) throw new Error("Failed");
             const data = await response.json()
-            setBudgets(data);
-
+            setRecurringExpenses(data);
 
             const userResponse = await apiFetch(`/Users/me`);
             if (!userResponse.ok) throw new Error("Failed");
@@ -85,7 +80,7 @@ loadCategories();
           }
         };
     
-        fetchBudgets();
+        fetchRecurringExpenses();
         return () => {}; 
       }, []) 
     );
@@ -100,45 +95,30 @@ loadCategories();
             style={styles.wrapper}
         >
             <Pressable style={[styles.container]} onPress={() => {}}>
-                {budgets.length <= 0 && (<Text style={{ color: '#999', fontStyle: 'italic' }}>No archived budgets yet.</Text>)}
+                {recurringExpenses.length <= 0 && (<Text style={{ color: '#999', fontStyle: 'italic' }}>No recurring expenses yet.</Text>)}
                 <ScrollView>
-                    {
-                    budgets.map(budget => {
-                        let budgetCategories = categories.filter(category => 
-                        budget.categoryIds.includes(category.id)
-                    );
-                    if(budgetCategories.length == categories.length){
-                        budgetCategories = [];
-                    } 
-                    
-                        const allSubcategories = categories.flatMap(cat => cat.subcategories);
-
-                        const budgetSubcategories = allSubcategories.filter(sub => 
-                        budget.subcategoryIds.includes(sub.id)
-                        );
+                    {recurringExpenses.map(expense => {
+                        const category = categories.find(c => c.id === expense.categoryId);
+                        const subcategory = categories
+                        .find(c => c.id === expense.categoryId)
+                        ?.subcategories.find(sc => sc.id === expense.subcategoryId);
                         return (
-                    <BudgetCard 
-                        key={budget.id}
-                        id={budget.id}
-                        icon={budget.icon}
-                        colorHex={budget.colorHex}
-                        progressBarColor={getProgressBarColorBudget((budget.currentAmount / budget.limit * 100))}
-                        name={budget.name}
-                        percentage={Number(((budget.currentAmount / budget.limit) * 100).toFixed(0))}
-                        from={formatDate(budget.from)}
-                        to={formatDate(budget.to)}
-                        limit={String(formatCost(budget.limit, userDefaultCurrency))}
-                        currentAmount={String(formatCost(budget.currentAmount, userDefaultCurrency))}
-                        remainingAmount={String(formatCost(budget.limit - budget.currentAmount, userDefaultCurrency))}
-                        categories={budgetCategories}
-                        subCategories={budgetSubcategories}
-                        limitReached={true}
-                        archived={true}
-                        onPress={function (): void {
-                        } } 
-                        reloadComponent={function (): void {
-                            throw new Error('Function not implemented.');
-                        } } />)})
+                        <ExpenseCard
+                            key={expense.id}
+                            title={expense.title}
+                            amount={formatCost(expense.cost, currencyFromNumber[expense.currency])}
+                            date={String(expense.expenseDate)}
+                            recurringFrequency={frequencyFromNumber[expense?.frequency]}
+                            categoryName= {category?.name ?? "Unknown"}
+                            categoryEmoji={category?.icon ?? "❌"}
+                            categoryColor={category?.colorHex ?? "x"}
+                            subcategoryEmoji={subcategory?.icon}
+                            subcategoryText={subcategory?.name}
+                            subcategoryColor={subcategory?.colorHex ?? "#ff7575"}
+                            onPress={() => handleRecurringExpenseView(expense.id)}
+                        />
+                        );
+                    })
                     }
                 </ScrollView>
             </Pressable>

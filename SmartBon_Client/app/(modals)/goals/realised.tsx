@@ -4,8 +4,8 @@ import { router, useFocusEffect } from 'expo-router';
 import { apiFetch } from '../../services/api';
 import { Goal } from '../../types/goal';
 import { GoalCard } from '../../components/goalCard';
-import { useCategories } from '../../context/CategoriesContext';
 import { Currency } from '../../types/expense';
+import { Category } from '../../types/category';
 
 const currencyFromNumber: Record<number, Currency> = {
   0: "EUR",
@@ -15,7 +15,8 @@ const currencyFromNumber: Record<number, Currency> = {
 export default function ChangeCategory() {
     const [goals, setGoals] = useState<Goal[]>([]);
   const [userDefaultCurrency, setUserDefaultCurrency] = useState("EUR");
-      const { categories } = useCategories();
+        const [categories, setCategories] = useState<Category[]>([]);
+
       const formatCost = (amount: number, currencyCode: string) => {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
@@ -45,10 +46,19 @@ const formatDate = (dateString: string | Date): string => {
   });
 };
 
+async function loadCategories(){
+   const response = await apiFetch(`/Categories`);
+    if (!response.ok) throw new Error("Failed");
+    const data = await response.json();
+    setCategories(data);
+}
+
     useFocusEffect(
       useCallback(() => {
         const fetchGoals = async () => {
           try {
+loadCategories();
+
             const response = await apiFetch(`/Goals/realised`);
             if (!response.ok) throw new Error("Failed");
             const data = await response.json()

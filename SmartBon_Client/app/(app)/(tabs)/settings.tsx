@@ -136,8 +136,12 @@ async function handleToggleMonthlyReport(newValue:boolean){
    SecureStore.setItem("token", "");
    router.navigate("../../(auth)");
   }
- async function handleOpenExportExpensesMenu() {
+ function handleOpenExportExpensesMenu() {
    router.push("../../(modals)/expenses/exportExpensesMenu");
+}
+
+function handleOpenRecurringExpensesMenu(){
+   router.push("../../(modals)/expenses/recurringExpensesMenu");
 }
 
 async function handleDeleteAccount() {
@@ -253,6 +257,14 @@ return (<>
 
       <TouchableOpacity onPress={() => router.push('/(modals)/users/managePlan')} style={{borderRadius:10,backgroundColor: "rgba(48, 119, 206, 0.32)", marginBottom: 10}}>
         <Text style={{margin: 10, fontSize: 17}}><FontAwesome6 name="credit-card" size={21} color="black" />   Manage plan</Text>
+      </TouchableOpacity>
+    </View>
+
+<View style={{backgroundColor: "white" , borderRadius: 20, marginHorizontal: 15, marginBottom: 15, padding: 15}}>
+      <Text style={{fontSize: 20, marginBottom: 20}}>Expenses</Text>
+
+      <TouchableOpacity onPress={isPremium ? handleOpenRecurringExpensesMenu : () => handlePremiumFeaturePress("Recurring expenses is a premium feature!")} style={{borderRadius:10,backgroundColor: isPremium ? "rgba(48, 119, 206, 0.32)" : "rgba(48, 119, 206, 0.13)", marginBottom: 10}}>
+        <Text style={{margin: 10, fontSize: 17, color: isPremium ? "#000000" : "#8c8c8c"}}><FontAwesome6 name= {isPremium ? "rotate-right" : "lock"}  size={21} color="black" />   Manage recurring expenses</Text>
       </TouchableOpacity>
     </View>
 

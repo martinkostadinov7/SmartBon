@@ -1,7 +1,6 @@
 import { View, ScrollView, StyleSheet, Text, TouchableOpacity, TextInput, Keyboard, Pressable, Dimensions, FlatList, ActivityIndicator } from "react-native";
 import React, { useCallback, useEffect, useState } from "react";
 import { router, useFocusEffect } from "expo-router";
-import { useCategories } from "../../context/CategoriesContext";
 import { Currency, Expense } from "../../types/expense";
 import { ExpenseCard } from "../../components/expense";
 import { AddButton } from "../../components/addButton";
@@ -11,7 +10,8 @@ import { Subcategory } from "../../types/subcategory";
 import { apiFetch } from "../../services/api";
 import DateTimePicker from '@react-native-community/datetimepicker';
 import MultiSlider from '@ptomasroos/react-native-multi-slider';
-
+import { useIsFocused } from '@react-navigation/native';
+import { Category } from "../../types/category";
 const paymentTypeMap: Record<string, number> = {
   Cash: 0,
   Card: 1,
@@ -34,8 +34,8 @@ const currencyMap: Record<string, number | null> = {
   USD: 1
 };
 export default function ExpensesScreen() {
-  const { categories } = useCategories();
-  
+  const [categories, setCategories] = useState<Category[]>([]);
+  const isFocused = useIsFocused();
   // Данни
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [isExpensesLoading, setIsExpensesLoading] = useState(true); // Първоначално зареждане
@@ -78,6 +78,20 @@ const [hasMore, setHasMore] = useState(true);
     const selectedCategory = categories.find(c => c.id === selectedCategoryIds[0]);
     subcategories = selectedCategory?.subcategories ?? [];
   }
+
+async function loadCategories(){
+   const response = await apiFetch(`/Categories`);
+    if (!response.ok) throw new Error("Failed");
+    const data = await response.json();
+    setCategories(data);
+}
+
+useEffect(() => {
+    if (isFocused) {
+      loadCategories();
+      updateExpensesFromQuery();
+    }
+  }, [isFocused]);
 
   function handleAddExpense() {
     router.push("../../(modals)/expenses/addExpense");
@@ -154,21 +168,33 @@ const [hasMore, setHasMore] = useState(true);
         const dateData = await dateRes.json();
         const start = parseDate(dateData.earliest);
         setEarliestDate(start);
-        setDateRange([start, new Date()]);
+        setDateRange([start, parseDate(dateData.latest)]);
       }
     } catch (e) {
       console.error("Error setting ranges:", e);
     }
   };
 
+const formatToLocalISO = (date: Date): string => {
+  // Взимаме отместването в милисекунди
+  const offset = date.getTimezoneOffset() * 60000;
+  
+  // Създаваме нова дата, адаптирана спрямо локалното време
+  const localDate = new Date(date.getTime() - offset);
+  
+  // Връщаме ISO стринг, но премахваме "Z" накрая
+  // Така ASP.NET няма да го конвертира обратно към UTC
+  return localDate.toISOString().slice(0, -1);
+};
+  
   const updateExpensesFromQuery = async (isInitial = false) => {
     if (isInitial) setIsExpensesLoading(true);
     setHasMore(true); // Нулираме флага при всяка нова филтрация
     const query = new URLSearchParams({
       "Search": search,
       "PageSize": "10",
-      "FilterParams.StartDate": dateRange[0].toISOString(),
-      "FilterParams.EndDate": dateRange[1].toISOString(),
+      "FilterParams.StartDate": formatToLocalISO(dateRange[0]),
+      "FilterParams.EndDate": formatToLocalISO(dateRange[1]),
       "FilterParams.FromCost": String(costRange[0]), 
       "FilterParams.ToCost": String(costRange[1]),
       "SortParams.Descending": selectedOrder === "Descending" ? "true" : "false",  

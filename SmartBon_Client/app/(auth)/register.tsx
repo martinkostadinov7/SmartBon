@@ -2,7 +2,6 @@ import { Link, router, useNavigation } from "expo-router";
 import React, { useState } from "react";
 import { View, Text, TextInput, StyleSheet, Alert, Pressable, TouchableOpacity} from "react-native";
 import * as SecureStore from "expo-secure-store";
-import { useCategories } from "../context/CategoriesContext";
 import { jwtDecode } from "jwt-decode";
 import { apiFetch } from "../services/api";
 
@@ -20,7 +19,6 @@ export default function LoginPage() {
   const [selectedCurrency, setSelectedCurrency] = useState("");
   const [selectedPlan, setSelectedPlan] = useState("Free");
   
-  const { reloadCategories } = useCategories();
   const handleRegister = async () => {
   setError("");
   if(!email || !password || !confirmPassword || !name || !selectedCurrency || !selectedPlan){
@@ -55,13 +53,11 @@ export default function LoginPage() {
           body: JSON.stringify(registerInfo)
         });
       const data = await response.json();
-      console.log(data);
       if (!response.ok) {
         throw new Error(data.message || "Registration failed");
       }
       const token = data.value;
       SecureStore.setItem("token", token);
-      await reloadCategories();
       router.replace("/home");
     }
     catch(ex: any){

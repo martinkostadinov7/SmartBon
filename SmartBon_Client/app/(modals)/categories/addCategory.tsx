@@ -14,14 +14,15 @@ import {
 import { router } from "expo-router";
 import EmojiPickerModal from "../../components/emojiPicker";
 import { apiFetch } from "../../services/api";
-import { useCategories } from "../../context/CategoriesContext";
 import { CategoryBox } from "../../components/categoryBox";
+import { Category } from "../../types/category";
 
 export default function AddCategoryModal() {
   const [name, setName] = useState("Category");
   const [icon, setIcon] = useState("📌");
   const [isEmojiOpen, setIsEmojiOpen] = useState(false);
-  const { reloadCategories } = useCategories();
+  const [categories, setCategories] = useState<Category[]>([]);
+
   const colors = [
     "#EF9A9A", // Soft Red
     "#FFAB91", // Soft Deep Orange
@@ -44,6 +45,13 @@ export default function AddCategoryModal() {
     "#E0E0E0", // Soft Grey
   ]
   const [selectedColor, setSelectedColor] = useState(colors[0]);
+
+async function loadCategories(){
+   const response = await apiFetch(`/Categories`);
+    if (!response.ok) throw new Error("Failed");
+    const data = await response.json();
+    setCategories(data);
+}
 
   async function handleAddCategory(){
 
@@ -70,7 +78,7 @@ export default function AddCategoryModal() {
         body: JSON.stringify(category),
         });
         if (!response.ok) return;
-        reloadCategories()
+        loadCategories();
         router.back();
         } catch (e: any) {
             console.log("Network/API error:", e?.message ?? e);
@@ -194,7 +202,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     paddingHorizontal: 12,
     paddingVertical: 10,
-    fontSize: 1
+    fontSize: 16
   },
   iconButton: {
     borderWidth: 1,

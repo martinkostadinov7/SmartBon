@@ -21,6 +21,5 @@ namespace Shared.DTOs.Expenses
         public PaymentType PaymentType { get; set; }
 
         public Currency Currency { get; set; }
-
     }
 }

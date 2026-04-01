@@ -1,27 +1,40 @@
 import { View, Text, ScrollView, Pressable, KeyboardAvoidingView, StyleSheet, TouchableOpacity, Alert } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { CategoryBox } from '../../components/categoryBox';
-import { useCategories } from "../../context/CategoriesContext";
 import { router, useLocalSearchParams } from 'expo-router';
+import { Category } from '../../types/category';
+import { useExpenseStore } from '../../services/store';
+import { apiFetch } from '../../services/api';
 export default function ChangeCategory() {
     const { categoryId } = useLocalSearchParams<{ categoryId: string}>();
-    const { categories, setTempCategory } = useCategories();
+      const [categories, setCategories] = useState<Category[]>([]);
+  const { clearTempData } = useExpenseStore();
+ const setTempSubcategoryId = useExpenseStore((state) => state.setTempSubcategoryId);
  
+async function loadCategories(){
+   const response = await apiFetch(`/Categories`);
+    if (!response.ok) throw new Error("Failed");
+    const data = await response.json();
+    setCategories(data);
+}
+
     const [selectedCategoryId, setSelectedCategoryId] = useState(-1);
     const [selectedSubcategoryId, setSelectedSubcategoryId] = useState(-1);
 
     useEffect(() => {(async () => {
+      loadCategories();
       setSelectedCategoryId(Number(categoryId));
     })();
    }, []);
 
+   console.log(categories);
+
     function handleCloseScreen(){
-        setSelectedCategoryId(-1);
-        setSelectedSubcategoryId(-1);
+        clearTempData();
         router.back();
     }
     function handleSave(){
-        setTempCategory({ cid: selectedCategoryId, sid: selectedSubcategoryId });
+        setTempSubcategoryId(selectedSubcategoryId);
         router.back();
     }
 
@@ -45,13 +58,13 @@ export default function ChangeCategory() {
     const subcategories = selectedCategory?.subcategories ?? [];
   return (
   <>
-        <Pressable style={styles.overlay} onPress={() => router.back()}>
+        <Pressable style={styles.overlay} onPress={() => handleCloseScreen}>
         <KeyboardAvoidingView
             style={styles.wrapper}
         >
             <Pressable style={styles.container} onPress={() => {}}>
             <View style={styles.header}>
-                <TouchableOpacity onPress={() => router.back()}>
+                <TouchableOpacity onPress={() => handleCloseScreen}>
                 <Text style={styles.headerBtn}>Cancel</Text>
                 </TouchableOpacity>
 

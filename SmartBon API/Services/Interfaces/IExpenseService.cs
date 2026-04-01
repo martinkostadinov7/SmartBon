@@ -8,7 +8,8 @@ namespace Services.Interfaces
     public interface IExpenseService
     {
         Task<ExpenseReadDto> CreateExpenseAsync(ExpenseCreateDto dto);
-        Task<ExpenseReadDto> CreateRecurringExpenseAsync(RecurringExpenseCreateDto dto);
+        Task<RecurringExpenseReadDto> CreateRecurringExpenseAsync(RecurringExpenseCreateDto dto);
+        Task<RecurringExpenseReadDto> UpdateRecurringExpenseAsync(int id, RecurringExpenseUpdateDto dto);
         Task<List<RecurringExpenseReadDto>> GetAllRecurringExpenses();
         Task<ExpenseReadDto> GetExpenseByIdAsync(int id);
         Task<List<ExpenseReadDto>> GetExpensesAsync();
@@ -21,5 +22,7 @@ namespace Services.Interfaces
         Task<ExpenseFilledFromImageDto> ExtractExpenseDataAsync(IFormFile image);
         Task<ExportFileResultDto> ExportExpensesAsync(ExpenseQueryParams queryParams);
         Task<bool> ImportExpensesAsync(IFormFile csvFile);
+        Task<RecurringExpenseReadDto> GetRecurringExpenseById(int id);
+        Task<RecurringExpenseReadDto> DeleteRecurringExpenseAsync(int id);
     }
 }

@@ -4,7 +4,11 @@ namespace Services.Interfaces
 {
     public interface IAuthService
     {
-        JsonWebToken Login(UserLoginDto user);
-        Task<JsonWebToken> RegisterAsync(UserRegisterDto user);
+        Task<LoginTokensDto> Login(UserLoginDto user);
+        Task<LoginTokensDto> RegisterAsync(UserRegisterDto user);
+
+        string GenerateRefreshToken();
+
+        Task<LoginTokensDto> RefreshTokens(string refreshToken);
     }
 }

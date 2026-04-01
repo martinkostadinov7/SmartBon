@@ -18,7 +18,7 @@ using System.Text;
 using System.Text.Json;
 namespace Services.Expenses
 {
-    public class ExpenseService(IUserRepository userRepo, IUserAccessor user, IExpenseRepository expenseRepository, IRecurringExpenseRepository recurringExpenseRepository, IMapper mapper, IBudgetRepository budgetRepository, IConfiguration _configuration, ICategoryRepository categoryRepository, ISubcategoryRepository subcategoryRepository) : IExpenseService
+    public class ExpenseService(IUserRepository userRepo, IUserAccessor user, IExpenseRepository expenseRepository, IRecurringExpenseRepository recurringExpenseRepository, IMapper mapper, IBudgetRepository budgetRepository, IConfiguration _configuration, ICategoryRepository categoryRepository) : IExpenseService
     {
         public async Task<ExpenseReadDto> CreateExpenseAsync(ExpenseCreateDto dto)
         {
@@ -238,7 +238,7 @@ namespace Services.Expenses
             return mappedExpense;
         }
 
-        public async Task<ExpenseReadDto> CreateRecurringExpenseAsync(RecurringExpenseCreateDto dto)
+        public async Task<RecurringExpenseReadDto> CreateRecurringExpenseAsync(RecurringExpenseCreateDto dto)
         {
             RecurringExpense recurringExpense = mapper.Map<RecurringExpense>(dto);
             recurringExpense.UserId = user.Id;
@@ -273,7 +273,7 @@ namespace Services.Expenses
 
             await UpdateBudgetsCreate(expense);
 
-            return mapper.Map<ExpenseReadDto>(expense);
+            return mapper.Map<RecurringExpenseReadDto>(recurringExpense);
         }
 
         public async Task<List<RecurringExpenseReadDto>> GetAllRecurringExpenses()
@@ -409,6 +409,32 @@ namespace Services.Expenses
             }
             await expenseRepository.AddRangeAsync(expenses);
             return true;
+        }
+
+        public async Task<RecurringExpenseReadDto> GetRecurringExpenseById(int id)
+        {
+            RecurringExpense recurringExpense = await recurringExpenseRepository.GetRecurringExpenseByIdAsync(id) ?? throw new NotFoundException("Recurring expense was not found!");
+            return mapper.Map<RecurringExpenseReadDto>(recurringExpense);
+        }
+
+        public async Task<RecurringExpenseReadDto> DeleteRecurringExpenseAsync(int id)
+        {
+            RecurringExpense recurringExpense = await recurringExpenseRepository.GetRecurringExpenseByIdAsync(id) ?? throw new NotFoundException("Recurring expense was not found!");
+            foreach (var expense in recurringExpense.Expenses)
+            {
+                expense.RecurringExpenseId = null;
+                expense.RecurringExpense = null;
+            }
+            await recurringExpenseRepository.DeleteAsync(recurringExpense);
+            return mapper.Map<RecurringExpenseReadDto>(recurringExpense);
+        }
+
+        public async Task<RecurringExpenseReadDto> UpdateRecurringExpenseAsync(int id, RecurringExpenseUpdateDto dto)
+        {
+            RecurringExpense recurringExpenseToUpdate = await recurringExpenseRepository.GetRecurringExpenseByIdAsync(id) ?? throw new NotFoundException("Recurring expense was not found!");
+            mapper.Map(dto, recurringExpenseToUpdate);
+            await recurringExpenseRepository.UpdateAsync(recurringExpenseToUpdate);
+            return mapper.Map<RecurringExpenseReadDto>(recurringExpenseToUpdate);
         }
     }
 }

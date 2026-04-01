@@ -18,10 +18,24 @@ namespace SmartBon_API.Controllers
         }
 
         [HttpPost("recurring")]
-        public async Task<ActionResult<ExpenseReadDto>> CreateRecurringExpense(RecurringExpenseCreateDto request)
+        public async Task<ActionResult<RecurringExpenseReadDto>> CreateRecurringExpense(RecurringExpenseCreateDto request)
         {
-            ExpenseReadDto result = await expenseService.CreateRecurringExpenseAsync(request);
+            RecurringExpenseReadDto result = await expenseService.CreateRecurringExpenseAsync(request);
             return CreatedAtAction(nameof(GetExpenseById), new { id = result.Id }, result);
+        }
+
+        [HttpPut("recurring/{id}")]
+        public async Task<ActionResult<RecurringExpenseReadDto>> UpdateRecurringExpense(int id, RecurringExpenseUpdateDto request)
+        {
+            RecurringExpenseReadDto result = await expenseService.UpdateRecurringExpenseAsync(id, request);
+            return Ok(result);
+        }
+
+        [HttpDelete("recurring/{id}")]
+        public async Task<ActionResult<RecurringExpenseReadDto>> DeleteRecurringExpense(int id)
+        {
+            RecurringExpenseReadDto result = await expenseService.DeleteRecurringExpenseAsync(id);
+            return Ok(result);
         }
 
         [HttpGet("recurring")]
@@ -104,6 +118,13 @@ namespace SmartBon_API.Controllers
         {
             await expenseService.ImportExpensesAsync(csvFile);
             return Ok();
+        }
+
+        [HttpGet("recurring/{id}")]
+        public async Task<ActionResult<List<RecurringExpenseReadDto>>> GetRecurringExpenseById(int id)
+        {
+            RecurringExpenseReadDto result = await expenseService.GetRecurringExpenseById(id);
+            return Ok(result);
         }
     }
 }

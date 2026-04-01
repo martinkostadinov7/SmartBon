@@ -4,66 +4,60 @@ import { View, Text, TextInput, StyleSheet, Alert, Pressable} from "react-native
 import * as SecureStore from "expo-secure-store";
 import { router } from "expo-router";
 import { apiFetch } from "../services/api";
-import { useCategories } from "../context/CategoriesContext";
 import { jwtDecode } from "jwt-decode";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const { reloadCategories } = useCategories();
   useEffect(() => {
-    async function checkToken() {
-      const token = await SecureStore.getItemAsync("token");
-      
-      if (token) {
-        await reloadCategories();
-        router.replace("/(app)/home");
-      }
-    }
-
-    checkToken();
-  }, []);
-  const handleLogin = async () => {
-
-  setError("");
-  if(!email || !password){
-    Alert.alert(
-      "Input error",
-      "Fill out email and password fields!",
-      [{ text: "OK" }]
-    );
-  }
-  else{
-  const loginInfo = {
-    "Email": email,
-    "Password": password
-  }
-  try{
-    const response = await apiFetch("/Auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(loginInfo)
-      });
-      const data = await response.json();
-      console.log(data);
-            
-      if (!response.ok) {
-        throw new Error(data.message || "Login failed");
-      }
-      const token = data.value;
-      SecureStore.setItem("token", token);
-      await reloadCategories();
+  async function checkToken() {
+    // Преди беше "", трябва да е името на ключа, например "token"
+    const token = await SecureStore.getItemAsync("token");
+    
+    if (token) {
+      // Тук е добре да добавиш проверка дали токенът не е изтекъл 
+      // с jwtDecode, но за начало и това работи
       router.replace("/(app)/home");
+    }
   }
-  catch(ex: any){
-    console.error(ex)
-    setError(ex.message || "Error")
+  checkToken();
+}, []);
+  const handleLogin = async () => {
+  setError("");
+  if (!email || !password) {
+    Alert.alert("Input error", "Fill out email and password fields!");
+    return; // Спираме изпълнението тук
   }
+
+  const loginInfo = { "Email": email, "Password": password };
+
+  try {
+    const response = await apiFetch("/Auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(loginInfo)
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || "Login failed");
+    }
+  
+    const accessToken = data.jsonWebToken.value;
+    const refreshToken = data.refreshToken;
+
+    // ЗАПИСВАМЕ И ДВАТА ТОКЕНА
+    await SecureStore.setItemAsync("token", accessToken);
+    await SecureStore.setItemAsync("refreshToken", refreshToken);
+
+    router.replace("/(app)/home");
+  } catch (ex : any) {
+    console.error(ex);
+    setError(ex.message || "Error");
   }
-}
+};
 
   return (
 

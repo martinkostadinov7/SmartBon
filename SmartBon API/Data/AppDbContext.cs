@@ -57,6 +57,11 @@ namespace Data
                 .HasForeignKey(s => s.CategoryId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            modelBuilder.Entity<Expense>()
+                .HasOne(e => e.RecurringExpense)
+                .WithMany(re => re.Expenses)
+                .HasForeignKey(e => e.RecurringExpenseId)
+                .OnDelete(DeleteBehavior.NoAction); // Това е ключовата част
         }
     }
 }

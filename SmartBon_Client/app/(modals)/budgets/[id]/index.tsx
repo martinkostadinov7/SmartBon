@@ -12,12 +12,12 @@ import {
 import { router, useLocalSearchParams } from "expo-router";
 import EmojiPickerModal from "../../../components/emojiPicker";
 import { apiFetch } from "../../../services/api";
-import { useCategories } from "../../../context/CategoriesContext";
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { CategoryBox } from "../../../components/categoryBox";
 import { Subcategory } from "../../../types/subcategory";
 import { Budget } from "../../../types/budget";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
+import { Category } from "../../../types/category";
 
 const dateRangeFromNumber: Record<number, string> = {
   0: "Daily",
@@ -49,7 +49,8 @@ export default function ViewBudgetModal() {
   const [selectedSubcategoryIds, setSelectedSubcategoryIds] = useState<Number[]>([]);
   const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
   const [selectedDateRange, setSelectedDateRange] = useState("");
-  const { categories } = useCategories();
+   const [categories, setCategories] = useState<Category[]>([]);
+
   const { id } = useLocalSearchParams<{ id: string}>();
   const [isEditing, setIsEditing] = useState(false);
     const [isPremium, setIsPremium] = useState(false);
@@ -109,12 +110,21 @@ function getProgressBarColor(percentage: number): string {
   const progressBarColor= getProgressBarColor((Number(currentAmount) / Number(confirmedLimit) * 100))
 const percentage= Math.min((Number(currentAmount) / Number(confirmedLimit)) * 100, 100).toFixed(0)
 const remaining = (Number(confirmedLimit) - Number(currentAmount)).toFixed(2)
+
+async function loadCategories(){
+   const response = await apiFetch(`/Categories`);
+    if (!response.ok) throw new Error("Failed");
+    const data = await response.json();
+    setCategories(data);
+}
+
 useEffect(() => {(async () => {
+loadCategories();
+
     const userResponse = await apiFetch(`/Users/me`);
     if (!userResponse.ok) throw new Error("Failed");
     const profileData = await userResponse.json();
     setIsPremium(profileData.isPremium);
-
 
       const response = await apiFetch(`/Budgets/${id}`);
       if (!response.ok) {

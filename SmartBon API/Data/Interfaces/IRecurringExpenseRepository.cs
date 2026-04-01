@@ -7,6 +7,6 @@ namespace Data.Interfaces
         Task<List<RecurringExpense>> GetAllPendingAsync();
         Task<List<RecurringExpense>> GetAllAsync(int userId);
         Task<bool> DeleteAllAsync(int userId);
-
+        Task<RecurringExpense?> GetRecurringExpenseByIdAsync(int id);
     }
 }

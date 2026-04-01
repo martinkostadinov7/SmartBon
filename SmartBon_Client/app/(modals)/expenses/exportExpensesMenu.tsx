@@ -14,15 +14,14 @@ import {
 } from "react-native";
 import { router } from "expo-router";
 import DateTimePicker from '@react-native-community/datetimepicker';
-import MultiSlider from '@ptomasroos/react-native-multi-slider';
 import { CategoryBox } from "../../components/categoryBox";
-import { useCategories } from "../../context/CategoriesContext";
 import { Currency, Expense } from "../../types/expense";
 import { Subcategory } from "../../types/subcategory";
 import { apiFetch } from "../../services/api";
 import * as FileSystem from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';
 import { Alert } from 'react-native';
+import { Category } from "../../types/category";
 
 const paymentTypeMap: Record<string, number> = {
   Cash: 0,
@@ -47,7 +46,8 @@ const currencyMap: Record<string, number | null> = {
 };
 
 export default function ExportExpensesMenu() {
- const { categories } = useCategories();
+  const [categories, setCategories] = useState<Category[]>([]);
+
    const [selectedCategoryIds, setSelectedCategoryIds] = useState<Number[]>([]);
    const [selectedSubcategoryIds, setSelectedSubcategoryIds] = useState<Number[]>([]);
    const [filterIconColor, setFilterIconColor] = useState("#3077ceff");
@@ -61,9 +61,7 @@ export default function ExportExpensesMenu() {
    const [lowestCost, setLowestCost] = useState(0);
    const [highestCost, setHighestCost] = useState(0);
    const [selectedCurrency, setSelectedCurrency] = useState("");
- 
-   let afterValue = "";
-   let afterDate = "";
+
    const [costRange, setCostRange] = useState([0, 9999.99]); // Начална и крайна цена
    let subcategories: Subcategory[] = [];
  
@@ -92,19 +90,14 @@ export default function ExportExpensesMenu() {
     setSelectedCurrency("");
   }
 
-  function handleToggleFilterScreen(){
-    if(isFilterScreenOpened){
-      setFilterIconColor("#3077ceff");
-      setIsFilterScreenOpened(false);
-    }
-    else{
-      setFilterIconColor("black");
-      setSortIconColor("#3077ceff");
-  
-      setIsFilterScreenOpened(true);
-      setIsSortScreenOpened(false);
-    }
-  }
+  async function loadCategories(){
+   const response = await apiFetch(`/Categories`);
+    if (!response.ok) throw new Error("Failed");
+    const data = await response.json();
+    setCategories(data);
+}
+
+loadCategories();
 
   async function handleExportExpenses(){
     if (selectedCategoryIds.length > 1) {
