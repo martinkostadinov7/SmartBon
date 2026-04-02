@@ -2,7 +2,7 @@ import { View, Text, ScrollView, Pressable, KeyboardAvoidingView, StyleSheet, To
 import React, { useCallback, useState } from 'react'
 import { router, useFocusEffect } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { apiFetch } from '../../services/api';
+import { apiFetch } from '../../../services/api';
 
 export default function ChangeLanguage() {
 const { t, i18n } = useTranslation();

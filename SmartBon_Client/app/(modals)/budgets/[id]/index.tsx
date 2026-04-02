@@ -10,14 +10,14 @@ import {
   ScrollView,
 } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
-import EmojiPickerModal from "../../../components/emojiPicker";
-import { apiFetch } from "../../../services/api";
+import EmojiPickerModal from "../../../../components/emojiPicker";
+import { apiFetch } from "../../../../services/api";
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { CategoryBox } from "../../../components/categoryBox";
-import { Subcategory } from "../../../types/subcategory";
-import { Budget } from "../../../types/budget";
+import { CategoryBox } from "../../../../components/categoryBox";
+import { Subcategory } from "../../../../types/subcategory";
+import { Budget } from "../../../../types/budget";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
-import { Category } from "../../../types/category";
+import { Category } from "../../../../types/category";
 import { useTranslation } from "react-i18next";
 
 const dateRangeFromNumber: Record<number, string> = {
@@ -293,7 +293,8 @@ loadCategories();
   adjustsFontSizeToFit style={styles.headerBtn}>{isEditing ? `${t('save')}` : `${t('edit')}`}</Text> 
             </TouchableOpacity>
             </View>
-        <ScrollView>
+        <ScrollView showsVerticalScrollIndicator={false}>
+<TouchableOpacity activeOpacity={1}>
         {isEditing ? 
         (<><View style={styles.row}>
             <View style={{marginRight: 20}}>
@@ -443,7 +444,7 @@ loadCategories();
                                     fontWeight: selectedDateRange === range ? 'bold' : 'normal',
                                     marginRight: isLocked ? 5 : 0
                                 }}>
-                                {range}
+                                {t(range)}
                                 </Text>
                                 
                                 {isLocked && (
@@ -680,8 +681,12 @@ loadCategories();
                 <Text 
   numberOfLines={1} 
   adjustsFontSizeToFit style={{marginVertical: 10, fontSize: 16}}>{t('date_range')}: {formatDate(from)} - {formatDate(to)}</Text>
-                
+
+                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                  <TouchableOpacity activeOpacity={1}> 
                <View style={styles.row}>
+                
+
                     {ranges.map((range) => (
                     <View
                         key={range}
@@ -696,11 +701,13 @@ loadCategories();
                         <Text 
   numberOfLines={1} 
   adjustsFontSizeToFit style={{ textAlign: "center", fontSize: 14, textTransform: 'capitalize', color: selectedDateRange === range ? "black" : "#8c8c8c", fontWeight: selectedDateRange === range ? 700 : 400}}>
-                        {range}
+                        {t(range)}
                         </Text>
                     </View>
                     ))}
                 </View>
+                  </TouchableOpacity>
+                    </ScrollView>
                 {selectedDateRange == "Custom" ? 
                 (<>
                     <View style={[styles.row, {width: 250, justifyContent: "space-between", marginVertical: 5}]}>
@@ -808,6 +815,8 @@ loadCategories();
                     );
                   })}
             </ScrollView></>)}
+
+</TouchableOpacity>
         </ScrollView>
           </Pressable>
       </Pressable>
@@ -854,6 +863,7 @@ const styles = StyleSheet.create({
     padding: 20,
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16,
+    height: 600
   },
   header: {
     flexDirection: "row",

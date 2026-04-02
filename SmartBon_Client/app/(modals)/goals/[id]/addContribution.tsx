@@ -1,7 +1,7 @@
 import { View, Text, ScrollView, Pressable, KeyboardAvoidingView, StyleSheet, TouchableOpacity, Alert, TextInput, Keyboard } from 'react-native'
 import React, { useCallback, useState } from 'react'
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
-import { apiFetch } from '../../../services/api';
+import { apiFetch } from '../../../../services/api';
 import { useTranslation } from 'react-i18next';
 
 export default function AddContribution() {

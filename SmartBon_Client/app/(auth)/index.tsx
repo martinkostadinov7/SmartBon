@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { View, Text, TextInput, StyleSheet, Alert, Pressable} from "react-native";
 import * as SecureStore from "expo-secure-store";
 import { router } from "expo-router";
-import { apiFetch } from "../services/api";
+import { apiFetch } from "../../services/api";
 import { jwtDecode } from "jwt-decode";
 
 export default function LoginPage() {

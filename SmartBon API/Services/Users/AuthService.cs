@@ -110,7 +110,7 @@ namespace Services.UserServices
 
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-            DateTime expires = DateTime.UtcNow.AddMinutes(30);
+            DateTime expires = DateTime.UtcNow.AddMinutes(1);
 
             var tokenDescriptor = new JwtSecurityToken(
                 issuer: configuration["AppSettings:Issuer"],

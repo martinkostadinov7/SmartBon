@@ -1,10 +1,10 @@
 import { View, Text, ScrollView, Pressable, KeyboardAvoidingView, StyleSheet, TouchableOpacity, Alert } from 'react-native'
 import React, { useEffect, useState } from 'react'
-import { CategoryBox } from '../../components/categoryBox';
+import { CategoryBox } from '../../../components/categoryBox';
 import { router, useLocalSearchParams } from 'expo-router';
-import { Category } from '../../types/category';
-import { useExpenseStore } from '../../services/store';
-import { apiFetch } from '../../services/api';
+import { Category } from '../../../types/category';
+import { useExpenseStore } from '../../../services/store';
+import { apiFetch } from '../../../services/api';
 import { useTranslation } from 'react-i18next';
 export default function ChangeCategory() {
     const { categoryId } = useLocalSearchParams<{ categoryId: string}>();

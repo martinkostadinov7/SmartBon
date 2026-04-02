@@ -15,13 +15,20 @@ import {
   Platform,
 } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
-import EmojiPickerModal from "../../../components/emojiPicker";
-import { apiFetch } from "../../../services/api";
+import EmojiPickerModal from "../../../../components/emojiPicker";
+import { apiFetch } from "../../../../services/api";
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { Goal } from "../../../types/goal";
-import { GoalContribution } from "../../../types/goalContribution";
+import { Goal } from "../../../../types/goal";
+import { GoalContribution } from "../../../../types/goalContribution";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import { useTranslation } from "react-i18next";
+import { Currency } from "../../../../types/expense";
+
+
+const currencyFromNumber: Record<number, Currency> = {
+  0: "EUR",
+  1: "USD"
+};
 
 export default function ViewGoalModal() {
   const [goal, setGoal] = useState<Goal | null>(null);
@@ -80,6 +87,9 @@ const formatDate = (dateString: string | Date): string => {
   });
 };
 
+
+
+
 function formatDateContribution(dateString: string) {
     const date = new Date(dateString);
     const today = new Date();
@@ -133,6 +143,7 @@ const fetchGoalData = useCallback(async () => {
     console.error("Error fetching goal:", error);
   }
 }, [id]);
+  const [userDefaultCurrency, setUserDefaultCurrency] = useState("");
 
 // Това се задейства всеки път, когато се върнеш на този екран
 useFocusEffect(
@@ -142,6 +153,12 @@ useFocusEffect(
 );
 
 useEffect(() => {(async () => {
+const userResponse = await apiFetch(`/Users/me`);
+      if (!userResponse.ok) throw new Error(t("error_occured"));
+      const profileData = await userResponse.json();
+      const currencyStr = currencyFromNumber[profileData.defaultCurrency];
+      setUserDefaultCurrency(currencyStr);
+
       const response = await apiFetch(`/Goals/${id}`);
       if (!response.ok) {
         throw new Error(`${t('error_occured')}`);
@@ -323,6 +340,14 @@ function handleAddContribution(goalId: number, goalName: string){
     }
   });
 }
+const formatCost = (amount: number) => {
+  const validCurrency = userDefaultCurrency || 'EUR'; 
+  console.log(validCurrency);
+  return new Intl.NumberFormat(i18n.language, { 
+    style: 'currency', 
+    currency: validCurrency 
+  }).format(amount);
+};
 
   async function handleDeleteGoal() {
     Alert.alert(
@@ -467,7 +492,7 @@ function handleAddContribution(goalId: number, goalName: string){
                     <View style={[styles.input, {maxWidth: 100, borderWidth: 0}]}>
                         <Text 
   numberOfLines={1} 
-  adjustsFontSizeToFit style={{fontSize: 16}}>{(Number(currentAmount)).toFixed(2)}</Text>
+  adjustsFontSizeToFit style={{fontSize: 16}}>{formatCost(Number((Number(currentAmount)).toFixed(2)))}</Text>
                     </View>
                 </View>
                 <Text 
@@ -480,7 +505,7 @@ function handleAddContribution(goalId: number, goalName: string){
                     <View style={[styles.input, {maxWidth: 100, borderWidth: 0}]}>
                         <Text 
   numberOfLines={1} 
-  adjustsFontSizeToFit style={{fontSize: 16}}>{(Number(remaining))}</Text>
+  adjustsFontSizeToFit style={{fontSize: 16}}>{formatCost(Number(remaining))}</Text>
                     </View>
                 </View>
                 
@@ -590,7 +615,7 @@ function handleAddContribution(goalId: number, goalName: string){
                     <View style={[styles.input, {maxWidth: 100, borderWidth: 0, paddingLeft: 0}]}>
                         <Text 
   numberOfLines={1} 
-  adjustsFontSizeToFit style={{fontSize: 16}}>{Number(currentAmount).toFixed(2)}</Text>
+  adjustsFontSizeToFit style={{fontSize: 16}}>{formatCost(Number((Number(currentAmount)).toFixed(2)))}</Text>
                     </View>
                 </View>
                 <Text 
@@ -603,7 +628,7 @@ function handleAddContribution(goalId: number, goalName: string){
                     <View style={[styles.input, {maxWidth: 100, borderWidth: 0, paddingLeft: 0}]}>
                         <Text 
   numberOfLines={1} 
-  adjustsFontSizeToFit style={{fontSize: 16}}>{(Number(selectedLimit) - Number(currentAmount)).toFixed(2)}</Text>
+  adjustsFontSizeToFit style={{fontSize: 16}}>{formatCost(Number((Number(selectedLimit) - Number(currentAmount)).toFixed(2)))}</Text>
                     </View>
                 </View>
             </View>
@@ -667,7 +692,7 @@ function handleAddContribution(goalId: number, goalName: string){
                         (
                             <Text 
   numberOfLines={1} 
-  adjustsFontSizeToFit style={{ fontSize: 16 }}>{Number(c.amount).toFixed(2)}</Text>
+  adjustsFontSizeToFit style={{ fontSize: 16 }}>{formatCost(Number(Number(c.amount).toFixed(2)))}</Text>
                         )}
                       
                       <Text>{formatDateContribution(String(c.dateTime))}</Text>

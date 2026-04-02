@@ -1,14 +1,14 @@
 import { View, Text, StyleSheet, TextInput, ScrollView, TouchableOpacity, Pressable, Keyboard, Alert, ActivityIndicator, Switch } from 'react-native'
 import React, { useCallback, useState} from 'react'
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { CategoryBox } from '../../components/categoryBox';
+import { CategoryBox } from '../../../components/categoryBox';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
-import { apiFetch } from '../../services/api';
+import { apiFetch } from '../../../services/api';
 import * as SecureStore from "expo-secure-store";
-import { Currency } from '../../types/expense';
+import { Currency } from '../../../types/expense';
 import * as ImagePicker from 'expo-image-picker';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
-import { Category } from '../../types/category';
+import { Category } from '../../../types/category';
 import { useTranslation } from 'react-i18next';
 const paymentTypeMap: Record<string, number> = {
   Cash: 0,

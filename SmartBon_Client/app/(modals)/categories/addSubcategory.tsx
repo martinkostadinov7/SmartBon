@@ -12,10 +12,10 @@ import {
   ScrollView,
 } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
-import EmojiPickerModal from "../../components/emojiPicker";
-import { apiFetch } from "../../services/api";
-import { CategoryBox } from "../../components/categoryBox";
-import { Category } from "../../types/category";
+import EmojiPickerModal from "../../../components/emojiPicker";
+import { apiFetch } from "../../../services/api";
+import { CategoryBox } from "../../../components/categoryBox";
+import { Category } from "../../../types/category";
 import { useTranslation } from "react-i18next";
 
 export default function AddCategoryModal() {

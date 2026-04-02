@@ -1,14 +1,14 @@
 import { View, Text, Pressable, KeyboardAvoidingView, StyleSheet, TouchableOpacity, Modal, TextInput, Keyboard, Alert, Platform, ScrollView} from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { router, useLocalSearchParams } from 'expo-router';
-import { Currency, Expense, PaymentType } from '../../../../types/expense';
-import { CategoryBox } from '../../../../components/categoryBox';
+import { Currency, Expense, PaymentType } from '../../../../../types/expense';
+import { CategoryBox } from '../../../../../components/categoryBox';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { apiFetch } from '../../../../services/api';
-import { ExpenseCard } from '../../../../components/expense';
-import { Category } from '../../../../types/category';
-import { useExpenseStore } from '../../../../services/store';
-import { Subcategory } from '../../../../types/subcategory';
+import { apiFetch } from '../../../../../services/api';
+import { ExpenseCard } from '../../../../../components/expense';
+import { Category } from '../../../../../types/category';
+import { useExpenseStore } from '../../../../../services/store';
+import { Subcategory } from '../../../../../types/subcategory';
 import { useTranslation } from 'react-i18next';
 
 const paymentTypeFromNumber: Record<number, PaymentType> = {

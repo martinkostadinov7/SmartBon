@@ -1,17 +1,17 @@
 import { View, ScrollView, StyleSheet, Text, TouchableOpacity, TextInput, Keyboard, Pressable, Dimensions, FlatList, ActivityIndicator } from "react-native";
 import React, { useCallback, useEffect, useState } from "react";
 import { router, useFocusEffect } from "expo-router";
-import { Currency, Expense } from "../../types/expense";
-import { ExpenseCard } from "../../components/expense";
-import { AddButton } from "../../components/addButton";
+import { Currency, Expense } from "../../../types/expense";
+import { ExpenseCard } from "../../../components/expense";
+import { AddButton } from "../../../components/addButton";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
-import { CategoryBox } from "../../components/categoryBox";
-import { Subcategory } from "../../types/subcategory";
-import { apiFetch } from "../../services/api";
+import { CategoryBox } from "../../../components/categoryBox";
+import { Subcategory } from "../../../types/subcategory";
+import { apiFetch } from "../../../services/api";
 import DateTimePicker from '@react-native-community/datetimepicker';
 import MultiSlider from '@ptomasroos/react-native-multi-slider';
 import { useIsFocused } from '@react-navigation/native';
-import { Category } from "../../types/category";
+import { Category } from "../../../types/category";
 import { useTranslation } from "react-i18next";
 const paymentTypeMap: Record<string, number> = {
   Cash: 0,

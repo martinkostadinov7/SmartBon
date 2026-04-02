@@ -2,8 +2,8 @@ import {ScrollView, StyleSheet, Switch, Text, TouchableOpacity, View } from "rea
 import React, { useCallback, useEffect, useState } from "react";
 import { router, useFocusEffect } from "expo-router";
 import * as SecureStore from "expo-secure-store";
-import { apiFetch } from "../../services/api";
-import { Currency } from "../../types/expense";
+import { apiFetch } from "../../../services/api";
+import { Currency } from "../../../types/expense";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import { Alert } from 'react-native';
 import * as DocumentPicker from 'expo-document-picker';

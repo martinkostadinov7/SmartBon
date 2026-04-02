@@ -2,8 +2,8 @@ import { Alert, Dimensions, ScrollView, StyleSheet, Text, TouchableOpacity, View
 import React, { useCallback, useEffect, useState } from "react";
 import { BarChart, LineChart, PieChart } from "react-native-chart-kit";
 import { router, useFocusEffect } from "expo-router";
-import { apiFetch } from "../../services/api";
-import { Currency, PaymentType } from "../../types/expense";
+import { apiFetch } from "../../../services/api";
+import { Currency, PaymentType } from "../../../types/expense";
 import DateTimePicker from '@react-native-community/datetimepicker';
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import { useTranslation } from "react-i18next";

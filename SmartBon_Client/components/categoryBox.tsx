@@ -23,7 +23,7 @@ const { t, i18n } = useTranslation();
   adjustsFontSizeToFit style={[styles.icon, {fontSize: iconSize}]}>{icon}</Text>
           <Text 
   numberOfLines={1} 
-  adjustsFontSizeToFit numberOfLines={2} ellipsizeMode="tail" style={[styles.name, {fontSize: fontSize}]}>{name}</Text>
+  adjustsFontSizeToFit ellipsizeMode="tail" style={[styles.name, {fontSize: fontSize}]}>{name}</Text>
         </TouchableOpacity>
         ) :  
       (
@@ -33,7 +33,7 @@ const { t, i18n } = useTranslation();
   adjustsFontSizeToFit style={[styles.icon, {fontSize: iconSize}]}>{icon}</Text>
           <Text 
   numberOfLines={1} 
-  adjustsFontSizeToFit numberOfLines={2} ellipsizeMode="tail" style={[styles.name, {fontSize: fontSize}]}>{t(name)}</Text>
+  adjustsFontSizeToFit ellipsizeMode="tail" style={[styles.name, {fontSize: fontSize}]}>{t(name)}</Text>
       </View>)}
     </>
     );

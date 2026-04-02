@@ -10,13 +10,13 @@ import {
   ScrollView,
 } from "react-native";
 import { router, useFocusEffect } from "expo-router";
-import EmojiPickerModal from "../../components/emojiPicker";
-import { apiFetch } from "../../services/api";
+import EmojiPickerModal from "../../../components/emojiPicker";
+import { apiFetch } from "../../../services/api";
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { CategoryBox } from "../../components/categoryBox";
-import { Subcategory } from "../../types/subcategory";
+import { CategoryBox } from "../../../components/categoryBox";
+import { Subcategory } from "../../../types/subcategory";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
-import { Category } from "../../types/category";
+import { Category } from "../../../types/category";
 import { useTranslation } from "react-i18next";
 
 const dateRangeFromString: Record<string, number> = {

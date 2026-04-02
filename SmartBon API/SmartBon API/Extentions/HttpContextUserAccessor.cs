@@ -12,7 +12,7 @@ public class HttpContextUserAccessor(IUserRepository userRepo, IHttpContextAcces
             var idStr = httpContextAccessor.HttpContext?.User?.FindFirst("Id")?.Value;
             if (!int.TryParse(idStr, out var id))
             {
-                throw new BadRequestException("Invalid token!");
+                throw new UnauthorizedException("Invalid token!");
             }
             
              return id;

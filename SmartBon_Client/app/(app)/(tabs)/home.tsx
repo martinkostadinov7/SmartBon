@@ -1,17 +1,17 @@
 import { Alert, Dimensions, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import React, { useCallback, useEffect, useState } from "react";
 import { router, useFocusEffect } from "expo-router";
-import { Currency, Expense } from "../../types/expense";
-import { ExpenseCard } from "../../components/expense";
-import { AddButton } from "../../components/addButton";
-import { apiFetch } from "../../services/api";
-import { Budget } from "../../types/budget";
-import { BudgetCard } from "../../components/budgetCard";
-import { Goal } from "../../types/goal";
-import { GoalCard } from "../../components/goalCard";
+import { Currency, Expense } from "../../../types/expense";
+import { ExpenseCard } from "../../../components/expense";
+import { AddButton } from "../../../components/addButton";
+import { apiFetch } from "../../../services/api";
+import { Budget } from "../../../types/budget";
+import { BudgetCard } from "../../../components/budgetCard";
+import { Goal } from "../../../types/goal";
+import { GoalCard } from "../../../components/goalCard";
 import { ContributionGraph } from "react-native-chart-kit";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
-import { Category } from "../../types/category";
+import { Category } from "../../../types/category";
 import { useTranslation } from 'react-i18next';
 const currencyFromNumber: Record<number, Currency> = {
   0: "EUR",

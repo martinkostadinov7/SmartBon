@@ -10,8 +10,8 @@ import {
   ScrollView,
 } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
-import EmojiPickerModal from "../../components/emojiPicker";
-import { apiFetch } from "../../services/api";
+import EmojiPickerModal from "../../../components/emojiPicker";
+import { apiFetch } from "../../../services/api";
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useTranslation } from "react-i18next";
 

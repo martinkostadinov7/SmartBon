@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { View, Text, TextInput, StyleSheet, Alert, Pressable, TouchableOpacity} from "react-native";
 import * as SecureStore from "expo-secure-store";
 import { jwtDecode } from "jwt-decode";
-import { apiFetch } from "../services/api";
+import { apiFetch } from "../../services/api";
 
 const currencyMap: Record<string, number> = {
   EUR: 0,

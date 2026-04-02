@@ -3,6 +3,7 @@
     "name": "SmartBon_Client",
     "slug": "SmartBon_Client",
     "version": "1.0.0",
+    "scheme": "expense-tracker",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",

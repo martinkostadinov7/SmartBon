@@ -1,13 +1,13 @@
 import { View, Text, Pressable, KeyboardAvoidingView, StyleSheet, TouchableOpacity, Modal, TextInput, Keyboard, Alert, Platform, ScrollView} from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { router, useLocalSearchParams } from 'expo-router';
-import { Currency, Expense, PaymentType } from '../../../types/expense';
-import { CategoryBox } from '../../../components/categoryBox';
+import { Currency, Expense, PaymentType } from '../../../../types/expense';
+import { CategoryBox } from '../../../../components/categoryBox';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { apiFetch } from '../../../services/api';
-import { Category } from '../../../types/category';
-import { Subcategory } from '../../../types/subcategory';
-import { useExpenseStore } from '../../../services/store';
+import { apiFetch } from '../../../../services/api';
+import { Category } from '../../../../types/category';
+import { Subcategory } from '../../../../types/subcategory';
+import { useExpenseStore } from '../../../../services/store';
 import { useTranslation } from 'react-i18next';
 
 const paymentTypeFromNumber: Record<number, PaymentType> = {
@@ -299,7 +299,7 @@ const localISOTime = new Date(date.getTime() - offset).toISOString().slice(0, -1
               </View>
               <Text 
   numberOfLines={1} 
-  adjustsFontSizeToFit style={styles.label}>{t('cost')}</Text>
+  adjustsFontSizeToFit style={styles.label}>{t('Cost')}</Text>
 
               {isEditing ?
                   <TextInput
@@ -335,7 +335,7 @@ const localISOTime = new Date(date.getTime() - offset).toISOString().slice(0, -1
 
               <Text 
   numberOfLines={1} 
-  adjustsFontSizeToFit style={styles.label}>{t('date')}</Text>
+  adjustsFontSizeToFit style={styles.label}>{t('Date')}</Text>
               {isEditing ? (
                 <DateTimePicker
                   locale={i18n.language}

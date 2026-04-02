@@ -1,11 +1,11 @@
 import { View, Text, ScrollView, Pressable, KeyboardAvoidingView, StyleSheet, TouchableOpacity, Alert, TextInput, Keyboard } from 'react-native'
 import React, { useCallback, useState } from 'react'
 import { router, useFocusEffect } from 'expo-router';
-import { apiFetch } from '../../services/api';
-import { Budget } from '../../types/budget';
-import { BudgetCard } from '../../components/budgetCard';
-import { Currency } from '../../types/expense';
-import { Category } from '../../types/category';
+import { apiFetch } from '../../../services/api';
+import { Budget } from '../../../types/budget';
+import { BudgetCard } from '../../../components/budgetCard';
+import { Currency } from '../../../types/expense';
+import { Category } from '../../../types/category';
 import { useTranslation } from 'react-i18next';
 
 const currencyFromNumber: Record<number, Currency> = {

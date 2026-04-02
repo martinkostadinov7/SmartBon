@@ -14,14 +14,14 @@ import {
 } from "react-native";
 import { router } from "expo-router";
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { CategoryBox } from "../../components/categoryBox";
-import { Currency, Expense } from "../../types/expense";
-import { Subcategory } from "../../types/subcategory";
-import { apiFetch } from "../../services/api";
+import { CategoryBox } from "../../../components/categoryBox";
+import { Currency, Expense } from "../../../types/expense";
+import { Subcategory } from "../../../types/subcategory";
+import { apiFetch } from "../../../services/api";
 import * as FileSystem from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';
 import { Alert } from 'react-native';
-import { Category } from "../../types/category";
+import { Category } from "../../../types/category";
 import { useTranslation } from "react-i18next";
 
 const paymentTypeMap: Record<string, number> = {
