@@ -22,6 +22,7 @@ import * as FileSystem from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';
 import { Alert } from 'react-native';
 import { Category } from "../../types/category";
+import { useTranslation } from "react-i18next";
 
 const paymentTypeMap: Record<string, number> = {
   Cash: 0,
@@ -61,7 +62,7 @@ export default function ExportExpensesMenu() {
    const [lowestCost, setLowestCost] = useState(0);
    const [highestCost, setHighestCost] = useState(0);
    const [selectedCurrency, setSelectedCurrency] = useState("");
-
+const { t, i18n } = useTranslation();
    const [costRange, setCostRange] = useState([0, 9999.99]); // Начална и крайна цена
    let subcategories: Subcategory[] = [];
  
@@ -92,7 +93,7 @@ export default function ExportExpensesMenu() {
 
   async function loadCategories(){
    const response = await apiFetch(`/Categories`);
-    if (!response.ok) throw new Error("Failed");
+    if (!response.ok) throw new Error(`${t('error_occured')}`);
     const data = await response.json();
     setCategories(data);
 }
@@ -138,7 +139,7 @@ loadCategories();
         const response = await apiFetch(`/expenses/export?${query.toString()}`);
 
         if (!response.ok) {
-            throw new Error(`Server error: ${response.status}`);
+            throw new Error(`${t('error_occured')}`);
         }
 
         const contentDisposition = response.headers.get("Content-Disposition");
@@ -167,12 +168,12 @@ loadCategories();
         if (await Sharing.isAvailableAsync()) {
             await Sharing.shareAsync(fileUri);
         } else {
-            Alert.alert("Error", "Sharing is not available");
+            Alert.alert(`${t('error')}`, `${t('error_occured')}`);
         }
 
     } catch (error) {
         console.error("Export Error:", error);
-        Alert.alert("Грешка", "Неуспешен експорт на данни.");
+        Alert.alert(`${t('error')}`, `${t('error_occured')}`);
     }
   }
 
@@ -186,13 +187,19 @@ loadCategories();
           <Pressable style={styles.container} onPress={() => {}}>
             <View style={styles.header}>
               <TouchableOpacity onPress={() => router.back()}>
-                <Text style={styles.headerBtn}>Cancel</Text>
+                <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.headerBtn}>{t('cancel')}</Text>
               </TouchableOpacity>
 
-              <Text style={styles.title}>Export expenses</Text>
+              <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.title}>{t('export_expenses')}</Text>
 
               <TouchableOpacity onPress={handleExportExpenses}>
-                <Text style={styles.headerBtn}>Export</Text>
+                <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.headerBtn}>{t('export')}</Text>
               </TouchableOpacity>
             </View>
 <ScrollView showsVerticalScrollIndicator={false}>
@@ -202,14 +209,20 @@ loadCategories();
          <View style={styles.header}>
 
             <TouchableOpacity onPress={handleClearParams}>
-              <Text style={[styles.headerBtn, {color: "red"}]}>Clear</Text> 
+              <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={[styles.headerBtn, {color: "red"}]}>{t('clear')}</Text> 
             </TouchableOpacity>
 
-              <Text style={[styles.title,{fontSize: 16}]}>Filters</Text>
+              <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={[styles.title,{fontSize: 16}]}>{t('filters')}</Text>
 
         </View>
         
-        <Text style={{fontSize: 18, marginBottom: 5}}>Category</Text>
+        <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{fontSize: 18, marginBottom: 5}}>{t('category')}</Text>
         <View style={{ overflow: "hidden" }}>
           <ScrollView
             horizontal
@@ -219,7 +232,7 @@ loadCategories();
             {categories.map(category => (
               <CategoryBox
                 key={category.id}
-                name={category.name}
+                name={t(category.name)}
                 icon={category.icon}
                 fontSize={12}
                 iconSize={30}
@@ -236,7 +249,9 @@ loadCategories();
           </ScrollView>
         </View>
         {selectedCategoryIds.length === 1 && ( <>
-          <Text style={{fontSize: 18, marginBottom: 5}}>Subcategory</Text>
+          <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{fontSize: 18, marginBottom: 5}}>{t("subcategory")}</Text>
           <View style={{ overflow: "hidden" }}>
             <ScrollView
             horizontal
@@ -246,7 +261,7 @@ loadCategories();
             {subcategories.map(subcategory => (
               <CategoryBox
               key={subcategory.id}
-              name={subcategory.name}
+              name={t(subcategory.name)}
               icon={subcategory.icon}
               fontSize={12}
               iconSize={30}
@@ -262,9 +277,12 @@ loadCategories();
           </ScrollView>
         </View>
       </> )}
-      <Text style={{ fontSize: 18, marginBottom: 5 }}>Date Interval</Text>
+      <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{ fontSize: 18, marginBottom: 5 }}>{t('date_interval')}</Text>
       <View style={styles.row}>
           <DateTimePicker
+            locale={i18n.language}
             style={styles.dateInput}
             value={dateRange[0]}
             mode="date" 
@@ -272,8 +290,11 @@ loadCategories();
               if (selectedDate) setDateRange([selectedDate, dateRange[1]]);
             }}
           />
-          <Text style={{ fontSize: 18, marginBottom: 5 }}>-</Text>
+          <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{ fontSize: 18, marginBottom: 5 }}>-</Text>
           <DateTimePicker
+            locale={i18n.language}
             style={styles.dateInput}
             value={dateRange[1]}
             mode="date" 
@@ -282,7 +303,9 @@ loadCategories();
             }}
           />
       </View>
-      <Text style={{ fontSize: 18, marginBottom: 5 }}>Cost Range</Text>
+      <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{ fontSize: 18, marginBottom: 5 }}>{t('cost_range')}</Text>
       <View style={styles.row}>
         <TextInput
           style={styles.costInput}
@@ -291,7 +314,9 @@ loadCategories();
           keyboardType="decimal-pad"
           onBlur={Keyboard.dismiss}
         />
-        <Text style={{ fontSize: 18, marginBottom: 5 }}>-</Text>
+        <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{ fontSize: 18, marginBottom: 5 }}>-</Text>
         <TextInput
           style={styles.costInput}
           onChangeText={newCost => setCostRange([costRange[0], Number(newCost)])}
@@ -309,8 +334,10 @@ loadCategories();
             ]}
             onPress={() => selectedCurrency == "EUR" ? setSelectedCurrency("") : setSelectedCurrency("EUR")}
           >
-            <Text style={selectedCurrency === "EUR" ? styles.activeText : styles.textPicker}>
-              EUR
+            <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={selectedCurrency === "EUR" ? styles.activeText : styles.textPicker}>
+              {t('eur')}
             </Text>
           </TouchableOpacity>
 
@@ -321,13 +348,17 @@ loadCategories();
             ]}
             onPress={() => selectedCurrency == "USD" ? setSelectedCurrency("") :  setSelectedCurrency("USD")}
           >
-            <Text style={selectedCurrency === "USD" ? styles.activeText : styles.textPicker}>
-              USD
+            <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={selectedCurrency === "USD" ? styles.activeText : styles.textPicker}>
+              {t('eur')}
             </Text>
           </TouchableOpacity>
         </View>
 
-      <Text style={{ fontSize: 18, marginBottom: 5 }}>Payment Type</Text>
+      <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{ fontSize: 18, marginBottom: 5 }}>{t('payment_type')}</Text>
       <View style={{marginBottom: 10, flexDirection: "row", gap: 10 }}>
         {paymentOptions.map(opt => {
           const selected = selectedPaymentTypes.includes(opt.value);
@@ -347,8 +378,10 @@ loadCategories();
                 backgroundColor: selected ? "#3077ceff" : "white",
               }}
             >
-              <Text style={{ fontSize: 16, color: selected ? "white" : "#3077ceff" }}>
-                {opt.label}
+              <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{ fontSize: 16, color: selected ? "white" : "#3077ceff" }}>
+                {t(opt.label)}
               </Text>
             </Pressable>
           );

@@ -95,5 +95,13 @@ namespace Services.Users
             await userRepo.DeleteAsync(await user.GetUserAsync());
             return true;
         }
+
+        public async Task<bool> ChangeLanguage(string language)
+        {
+            User userFromDb = await userRepo.GetByIdAsync(user.Id) ?? throw new NotFoundException("user was not found");
+            userFromDb.Language = language;
+            await userRepo.UpdateAsync(userFromDb);
+            return true;
+        }
     }
 }

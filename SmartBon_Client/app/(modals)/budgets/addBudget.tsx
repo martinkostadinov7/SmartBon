@@ -17,6 +17,7 @@ import { CategoryBox } from "../../components/categoryBox";
 import { Subcategory } from "../../types/subcategory";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import { Category } from "../../types/category";
+import { useTranslation } from "react-i18next";
 
 const dateRangeFromString: Record<string, number> = {
   "Daily": 0,
@@ -41,7 +42,7 @@ export default function AddBudgetModal() {
   const [isPremium, setIsPremium] = useState(false);
     const [categories, setCategories] = useState<Category[]>([]);
 
-    const ranges = ["Weekly", "Monthly", "Yearly", "Daily", "Custom"];
+    const ranges = ["Daily", "Weekly", "Monthly", "Yearly",  "Custom"];
 const premiumRanges = ['Daily', 'Custom'];
 
 // Вътре в рендера на бутона:
@@ -67,6 +68,7 @@ const premiumRanges = ['Daily', 'Custom'];
     "#E0E0E0", // Soft Grey
   ]
   const [selectedColor, setSelectedColor] = useState(colors[0]);
+const { t, i18n } = useTranslation();
 
 const formatDate = (dateString: string | Date): string => {
   const date = new Date(dateString);
@@ -76,7 +78,7 @@ const formatDate = (dateString: string | Date): string => {
   const currentYear = new Date().getFullYear();
   const dateYear = date.getFullYear();
 
-  return date.toLocaleDateString('en-US', {
+  return date.toLocaleDateString(i18n.language, {
     month: 'short',
     day: 'numeric',
     // Only show year if it's not the current year
@@ -200,30 +202,42 @@ loadCategories();
           <Pressable style={styles.container} onPress={() => {}}>
             <View style={styles.header}>
               <TouchableOpacity onPress={() => router.back()}>
-                <Text style={styles.headerBtn}>Cancel</Text>
+                <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.headerBtn}>{t('cancel')}</Text>
               </TouchableOpacity>
 
-              <Text style={styles.title}>Add Budget</Text>
+              <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.title}>{t('add_budget')}</Text>
 
               <TouchableOpacity onPress={handleAddBudget}>
-                <Text style={styles.headerBtn}>Add</Text>
+                <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.headerBtn}>{t('add')}</Text>
               </TouchableOpacity>
             </View>
         <ScrollView>
 
         <View style={styles.row}>
             <View style={{marginRight: 20}}>
-                <Text style={[styles.label,{marginTop: 0}]}>Icon</Text>
+                <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={[styles.label,{marginTop: 0}]}>{t('icon')}</Text>
                 <TouchableOpacity
                 style={styles.iconButton}
                 onPress={() => setIsEmojiOpen(true)}
                 >
-                    <Text style={styles.iconText}>{selectedIcon}</Text>
+                    <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.iconText}>{selectedIcon}</Text>
                 </TouchableOpacity>
             </View>
 
             <View style={{width: 288}}>
-                <Text style={[styles.label, {marginTop: 0}]}>Name</Text>
+                <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={[styles.label, {marginTop: 0}]}>{t('name')}</Text>
                 <TextInput
                 style={styles.input}
                 value={name}
@@ -232,7 +246,9 @@ loadCategories();
             </View>
         </View>
 
-            <Text style={styles.label}>Description</Text>
+            <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.label}>{t('description')}</Text>
             <TextInput
               style={styles.input}
               value={description}
@@ -240,7 +256,9 @@ loadCategories();
               multiline
             />
             
-            <Text style={styles.label}>Limit</Text>
+            <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.label}>{t('limit')}</Text>
             <TextInput
               style={[styles.input, {maxWidth: 100}]}
               value={selectedLimit}
@@ -248,7 +266,9 @@ loadCategories();
               keyboardType="decimal-pad"
             />
             <View>
-                <Text style={{marginVertical: 10, fontSize: 16}}>Date range: {formatDate(from)} - {formatDate(to)}</Text>
+                <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{marginVertical: 10, fontSize: 16}}>{t('date_range')}: {formatDate(from)} - {formatDate(to)}</Text>
                 
                 <View style={styles.row}>
                     <ScrollView horizontal showsHorizontalScrollIndicator={false}>
@@ -276,12 +296,12 @@ loadCategories();
                                 onPress={() => {
                                 if (isLocked) {
                                     Alert.alert(
-                                    "Premium feature!",
-                                    "Choosing a daily or custom period is only available for Premium users.",
+                                    `${t('premium_feature')}`,
+                                    `${t('premium_feature_choosing_period')}`,
                                     [
-                                        { text: "Cancel", style: "cancel" },
+                                        { text: `${t('cancel')}`, style: "cancel" },
                                         {
-                                        text: "Upgrade",
+                                        text: `${t('upgrade')}`,
                                         style: "default",
                                         onPress: async () => {
                                             router.push("(modals)/users/managePlan");
@@ -294,7 +314,9 @@ loadCategories();
                                 }
                                 }}
                             >
-                                <Text style={{ 
+                                <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{ 
                                     textAlign: "center", 
                                     fontSize: 14, 
                                     textTransform: 'capitalize',
@@ -302,7 +324,7 @@ loadCategories();
                                     fontWeight: selectedDateRange === range ? 'bold' : 'normal',
                                     marginRight: isLocked ? 5 : 0
                                 }}>
-                                {range}
+                                {t(range)}
                                 </Text>
                                 
                                 {isLocked && (
@@ -316,8 +338,9 @@ loadCategories();
                 {selectedDateRange == "Custom" ? 
                 (<>
                     <View style={[styles.row, {width: 250, justifyContent: "space-between", marginVertical: 5}]}>
-                        <Text>From</Text>
+                        <Text>{t('from')}</Text>
                         <DateTimePicker
+                          locale={i18n.language}
                         style={{}}
                         value={from} // Подсигури се, че е Date обект
                         mode="datetime"
@@ -328,8 +351,9 @@ loadCategories();
                         />
                     </View>
                     <View style={[styles.row, {width: 250, justifyContent: "space-between"}]}>
-                        <Text>To</Text>
+                        <Text>{t('to')}</Text>
                         <DateTimePicker
+                          locale={i18n.language}
                         value={to} // Подсигури се, че е Date обект
                         mode="datetime"
                         display="default"
@@ -343,7 +367,9 @@ loadCategories();
             </View>
 
 
-            <Text style={{fontSize: 16, marginTop: 10, marginBottom: 5}}>Included Categories</Text>
+            <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{fontSize: 16, marginTop: 10, marginBottom: 5}}>{t('included_categories')}</Text>
                     <View style={{ overflow: "hidden" }}>
                       <ScrollView
                         horizontal
@@ -356,13 +382,17 @@ loadCategories();
                               setSelectedCategoryIds([]);
                             }}
                           >
-                            <Text style={{textAlign: "center", fontSize: 16}}>Select</Text>
-                            <Text style={{textAlign: "center", fontSize: 16}}>All</Text>
+                            <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{textAlign: "center", fontSize: 16}}>{t('select')}</Text>
+                            <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{textAlign: "center", fontSize: 16}}>{t('all')}</Text>
                           </TouchableOpacity>
                         {categories.map(category => (
                           <CategoryBox
                             key={category.id}
-                            name={category.name}
+                            name={t(category.name)}
                             icon={category.icon}
                             fontSize={12}
                             iconSize={30}
@@ -380,7 +410,9 @@ loadCategories();
                       </ScrollView>
                     </View>
                     {(selectedCategoryIds.length == 1) && ( <>
-                      <Text style={{fontSize: 16, marginBottom: 5}}>Included Subcategories</Text>
+                      <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{fontSize: 16, marginBottom: 5}}>{t('included_subcategories')}</Text>
                       <View style={{ overflow: "hidden" }}>
                         <ScrollView
                         horizontal
@@ -394,8 +426,12 @@ loadCategories();
                               setSelectedSubcategoryIds([]);
                             }}
                           >
-                            <Text style={{textAlign: "center", fontSize: 16}}>Select</Text>
-                            <Text style={{textAlign: "center", fontSize: 16}}>All</Text>
+                            <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{textAlign: "center", fontSize: 16}}>{t('select')}</Text>
+                            <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{textAlign: "center", fontSize: 16}}>{t('all')}</Text>
                           </TouchableOpacity>
                             {subcategories.map(subcategory => (
                             <CategoryBox
@@ -416,7 +452,9 @@ loadCategories();
                       </ScrollView>
                     </View>
                   </> )}
-            <Text style={styles.label}>Color</Text>
+            <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.label}>{t('color')}</Text>
             <ScrollView  horizontal style={{ flexDirection: 'row'}}
             showsHorizontalScrollIndicator={false}
             >

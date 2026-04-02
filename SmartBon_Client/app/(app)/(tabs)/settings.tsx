@@ -7,12 +7,15 @@ import { Currency } from "../../types/expense";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import { Alert } from 'react-native';
 import * as DocumentPicker from 'expo-document-picker';
+import { useTranslation } from "react-i18next";
+
 const currencyFromNumber: Record<number, Currency> = {
   0: "EUR",
   1: "USD"  
 };
 
 export default function SettingsScreen() {
+
   const [userName, setUserName] = useState("Unidentified");
   const [userEmail, setUserEmail] = useState("Unidentified");
   const [isPremium, setIsPremium] = useState(false);
@@ -21,7 +24,11 @@ export default function SettingsScreen() {
   const [isBudgetLimitAlertEnabled, setIsBudgetLimitAlertEnabled] = useState(true);
   const [isMonthlyAppReportsEnabled, setIsMonthlyAppReportsEnabled] = useState(true);
   const [isMonthlyEmailReportsEnabled, setIsMonthlyEmailReportsEnabled] = useState(true);
+  const { t, i18n } = useTranslation();
 
+  function handleChangeLanguage(){
+    router.push("../../(modals)/users/changeLanguage");
+  }
 const importCsvFile = async () => {
   try {
     // 1. Отваряне на прозореца за избор на файл
@@ -52,13 +59,13 @@ const importCsvFile = async () => {
        });
 
     if (response.ok) {
-      Alert.alert("Success", "Expenses imported successfully!");
+      Alert.alert(`${t('success')}`, `${t('expenses_imported')}`);
     } else {
       const errorText = await response.text();
-      Alert.alert("Import Error", errorText);
+      Alert.alert(`${t('import_error')}`, errorText);
     }
   } catch (error) {
-    Alert.alert("Error", "An error occurred while picking or uploading the file.");
+    Alert.alert(`${t('error')}`, `${t('error_occured')}`);
     console.log(error);
   }
 };
@@ -68,13 +75,14 @@ const importCsvFile = async () => {
     const fetchProfile = async () => {
       try {
         const response = await apiFetch(`/Users/me`);
-        if (!response.ok) throw new Error("Failed");
+        if (!response.ok) throw new Error(t("error_occured"));
         const profileData = await response.json()
         setUserName(profileData.name);
         setUserEmail(profileData.email);
         setIsPremium(profileData.isPremium);
         setUserDefaultCurrency(currencyFromNumber[profileData.defaultCurrency]);
         setUserJoined(formatDate(profileData.createdAt));
+        
       } catch (error) {
         console.error(error);
       }
@@ -93,12 +101,12 @@ function formatDate(dateString: string) {
 
 function handlePremiumFeaturePress(message: string){
   Alert.alert(
-      "Premium feature",
-      `${message} Would you like to upgrade to Premium for unlimited?`,
+      `${t("premium_feature")}`,
+      `${message} ${t('would_you_like_to_upgrade_message')}`,
       [
-        { text: "Cancel", style: "cancel" },
+        { text: `${t("cancel")}`, style: "cancel" },
         {
-          text: "Upgrade",
+          text: `${t("upgrade")}`,
           style: "default",
           onPress: async () => {
             router.push("(modals)/users/managePlan");
@@ -119,18 +127,20 @@ async function handleToggleMonthlyReport(newValue:boolean){
       if (!response.ok) 
       {
           const errorData = await response.json(); 
-          throw new Error(errorData.message || "An unknown error occurred");
+          throw new Error(errorData.message || `${t("error_occured")}`);
       }
   } catch (e: any) {
 
   Alert.alert(
-      "Error",
-      e?.message,
+      `${t("error")}`,
+      `${t("error_occured")}`,
       [{ text: "OK" }]
       );
       console.log("Network/API error:", e?.message.message ?? e);
   }
 }
+
+
 
   function handleSignOut(){
    SecureStore.setItem("token", "");
@@ -146,12 +156,12 @@ function handleOpenRecurringExpensesMenu(){
 
 async function handleDeleteAccount() {
     Alert.alert(
-        "Delete Account",
-        "This action is permanent. All your data and your profile will be gone forever.",
+        `${t("delete_account")}`,
+        `${t("delete_account_message")}`,
         [
-            { text: "Cancel", style: "cancel" },
+            { text: `${t("cancel")}`, style: "cancel" },
             { 
-                text: "Delete My Account", 
+                text: `${t("delete")}`, 
                 style: "destructive", 
                 onPress: async () => {
                     const success = await executeAccountDeletion();
@@ -171,29 +181,28 @@ async function executeAccountDeletion() {
             method: "DELETE"
         });
 
-        if (!response.ok) throw new Error("Could not delete account.");
+        if (!response.ok) throw new Error(`${t('could_not_delete_account')}`);
 
         await SecureStore.deleteItemAsync("token"); 
         handleSignOut();
-        Alert.alert("Account Deleted", "We're sorry to see you go.");
+        Alert.alert(`${t('account_deleted')}`, `${t('account_deleted_message')}`);
         return true;
     } catch (e) {
-        const errorMessage = e instanceof Error ? e.message : "An unknown error occurred";
+        const errorMessage = e instanceof Error ? e.message : `${t('error_occured')}`;
         
-        Alert.alert("Error", errorMessage);
-        console.error("Delete All Data Error:", e);
+        Alert.alert(`${t('error')}`, errorMessage);
     }
 }
 
  async function handleDeleteData() {
     // 1. Always ask for confirmation before deleting everything!
     Alert.alert(
-        "Reset All Data",
-        "This will permanently delete all your expenses, budgets, and goals. Are you sure?",
+        `${t('delete_all_data_alert')}`,
+        `${t('delete_all_data_message')}`,
         [
-            { text: "Cancel", style: "cancel" },
+            { text: `${t('cancel')}`, style: "cancel" },
             { 
-                text: "Delete Everything", 
+                text: `${t('delete_everything')}`, 
                 style: "destructive", 
                 onPress: async () => await executeDelete() 
             }
@@ -214,79 +223,122 @@ async function executeDelete() {
         if (!response.ok) {
             // Check if the body is empty before calling .json() to avoid crashes
             const errorData = await response.json().catch(() => ({}));
-            throw new Error(errorData.message || "Failed to delete data.");
+            throw new Error(errorData.message || `${t('error_occured')}`);
         }
 
-        Alert.alert("Success", "All your data has been cleared.");
+        Alert.alert(`${t('success')}`, `${t('data_cleared')}`);
 
     } catch (e) {
-        const errorMessage = e instanceof Error ? e.message : "An unknown error occurred";
+        const errorMessage = e instanceof Error ? e.message : `${t('error_occured')}`;
         
-        Alert.alert("Error", errorMessage);
-        console.error("Delete All Data Error:", e);
+        Alert.alert(`${t('error')}`, errorMessage);
     }
 }
 
 return (<>
     <View style={[{padding: 15, backgroundColor: "#3077ceff"}]}>
-      <Text style={{fontSize: 32, color: "white"}}>Settings</Text>
+      <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{fontSize: 32, color: "white"}}>{t('settings')}</Text>
     </View>
     <ScrollView style={{backgroundColor: "#e1ebffff", flex: 1}}>
 
     <View style={styles.profileContainer}>
-      <Text style={{fontSize: 26}}>{userName}</Text>
-      <Text style={{fontSize: 18, marginTop: 5}}>{userEmail}</Text>
+      <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{fontSize: 26}}>{userName}</Text>
+      <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{fontSize: 18, marginTop: 5}}>{userEmail}</Text>
       <View style={[{marginTop: 10, borderRadius: 15, alignItems: "center"} , isPremium ? {backgroundColor: "#3077ceff", width: 110} : {backgroundColor: "gray", width: 60}]}>
-        <Text style={{fontSize: 16, color: "white", margin: 5}}>{isPremium ? <FontAwesome6 name="crown" size={21} color="yellow" /> : ""}{isPremium ? " Premium" : "Free"}</Text>
+        <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{fontSize: 16, color: "white", margin: 5}}>{isPremium ? <FontAwesome6 name="crown" size={21} color="yellow" /> : ""}{isPremium ? ` ${t('premium')}` : `${t('free')}`}</Text>
       </View>
 
-      <Text style={{fontSize: 16, marginTop: 5}}>Default Currency: {userDefaultCurrency}</Text>
-      <Text style={{fontSize: 16, marginTop: 5}}>Joined: {userJoined}</Text>
+      <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{fontSize: 16, marginTop: 5}}>{t('default_currency')}: {userDefaultCurrency}</Text>
+      <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{fontSize: 16, marginTop: 5}}>{t('joined')}: {userJoined}</Text>
     </View>
 
     <View style={{backgroundColor: "white" , borderRadius: 20, marginHorizontal: 15, marginBottom: 15, padding: 15}}>
-      <Text style={{fontSize: 20, marginBottom: 20}}>Profile</Text>
+      <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{fontSize: 20, marginBottom: 20}}>{t('profile')}</Text>
 
       <TouchableOpacity onPress={() => router.push('/(modals)/users/editProfile')} style={{borderRadius:10, backgroundColor: "rgba(48, 119, 206, 0.32)", marginBottom: 10}}>
-        <Text style={{margin: 10, fontSize: 17}}><FontAwesome6 name="user-pen" size={21} color="black" />   Edit profile</Text>
+        <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{margin: 10, fontSize: 17}}><FontAwesome6 name="user-pen" size={21} color="black" />   {t('edit_profile')}</Text>
       </TouchableOpacity>
 
       <TouchableOpacity onPress={() => router.push('/(modals)/users/changePassword')} style={{borderRadius:10, backgroundColor: "rgba(48, 119, 206, 0.32)", marginBottom: 10}}>
-        <Text style={{margin: 10, fontSize: 17}}><FontAwesome6 name="key" size={21} color="black" />   Change password</Text>
+        <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{margin: 10, fontSize: 17}}><FontAwesome6 name="key" size={21} color="black" />   {t('change_password')}</Text>
       </TouchableOpacity>
 
       <TouchableOpacity onPress={() => router.push('/(modals)/users/managePlan')} style={{borderRadius:10,backgroundColor: "rgba(48, 119, 206, 0.32)", marginBottom: 10}}>
-        <Text style={{margin: 10, fontSize: 17}}><FontAwesome6 name="credit-card" size={21} color="black" />   Manage plan</Text>
+        <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{margin: 10, fontSize: 17}}><FontAwesome6 name="credit-card" size={21} color="black" />   {t('manage_plan')}</Text>
+      </TouchableOpacity>
+
+<TouchableOpacity onPress={handleChangeLanguage} style={{borderRadius:10,backgroundColor: "rgba(48, 119, 206, 0.32)", marginBottom: 10}}>
+        <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{margin: 10, fontSize: 17}}><FontAwesome6 name="globe" size={21} color="black" />   {t('change_language')}</Text>
       </TouchableOpacity>
     </View>
 
 <View style={{backgroundColor: "white" , borderRadius: 20, marginHorizontal: 15, marginBottom: 15, padding: 15}}>
-      <Text style={{fontSize: 20, marginBottom: 20}}>Expenses</Text>
+      <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{fontSize: 20, marginBottom: 20}}>{t('expenses')}</Text>
 
-      <TouchableOpacity onPress={isPremium ? handleOpenRecurringExpensesMenu : () => handlePremiumFeaturePress("Recurring expenses is a premium feature!")} style={{borderRadius:10,backgroundColor: isPremium ? "rgba(48, 119, 206, 0.32)" : "rgba(48, 119, 206, 0.13)", marginBottom: 10}}>
-        <Text style={{margin: 10, fontSize: 17, color: isPremium ? "#000000" : "#8c8c8c"}}><FontAwesome6 name= {isPremium ? "rotate-right" : "lock"}  size={21} color="black" />   Manage recurring expenses</Text>
+      <TouchableOpacity onPress={isPremium ? handleOpenRecurringExpensesMenu : () => handlePremiumFeaturePress(`${t('premium_feature_recurring')}`)} style={{borderRadius:10,backgroundColor: isPremium ? "rgba(48, 119, 206, 0.32)" : "rgba(48, 119, 206, 0.13)", marginBottom: 10}}>
+        <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{margin: 10, fontSize: 17, color: isPremium ? "#000000" : "#8c8c8c"}}><FontAwesome6 name= {isPremium ? "rotate-right" : "lock"}  size={21} color="black" />   {t('manage_recurring_expenses')}</Text>
       </TouchableOpacity>
     </View>
 
 <View style={{backgroundColor: "white" , borderRadius: 20, marginHorizontal: 15, marginBottom: 15, padding: 15}}>
-      <Text style={{fontSize: 20, marginBottom: 20}}>Archive</Text>
+      <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{fontSize: 20, marginBottom: 20}}>{t('archive')}</Text>
       
       <TouchableOpacity onPress={() => router.push('/(modals)/budgets/archived')} style={{borderRadius:10,backgroundColor: "rgba(48, 119, 206, 0.32)", marginBottom: 10}}>
-        <Text style={{margin: 10, fontSize: 17}}><FontAwesome6 name="box-archive" size={21} color="black" />   Archived budgets</Text>
+        <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{margin: 10, fontSize: 17}}><FontAwesome6 name="box-archive" size={21} color="black" />   {t('archived_budgets')}</Text>
       </TouchableOpacity>
 
       <TouchableOpacity onPress={() => router.push('/(modals)/goals/realised')} style={{borderRadius:10,backgroundColor: "rgba(48, 119, 206, 0.32)", marginBottom: 10}}>
-        <Text style={{margin: 10, fontSize: 17}}><FontAwesome6 name="trophy" size={21} color="black" />   Realised goals</Text>
+        <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{margin: 10, fontSize: 17}}><FontAwesome6 name="trophy" size={21} color="black" />   {t('realised_goals')}</Text>
       </TouchableOpacity>
       
     </View>
 
     <View style={{backgroundColor: "white" , borderRadius: 20, marginHorizontal: 15, marginBottom: 15, padding: 15}}>
-      <Text style={{fontSize: 20, marginBottom: 20}}>Email receiving</Text>
+      <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{fontSize: 20, marginBottom: 20}}>{t('email_receiving')}</Text>
       
 
       <TouchableOpacity 
-  onPress={isPremium ? handleOpenExportExpensesMenu : () => handlePremiumFeaturePress("Receiving monthly reports by email is a premium feature!")} 
+  onPress={isPremium ? () => {if (isPremium) {
+        const nextState = !isMonthlyEmailReportsEnabled;
+        setIsMonthlyEmailReportsEnabled(nextState);
+        handleToggleMonthlyReport(nextState);
+      } else {
+        handlePremiumFeaturePress(`${t('premium_feature_reports')}`);
+      }} : () => handlePremiumFeaturePress(`${t('premium_feature_reports')}`)} 
   style={[
     styles.row, 
     {
@@ -296,7 +348,9 @@ return (<>
     }
   ]}
 >
-  <Text style={{margin: 10, fontSize: 17, color: isPremium ? "#000000" : "#8c8c8c"}}><FontAwesome6 name= {isPremium ? "envelope-open-text" : "lock"} size={21} color="black" />   Monthly reports</Text>
+  <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{margin: 10, fontSize: 17, color: isPremium ? "#000000" : "#8c8c8c"}}><FontAwesome6 name= {isPremium ? "envelope-open-text" : "lock"} size={21} color="black" />   {t('monthly_reports')}</Text>
 
 
   <Switch
@@ -310,7 +364,7 @@ return (<>
         setIsMonthlyEmailReportsEnabled(nextState);
         handleToggleMonthlyReport(nextState);
       } else {
-        handlePremiumFeaturePress("Receiving monthly reports by email is a premium feature!");
+        handlePremiumFeaturePress(`${t('premium_feature_reports')}`);
       }
     }}
     // Деактивираме суича визуално, ако не е премиум
@@ -321,31 +375,45 @@ return (<>
     </View>
 
     <View style={{backgroundColor: "white" , borderRadius: 20, marginHorizontal: 15, marginBottom: 15, padding: 15}}>
-      <Text style={{fontSize: 20, marginBottom: 20}}>Data</Text>
+      <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{fontSize: 20, marginBottom: 20}}>{t('data')}</Text>
 
-    <TouchableOpacity onPress={isPremium ? importCsvFile : () => handlePremiumFeaturePress("Importing expenses is a premium feature!")} style={{borderRadius:10,backgroundColor: isPremium ? "rgba(48, 119, 206, 0.32)" : "rgba(48, 119, 206, 0.13)", marginBottom: 10}}>
-        <Text style={{margin: 10, fontSize: 17, color: isPremium ? "#000000" : "#8c8c8c"}}><FontAwesome6 name= {isPremium ? "file-export" : "lock"} size={21} color="black" />   Import expenses</Text>
+    <TouchableOpacity onPress={isPremium ? importCsvFile : () => handlePremiumFeaturePress(`${t('premium_feature_importing')}`)} style={{borderRadius:10,backgroundColor: isPremium ? "rgba(48, 119, 206, 0.32)" : "rgba(48, 119, 206, 0.13)", marginBottom: 10}}>
+        <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{margin: 10, fontSize: 17, color: isPremium ? "#000000" : "#8c8c8c"}}><FontAwesome6 name= {isPremium ? "file-export" : "lock"} size={21} color="black" />   {t('import_expenses')}</Text>
       </TouchableOpacity>
       
-      <TouchableOpacity onPress={isPremium ? handleOpenExportExpensesMenu : () => handlePremiumFeaturePress("Exporting expenses is a premium feature!")} style={{borderRadius:10,backgroundColor: isPremium ? "rgba(48, 119, 206, 0.32)" : "rgba(48, 119, 206, 0.13)", marginBottom: 10}}>
-        <Text style={{margin: 10, fontSize: 17, color: isPremium ? "#000000" : "#8c8c8c"}}><FontAwesome6 name= {isPremium ? "file-export" : "lock"}  size={21} color="black" />   Export expenses</Text>
+      <TouchableOpacity onPress={isPremium ? handleOpenExportExpensesMenu : () => handlePremiumFeaturePress(`${t('premium_feature_exporting')}`)} style={{borderRadius:10,backgroundColor: isPremium ? "rgba(48, 119, 206, 0.32)" : "rgba(48, 119, 206, 0.13)", marginBottom: 10}}>
+        <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{margin: 10, fontSize: 17, color: isPremium ? "#000000" : "#8c8c8c"}}><FontAwesome6 name= {isPremium ? "file-export" : "lock"}  size={21} color="black" />   {t('export_expenses')}</Text>
       </TouchableOpacity>
     </View>
 
     <View style={{backgroundColor: "rgba(228, 67, 67, 0.33)" , borderRadius: 20, marginHorizontal: 15, marginBottom: 15, padding: 15}}>
-      <Text style={{fontSize: 20, marginBottom: 20}}>Danger Zone</Text>
+      <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{fontSize: 20, marginBottom: 20}}>{t('danger_zone')}</Text>
 
       <TouchableOpacity onPress={(handleDeleteData)} style={{borderRadius:10,backgroundColor: "rgba(228, 67, 67, 0.85)", marginBottom: 10}}>
-        <Text style={{margin: 10, fontSize: 17}}><FontAwesome6 name="trash-can" size={21} color="black" />   Delete data</Text>
+        <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{margin: 10, fontSize: 17}}><FontAwesome6 name="trash-can" size={21} color="black" />   {t('delete_data')}</Text>
       </TouchableOpacity>
       
       <TouchableOpacity onPress={(handleDeleteAccount)} style={{borderRadius:10,backgroundColor: "rgba(228, 67, 67, 0.85)", marginBottom: 10}}>
-        <Text style={{margin: 10, fontSize: 17}}><FontAwesome6 name="user-slash" size={21} color="black" />   Delete account</Text>
+        <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{margin: 10, fontSize: 17}}><FontAwesome6 name="user-slash" size={21} color="black" />   {t('delete_account')}</Text>
       </TouchableOpacity>
     </View>
       
      <TouchableOpacity style={styles.button} onPress={handleSignOut}>
-        <Text style={{ color: "white", fontSize: 20}}>Sign out</Text>
+        <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{ color: "white", fontSize: 20}}>{t('sign_out')}</Text>
       </TouchableOpacity>
     </ScrollView>
   </>

@@ -40,6 +40,13 @@ namespace SmartBon_API.Controllers
             return Ok();
         }
 
+        [HttpPost("changeLanguage")]
+        public async Task<ActionResult> ManagePlan(string language)
+        {
+            await userService.ChangeLanguage(language);
+            return Ok();
+        }
+
         [HttpPost("monthlyReport")]
         public async Task<ActionResult> ToggleMonthlyReport(bool receiveMonthlyReportEmail)
         {
@@ -60,5 +67,7 @@ namespace SmartBon_API.Controllers
             await userService.DeleteAccount();
             return Ok();
         }
+
+
     }
 }

@@ -5,6 +5,7 @@ import { router } from 'expo-router';
 import { Category } from '../../types/category';
 import { apiFetch } from '../../services/api';
 import { useExpenseStore } from '../../services/store';
+import { useTranslation } from 'react-i18next';
 export default function ChangeCategory() {
       const [categories, setCategories] = useState<Category[]>([]);
     const [selectedCategoryId, setSelectedCategoryId] = useState(-1);
@@ -12,9 +13,11 @@ export default function ChangeCategory() {
 const setTempCategoryId = useExpenseStore((state) => state.setTempCategoryId);
 const setTempSubcategoryId = useExpenseStore((state) => state.setTempSubcategoryId);
 const {clearTempData} = useExpenseStore();
+const { t, i18n } = useTranslation();
+
 async function loadCategories(){
    const response = await apiFetch(`/Categories`);
-    if (!response.ok) throw new Error("Failed");
+    if (!response.ok) throw new Error(`${t('error_occured')}`);
     const data = await response.json();
     setCategories(data);
 }
@@ -38,8 +41,8 @@ useEffect(() => {
     function handleSubcategoryAdd(){
         if(selectedCategoryId == -1){
             Alert.alert(
-            "Error",
-            "Choose category first!",
+            `${t('error')}`,
+            `${t('choose_category')}`,
             [{ text: "OK" }]
             );
         }
@@ -62,15 +65,21 @@ useEffect(() => {
             <Pressable style={styles.container} onPress={() => {}}>
             <View style={styles.header}>
                 <TouchableOpacity onPress={handleCloseScreen}>
-                <Text style={styles.headerBtn}>Cancel</Text>
+                <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.headerBtn}>{t('cancel')}</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity onPress={handleSave}>
-                <Text style={styles.headerBtn}>Save</Text> 
+                <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.headerBtn}>{t('save')}</Text> 
                 </TouchableOpacity>
             </View>
 
-            <Text style={{fontSize: 18, marginBottom: 10}}>Category</Text>
+            <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{fontSize: 18, marginBottom: 10}}>{t('category')}</Text>
             <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
@@ -78,7 +87,7 @@ useEffect(() => {
                 {categories.map(category => (
                     <CategoryBox
                         key={category.id}
-                        name={category.name}
+                        name={t(category.name)}
                         icon={category.icon}
                         fontSize={16}
                         color={category.colorHex}
@@ -91,7 +100,7 @@ useEffect(() => {
                 ))}
                 <CategoryBox
                     key={-2}
-                    name="Add"
+                    name={t('add')}
                     icon="+"
                     color={"#FFFFFF"}
                     fontSize={16}
@@ -100,7 +109,9 @@ useEffect(() => {
                     />
                 </ScrollView>
 
-                <Text style={{fontSize: 18, marginVertical: 10}}>Subcategory</Text>
+                <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{fontSize: 18, marginVertical: 10}}>{t('subcategory    ')}</Text>
             
             <ScrollView
                 horizontal
@@ -109,7 +120,7 @@ useEffect(() => {
                 {subcategories.map(subcategory => (
                     <CategoryBox
                         key={subcategory.id}
-                        name={subcategory.name}
+                        name={t(subcategory.name)}
                         icon={subcategory.icon}
                         fontSize={16}
                         color={subcategory.colorHex}
@@ -119,7 +130,7 @@ useEffect(() => {
                 ))}
                 <CategoryBox
                     key={-2}
-                    name="Add"
+                    name={t('add')}
                     icon="+"
                     color={"#FFFFFF"}
                     fontSize={16}

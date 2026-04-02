@@ -1,4 +1,5 @@
 import React, { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import {
   View,
   Text,
@@ -83,6 +84,7 @@ export default function EmojiPickerModal({
     () => EMOJIS.map((e) => ({ key: e, emoji: e })),
     []
   );
+const { t, i18n } = useTranslation();
 
   return (
     <Modal
@@ -94,9 +96,13 @@ export default function EmojiPickerModal({
       <Pressable style={styles.overlay} onPress={onClose}>
         <Pressable style={styles.sheet} onPress={() => {}}>
           <View style={styles.header}>
-            <Text style={styles.title}>Choose an icon</Text>
+            <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.title}>{t('choose_icon')}</Text>
             <TouchableOpacity onPress={onClose}>
-              <Text style={styles.close}>Close</Text>
+              <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.close}>{t('cancel')}</Text>
             </TouchableOpacity>
           </View>
 
@@ -113,7 +119,9 @@ export default function EmojiPickerModal({
                   onClose();
                 }}
               >
-                <Text style={styles.emoji}>{item.emoji}</Text>
+                <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.emoji}>{item.emoji}</Text>
               </TouchableOpacity>
             )}
           />

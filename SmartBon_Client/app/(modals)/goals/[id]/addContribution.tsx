@@ -2,6 +2,7 @@ import { View, Text, ScrollView, Pressable, KeyboardAvoidingView, StyleSheet, To
 import React, { useCallback, useState } from 'react'
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { apiFetch } from '../../../services/api';
+import { useTranslation } from 'react-i18next';
 
 export default function AddContribution() {
     const {goalName: goalNameFromParams, goalId: goalIdFromParams } = useLocalSearchParams();
@@ -9,18 +10,18 @@ export default function AddContribution() {
     const [goalName, setGoalName] = useState(String(goalNameFromParams) || "");
     const [goalId, setGoalId] = useState(String(goalIdFromParams) || "");
     const [screenHeight, setScreenHeight] = useState(180);
-
+const { t, i18n } = useTranslation();
     function handleCloseScreen(){
            router.back();
        }
        async function handleAdd(){
             try {
                 if(!amount){
-                    Alert.alert(
-                    "Input error",
-                    "Amount field cannot be empty!",
-                    [{ text: "OK" }]
-                    );
+                  Alert.alert(
+                  `${t('error')}`,
+                  `${t('fill_out_fields')}`,
+                  [{ text: "OK" }]
+                  );
                     return;
                 }
                 const normalizedCost = amount.replace(",", ".").trim();
@@ -40,13 +41,13 @@ export default function AddContribution() {
                 if (!response.ok) 
                 {
                    const errorData = await response.json(); 
-                    throw new Error(errorData.message || "An unknown error occurred");
+                    throw new Error(errorData.message || `${t('error_occured')}`);
                 }
                 handleCloseScreen();
             } catch (e: any) {
 
             Alert.alert(
-                "Error",
+                `${t('error')}`,
                 e?.message,
                 [{ text: "OK" }]
                 );
@@ -64,17 +65,25 @@ export default function AddContribution() {
             <Pressable style={[styles.container, {height: screenHeight}]} onPress={() => {Keyboard.dismiss}}>
                 <View style={styles.header}>
                     <TouchableOpacity onPress={handleCloseScreen}>
-                    <Text style={styles.headerBtn}>Cancel</Text>
+                    <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.headerBtn}>{t('cancel')}</Text>
                     </TouchableOpacity>
 
-                    <Text style={[styles.headerBtn, {color: "black", fontWeight: "500", fontSize: 18, maxWidth: 210}]}>Add money</Text> 
+                    <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={[styles.headerBtn, {color: "black", fontWeight: "500", fontSize: 18, maxWidth: 210}]}>{t('add_money')}</Text> 
 
                     <TouchableOpacity onPress={handleAdd}>
-                    <Text style={styles.headerBtn}>Add</Text> 
+                    <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.headerBtn}>{t('add')}</Text> 
                     </TouchableOpacity>
                 </View>
 
-                <Text style={styles.label}>Amount</Text>
+                <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.label}>{t('amount')}</Text>
                 <TextInput
                 style={[styles.input, {maxWidth: 100}]}
                 value={amount}

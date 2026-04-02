@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 
   export function CategoryBox({
@@ -12,18 +13,27 @@ import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
     pressable = true,
     onPress
   }: categoryBoxProps) {
+const { t, i18n } = useTranslation();
 
     return (<>
       {pressable ? (
         <TouchableOpacity activeOpacity={readOnly ? 1 : 0.3} onPress={onPress} style={[selected ? styles.selected : styles.box, {backgroundColor: color, width: boxSize, height: boxSize}]}>
-          <Text style={[styles.icon, {fontSize: iconSize}]}>{icon}</Text>
-          <Text numberOfLines={2} ellipsizeMode="tail" style={[styles.name, {fontSize: fontSize}]}>{name}</Text>
+          <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={[styles.icon, {fontSize: iconSize}]}>{icon}</Text>
+          <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit numberOfLines={2} ellipsizeMode="tail" style={[styles.name, {fontSize: fontSize}]}>{name}</Text>
         </TouchableOpacity>
         ) :  
       (
       <View style={[selected ? styles.selected : styles.box, {backgroundColor: color, width: boxSize, height: boxSize}]}>
-          <Text style={[styles.icon, {fontSize: iconSize}]}>{icon}</Text>
-          <Text numberOfLines={2} ellipsizeMode="tail" style={[styles.name, {fontSize: fontSize}]}>{name}</Text>
+          <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={[styles.icon, {fontSize: iconSize}]}>{icon}</Text>
+          <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit numberOfLines={2} ellipsizeMode="tail" style={[styles.name, {fontSize: fontSize}]}>{t(name)}</Text>
       </View>)}
     </>
     );

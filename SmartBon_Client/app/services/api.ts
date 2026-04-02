@@ -47,10 +47,12 @@ export async function apiFetch(
         if (refreshResponse.ok) {
           // Бекендът ти трябва да върне { token: "...", refreshToken: "..." }
           const newData = await refreshResponse.json();
-          
-          // Записваме новата двойка токени
-          await SecureStore.setItemAsync("token", newData.token);
-          await SecureStore.setItemAsync("refreshToken", newData.refreshToken);
+            const accessToken = newData.jsonWebToken.value;
+            const refreshToken = newData.refreshToken;
+         console.log(newData);
+             // ЗАПИСВАМЕ И ДВАТА ТОКЕНА
+             await SecureStore.setItemAsync("token", accessToken);
+             await SecureStore.setItemAsync("refreshToken", refreshToken);
 
           // Обновяваме хедъра на оригиналната заявка
           headers.set("Authorization", `Bearer ${newData.token}`);
@@ -68,7 +70,7 @@ export async function apiFetch(
 
     await SecureStore.deleteItemAsync("token");
     await SecureStore.deleteItemAsync("refreshToken");
-    router.replace("/login");
+    router.replace("../(auth)");
   }
 
   return response;

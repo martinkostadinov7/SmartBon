@@ -58,7 +58,7 @@ namespace Services.Expenses
             if (budgetNamesReached.Any())
             {
                 throw new BadRequestException($"Budget limit for {string.Join(", ", budgetNamesReached)} reached!");
-            }
+            }   
             if (budgetNamesAlmost.Any())
             {
                 throw new BadRequestException($"Budget limit for {string.Join(", ", budgetNamesAlmost)} almost reached!");

@@ -12,6 +12,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import MultiSlider from '@ptomasroos/react-native-multi-slider';
 import { useIsFocused } from '@react-navigation/native';
 import { Category } from "../../types/category";
+import { useTranslation } from "react-i18next";
 const paymentTypeMap: Record<string, number> = {
   Cash: 0,
   Card: 1,
@@ -55,6 +56,7 @@ export default function ExpensesScreen() {
   const [highestCost, setHighestCost] = useState(0);
   const [earliestDate, setEarliestDate] = useState(new Date());
   const [latestDate, setLatestDate] = useState(new Date());
+const { t, i18n } = useTranslation();
 
   // UI Стейт
   const [isFilterScreenOpened, setIsFilterScreenOpened] = useState(false);
@@ -147,8 +149,12 @@ useEffect(() => {
   };
 
   const formatCost = (amount: number, currencyCode: string) => {
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency: currencyCode }).format(amount);
-  };
+  const validCurrency = currencyCode || 'EUR'; 
+  return new Intl.NumberFormat(i18n.language, { 
+    style: 'currency', 
+    currency: validCurrency 
+  }).format(amount);
+};
 
   const setRangesFromDb = async () => {
     try {
@@ -276,7 +282,9 @@ setIsLoadingNextPage(true);
   return (<>
   <View >
     <View style={[styles.row, {padding: 15, backgroundColor: "#3077ceff"}]}>
-      <Text style={{fontSize: 32, color: "white"}}>Expenses</Text>
+      <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{fontSize: 32, color: "white"}}>{t('expenses')}</Text>
     </View>
     <View style={[styles.row, {marginLeft: 15, marginVertical: 15, width: 65}]}>
         <TouchableOpacity onPress={handleToggleFilterScreen}>
@@ -292,15 +300,21 @@ setIsLoadingNextPage(true);
         onPress={() => Keyboard.dismiss()}>
           <View style={styles.header}>
               <TouchableOpacity onPress={handleToggleFilterScreen}>
-              <Text style={[styles.headerBtn, {}]}>{"Hide ▲"}</Text>
+              <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={[styles.headerBtn, {}]}>{`${t('hide')} ▲`}</Text>
               </TouchableOpacity>
 
               <TouchableOpacity onPress={handleClearParams}>
-                <Text style={[styles.headerBtn, {color: "red"}]}>Clear</Text> 
+                <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={[styles.headerBtn, {color: "red"}]}>{t('clear')}</Text> 
               </TouchableOpacity>
           </View>
           <View style={styles.row}>
-            <Text style={{fontSize: 18}}>Search:</Text>
+            <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{fontSize: 18}}>{t('search')}:</Text>
             <TextInput
               style={styles.searchInput}
               onChangeText={newSearch => setSearch(newSearch)}
@@ -310,7 +324,9 @@ setIsLoadingNextPage(true);
 
           </View>
 
-          <Text style={{fontSize: 18, marginBottom: 5}}>Category</Text>
+          <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{fontSize: 18, marginBottom: 5}}>{t('category')}</Text>
           <View style={{ overflow: "hidden" }}>
             <ScrollView
               horizontal
@@ -320,7 +336,7 @@ setIsLoadingNextPage(true);
               {categories.map(category => (
                 <CategoryBox
                   key={category.id}
-                  name={category.name}
+                  name={t(category.name)}
                   icon={category.icon}
                   fontSize={12}
                   iconSize={30}
@@ -337,7 +353,9 @@ setIsLoadingNextPage(true);
             </ScrollView>
           </View>
           {selectedCategoryIds.length === 1 && ( <>
-            <Text style={{fontSize: 18, marginBottom: 5}}>Subcategory</Text>
+            <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{fontSize: 18, marginBottom: 5}}>{t('subcategory')}</Text>
             <View style={{ overflow: "hidden" }}>
               <ScrollView
               horizontal
@@ -347,7 +365,7 @@ setIsLoadingNextPage(true);
               {subcategories.map(subcategory => (
                 <CategoryBox
                 key={subcategory.id}
-                name={subcategory.name}
+                name={t(subcategory.name)}
                 icon={subcategory.icon}
                 fontSize={12}
                 iconSize={30}
@@ -363,9 +381,12 @@ setIsLoadingNextPage(true);
             </ScrollView>
           </View>
         </> )}
-        <Text style={{ fontSize: 18, marginBottom: 5 }}>Date Interval</Text>
+        <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{ fontSize: 18, marginBottom: 5 }}>{t('date_interval')}</Text>
         <View style={styles.row}>
             <DateTimePicker
+              locale={i18n.language}
               style={styles.dateInput}
               value={dateRange[0]}
               mode="date" 
@@ -373,8 +394,11 @@ setIsLoadingNextPage(true);
                 if (selectedDate) setDateRange([selectedDate, dateRange[1]]);
               }}
             />
-            <Text style={{ fontSize: 18, marginBottom: 5 }}>-</Text>
+            <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{ fontSize: 18, marginBottom: 5 }}>-</Text>
             <DateTimePicker
+              locale={i18n.language}
               style={styles.dateInput}
               value={dateRange[1]}
               mode="date" 
@@ -383,7 +407,9 @@ setIsLoadingNextPage(true);
               }}
             />
         </View>
-        <Text style={{ fontSize: 18, marginBottom: 5 }}>Cost Range</Text>
+        <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{ fontSize: 18, marginBottom: 5 }}>{t('cost_range')}</Text>
         <View style={styles.row}>
           <TextInput
             style={styles.costInput}
@@ -392,7 +418,9 @@ setIsLoadingNextPage(true);
             keyboardType="decimal-pad"
             onBlur={Keyboard.dismiss}
           />
-          <Text style={{ fontSize: 18, marginBottom: 5 }}>-</Text>
+          <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{ fontSize: 18, marginBottom: 5 }}>-</Text>
           <TextInput
             style={styles.costInput}
             onChangeText={newCost => setCostRange([costRange[0], Number(newCost)])}
@@ -413,7 +441,9 @@ setIsLoadingNextPage(true);
           selectedStyle={{ backgroundColor: 'rgb(16, 85, 221)' }} // Твоят син цвят
           markerStyle={{ backgroundColor: 'white', borderWidth: 2, marginLeft: 30, borderColor: 'rgb(16, 85, 221)' }}
         />
-        <Text style={{ fontSize: 18, marginBottom: 5 }}>Currency</Text>
+        <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{ fontSize: 18, marginBottom: 5 }}>{t('currency')}</Text>
 
         <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
             <TouchableOpacity
@@ -423,7 +453,9 @@ setIsLoadingNextPage(true);
               ]}
               onPress={() => selectedCurrency == "EUR" ? setSelectedCurrency("") : setSelectedCurrency("EUR")}
             >
-              <Text style={selectedCurrency === "EUR" ? styles.activeText : styles.textPicker}>
+              <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={selectedCurrency === "EUR" ? styles.activeText : styles.textPicker}>
                 EUR
               </Text>
             </TouchableOpacity>
@@ -435,13 +467,17 @@ setIsLoadingNextPage(true);
               ]}
               onPress={() => selectedCurrency == "USD" ? setSelectedCurrency("") :  setSelectedCurrency("USD")}
             >
-              <Text style={selectedCurrency === "USD" ? styles.activeText : styles.textPicker}>
+              <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={selectedCurrency === "USD" ? styles.activeText : styles.textPicker}>
                 USD
               </Text>
             </TouchableOpacity>
           </View>
 
-        <Text style={{ fontSize: 18, marginBottom: 5 }}>Payment Type</Text>
+        <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{ fontSize: 18, marginBottom: 5 }}>{t('payment_type')}</Text>
         <View style={{marginBottom: 10, flexDirection: "row", gap: 10 }}>
           {paymentOptions.map(opt => {
             const selected = selectedPaymentTypes.includes(opt.value);
@@ -461,8 +497,10 @@ setIsLoadingNextPage(true);
                   backgroundColor: selected ? "#3077ceff" : "white",
                 }}
               >
-                <Text style={{ fontSize: 16, color: selected ? "white" : "#3077ceff" }}>
-                  {opt.label}
+                <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{ fontSize: 16, color: selected ? "white" : "#3077ceff" }}>
+                  {t(opt.label)}
                 </Text>
               </Pressable>
             );
@@ -476,29 +514,37 @@ setIsLoadingNextPage(true);
       onPress={() => Keyboard.dismiss()}>
         <View style={styles.header}>
             <TouchableOpacity onPress={handleToggleSortScreen}>
-            <Text style={styles.headerBtn}>{"Hide ▲"}</Text>
+            <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.headerBtn}>{`${t('hide')} ▲`}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity onPress={handleClearSortParams}>
-              <Text style={[styles.headerBtn, {color: "red"}]}>Clear</Text> 
+              <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={[styles.headerBtn, {color: "red"}]}>{t('clear')}</Text> 
             </TouchableOpacity>
         </View>
-        <Text style={{fontSize: 20}}>Sort By</Text>
-        <View style={{marginVertical: 10, flexDirection: "row", gap: 22 }}>
+        <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{fontSize: 20}}>{t('sort_by')}</Text>
+        <View style={{marginVertical: 10, flexDirection: "row", gap: 15}}>
           <Pressable
                 onPress={() => {setSelectedSortBy("Title")
                 }}
                 style={{
                   paddingVertical: 8,
-                  paddingHorizontal: 14,
+                  paddingHorizontal: 15,
                   borderRadius: 20,
                   borderWidth: 1.5,
                   borderColor: "#3077ceff",
                   backgroundColor: selectedSortBy == "Title" ? "#3077ceff" : "white",
-                  width: 100
+                  width: 110
                 }}
               >
-                <Text style={{fontSize:18, textAlign: "center" ,color: selectedSortBy == "Title" ? "white" : "#3077ceff"}}>Title</Text>
+                <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{fontSize:18, textAlign: "center" ,color: selectedSortBy == "Title" ? "white" : "#3077ceff"}}>{t("Title")}</Text>
             </Pressable>
 
             <Pressable
@@ -511,10 +557,12 @@ setIsLoadingNextPage(true);
                   borderWidth: 1.5,
                   borderColor: "#3077ceff",
                   backgroundColor: selectedSortBy == "Date" ? "#3077ceff" : "white",
-                  width: 100
+                  width: 110
                 }}
               >
-                <Text style={{fontSize:18, textAlign: "center" ,color: selectedSortBy == "Date" ? "white" : "#3077ceff"}}>Date</Text>
+                <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{fontSize:18, textAlign: "center" ,color: selectedSortBy == "Date" ? "white" : "#3077ceff"}}>{t("Date")}</Text>
             </Pressable>
 
             <Pressable
@@ -527,14 +575,18 @@ setIsLoadingNextPage(true);
                   borderWidth: 1.5,
                   borderColor: "#3077ceff",
                   backgroundColor: selectedSortBy == "Cost" ? "#3077ceff" : "white",
-                  width: 100
+                  width: 110
               }}
               >
-                <Text style={{fontSize:18, textAlign: "center" ,color: selectedSortBy == "Cost" ? "white" : "#3077ceff"}}>Cost</Text>
+                <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{fontSize:18, textAlign: "center" ,color: selectedSortBy == "Cost" ? "white" : "#3077ceff"}}>{t("Cost")}</Text>
             </Pressable>
         </View>
-        <Text style={{fontSize: 20}}>Order</Text>
-        <View style={{marginVertical: 10, flexDirection: "row", gap: 40 }}>
+        <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{fontSize: 20}}>{t('order')}</Text>
+        <View style={{marginVertical: 10, flexDirection: "row", gap: 40}}>
           <Pressable
                 onPress={() => {setSelectedOrder("Ascending")
                 }}
@@ -548,7 +600,9 @@ setIsLoadingNextPage(true);
                   width: 150
                 }}
               >
-                <Text style={{fontSize:18, textAlign: "center" ,color: selectedOrder == "Ascending" ? "white" : "#3077ceff"}}>Ascending</Text>
+              <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{fontSize:18, textAlign: "center" ,color: selectedOrder == "Ascending" ? "white" : "#3077ceff"}}>{t("ascending")}</Text>
             </Pressable>
 
             <Pressable
@@ -564,7 +618,9 @@ setIsLoadingNextPage(true);
                   width: 150
                 }}
               >
-                <Text style={{fontSize:18, textAlign: "center" ,color: selectedOrder == "Descending" ? "white" : "#3077ceff"}}>Descending</Text>
+                <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{fontSize:18, textAlign: "center" ,color: selectedOrder == "Descending" ? "white" : "#3077ceff"}}>{t("descending")}</Text>
             </Pressable>
         </View>
       </Pressable>
@@ -574,7 +630,9 @@ setIsLoadingNextPage(true);
         {isExpensesLoading ? (
           <View style={styles.centerContainer}>
             <ActivityIndicator size="large" color="#3077ceff" />
-            <Text style={{ marginTop: 10 }}>Loading expenses...</Text>
+            <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{ marginTop: 10 }}>{t('loading_expenses')}...</Text>
           </View>
         ) : (
           <FlatList
@@ -593,7 +651,7 @@ setIsLoadingNextPage(true);
                   title={expense.title}
                   amount={formatCost(expense.cost, currencyFromNumber[expense.currency])}
                   date={new Date(expense.expenseDate).toISOString()}
-                  categoryName={category?.name ?? "Unknown"}
+                  categoryName={t(category?.name ?? "Unknown")}
                   categoryEmoji={category?.icon ?? "💰"}
                   categoryColor={category?.colorHex ?? "#eee"}
                   subcategoryEmoji={subcategory?.icon}
@@ -606,7 +664,9 @@ setIsLoadingNextPage(true);
             ListEmptyComponent={
               <View style={styles.centerContainer}>
                 <FontAwesome6 name="ghost" size={50} color="#ccc" />
-                <Text style={styles.emptyText}>No expenses found.</Text>
+                <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.emptyText}>{t('no_expenses_found')}</Text>
               </View>
             }
             ListFooterComponent={isLoadingNextPage ? <ActivityIndicator style={{ marginVertical: 20 }} /> : null}
@@ -623,7 +683,7 @@ setIsLoadingNextPage(true);
 
 const styles = StyleSheet.create({
    row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  filterScreen: { padding: 15, backgroundColor: "white", borderBottomWidth: 1, borderColor: '#ddd', height: 500},
+  filterScreen: { padding: 15, backgroundColor: "white", borderBottomWidth: 1, borderColor: '#ddd', height: 600},
   header: { flexDirection: "row", justifyContent: "space-between", marginBottom: 15 },
   headerBtn: { fontSize: 16, fontWeight: '600', color: "#3077ceff" },
   filterLabel: { fontSize: 16, fontWeight: 'bold', marginBottom: 8, marginTop: 5 },

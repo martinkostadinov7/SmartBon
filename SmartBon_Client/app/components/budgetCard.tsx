@@ -2,6 +2,7 @@
 import { Category } from "../types/category";
 import { Subcategory } from "../types/subcategory";
 import { apiFetch } from "../services/api";
+import { useTranslation } from "react-i18next";
 
   export function BudgetCard({
     id,
@@ -22,7 +23,10 @@ import { apiFetch } from "../services/api";
     onPress,
     reloadComponent
   }: BudgetCardProps) {
+    const { t, i18n } = useTranslation();
+    
     async function handleArchiveBudget(){
+
         try {
             const response = await apiFetch(`/Budgets/${id}/archive`, {
                 method: "PATCH",
@@ -34,22 +38,23 @@ import { apiFetch } from "../services/api";
             if (!response.ok) 
             {
                 const errorData = await response.json(); 
-                throw new Error(errorData.message || "An unknown error occurred");
+                throw new Error(errorData.message || `${t('error_occured')}`);
             }
         } catch (e: any) {
 
         Alert.alert(
-            "Error",
+            `${t('error')}`,
             e?.message,
             [{ text: "OK" }]
             );
-            console.log("Network/API error:", e?.message.message ?? e);
         }
     }
     return (
       <TouchableOpacity onPress={onPress} style={[styles.card, {backgroundColor: colorHex}]}>
         <View style={[styles.row,{marginBottom: 5}]}>
-            <Text style={{fontSize: 40}}>{icon}</Text>
+            <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{fontSize: 40}}>{icon}</Text>
             <Text
              numberOfLines={1}
             ellipsizeMode="tail" style={{fontSize: 20, marginRight: 10, maxWidth: 290}}>{name}</Text>
@@ -58,40 +63,54 @@ import { apiFetch } from "../services/api";
             {subCategories.length > 0 ? 
             (subCategories.map(subCategory => (
             <View key={subCategory.id}  style={[styles.row, {padding: 5,borderRadius: 10, backgroundColor: subCategory.colorHex, marginRight: 10, height: 30}]}>
-                <Text style={{fontSize: 16}}>{subCategory.icon}</Text>
-                <Text style={{fontSize: 14, marginLeft: 5, marginVertical: 0}}>{subCategory.name}</Text>
+                <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{fontSize: 16}}>{subCategory.icon}</Text>
+                <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{fontSize: 14, marginLeft: 5, marginVertical: 0}}>{subCategory.name}</Text>
             </View>))) : 
             (
             categories.length > 0 ? (categories.map(category => (
             <View key={category.id} style={[styles.row, {padding: 5,borderRadius: 10, backgroundColor: category.colorHex, marginRight: 10, height: 30}]}>
-                <Text style={{fontSize: 16}}>{category.icon}</Text>
-                <Text style={{fontSize: 14, marginLeft: 5, marginVertical: 0}}>{category.name}</Text>
+                <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{fontSize: 16}}>{category.icon}</Text>
+                <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{fontSize: 14, marginLeft: 5, marginVertical: 0}}>{t(category.name)}</Text>
             </View>
             ))) : (<></>)
             )}
         </ScrollView>
         <View style={[styles.row]}>
             <View>
-                <Text>From: {from}</Text>
-                <Text>To: {to}</Text>
+                <Text>{t('from')}: {from}</Text>
+                <Text>{t('to')}: {to}</Text>
             </View>
             <View style={{alignContent: "flex-end"}}>
                 <View style={styles.row}>
-                    <Text style={{fontWeight:"700"}}>{currentAmount}</Text>
+                    <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{fontWeight:"700"}}>{currentAmount}</Text>
                     <Text> / </Text>
                     <Text>{limit}</Text>
                 </View>
-                <Text>Remaining: {remainingAmount}</Text>
+                <Text>{t('remaining')}: {remainingAmount}</Text>
             </View>
         </View>
         {limitReached && !archived ? (<TouchableOpacity onPress={handleArchiveBudget} style={styles.archiveBudgetButton}>
-                    <Text style={styles.archiveBudgetText}>Archive budget</Text>
+                    <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.archiveBudgetText}>{t('archive_budget')}</Text>
                 </TouchableOpacity>) :
         (<View style={styles.progressBarContainer}>
             <View style={[styles.progressBarFill, {backgroundColor: progressBarColor, width: `${percentage}%`}]}>
             </View>
                 <View style={styles.textContainer}>
-                    <Text style={styles.percentageText}>{percentage}%</Text>
+                    <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.percentageText}>{percentage}%</Text>
                 </View>
         </View>)}
       </TouchableOpacity>

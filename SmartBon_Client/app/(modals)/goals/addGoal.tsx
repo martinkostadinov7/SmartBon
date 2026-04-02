@@ -13,6 +13,7 @@ import { router, useLocalSearchParams } from "expo-router";
 import EmojiPickerModal from "../../components/emojiPicker";
 import { apiFetch } from "../../services/api";
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { useTranslation } from "react-i18next";
 
 export default function ViewGoalModal() {
   const [name, setName] = useState("");
@@ -24,6 +25,7 @@ export default function ViewGoalModal() {
   const [isEmojiOpen, setIsEmojiOpen] = useState(false);
   const [screenHeight, setScreenHeight] = useState(310);
   const [isEditing, setIsEditing] = useState(false);
+  const { t, i18n } = useTranslation();
   const colors = [
     "#EF9A9A", // Soft Red
     "#FFAB91", // Soft Deep Orange
@@ -51,18 +53,18 @@ export default function ViewGoalModal() {
   async function handleSaveGoal(){
       if(!name || !selectedLimit){
           Alert.alert(
-              "Input error",
-              "Fill out required fields!",
-              [{ text: "OK" }]
-            );
+          `${t('error')}`,
+          `${t('fill_out_fields')}`,
+          [{ text: "OK" }]
+          );
             return;
         }
         if(targetDate < new Date()){
           Alert.alert(
-              "Input error",
-              "Target date must not be in the past!",
-              [{ text: "OK" }]
-            );
+          `${t('error')}`,
+          `${t('target_date_must_not_be_in_past')}`,
+          [{ text: "OK" }]
+          );
             return;
         }
         
@@ -87,13 +89,13 @@ export default function ViewGoalModal() {
         if (!response.ok) 
         {
             const errorData = await response.json(); 
-            throw new Error(errorData.message || "An unknown error occurred");
+            throw new Error(errorData.message || `${t('error_occured')}`);
         }
         router.back();
     } catch (e: any) {
 
     Alert.alert(
-        "Error",
+        `${t('error')}`,
         e?.message,
         [{ text: "OK" }]
         );
@@ -117,27 +119,37 @@ export default function ViewGoalModal() {
             >
             <View style={styles.header}>
               <TouchableOpacity onPress={() => router.back()}>
-                <Text style={styles.headerBtn}>Cancel</Text>
+                <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.headerBtn}>{t('cancel')}</Text>
               </TouchableOpacity>
 
             <TouchableOpacity onPress={handleSaveGoal}>
-                <Text style={styles.headerBtn}>Save</Text> 
+                <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.headerBtn}>{t('save')}</Text> 
             </TouchableOpacity>
             </View>
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ flexGrow: 1, paddingBottom: 40 }}>
             <View style={styles.row}>
             <View style={{marginRight: 20}}>
-                <Text style={[styles.label,{marginTop: 0}]}>Icon</Text>
+                <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={[styles.label,{marginTop: 0}]}>{t('icon')}</Text>
                 <TouchableOpacity
                 style={styles.iconButtargetDaten}
                 onPress={() => setIsEmojiOpen(true)}
                 >
-                    <Text style={styles.iconText}>{selectedIcon}</Text>
+                    <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.iconText}>{selectedIcon}</Text>
                 </TouchableOpacity>
             </View>
 
             <View style={{width: 288}}>
-                <Text style={[styles.label, {marginTop: 0}]}>Name</Text>
+                <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={[styles.label, {marginTop: 0}]}>{t('name')}</Text>
                 <TextInput
                 style={styles.input}
                 value={name}
@@ -146,7 +158,9 @@ export default function ViewGoalModal() {
             </View>
         </View>
 
-            <Text style={styles.label}>Description</Text>
+            <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.label}>{t('description')}</Text>
             <TextInput
               style={styles.input}
               value={description}
@@ -156,7 +170,9 @@ export default function ViewGoalModal() {
               multiline
             />
 
-            <Text style={styles.label}>Goal</Text>
+            <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.label}>{t('goal')}</Text>
             <TextInput
             style={[styles.input, {minWidth: 75}]}
             value={selectedLimit}
@@ -168,8 +184,11 @@ export default function ViewGoalModal() {
                 
             <View style={{marginTop: 10}}>
                 <View style={[styles.row, {width: 250, justifyContent: "space-between"}]}>
-                    <Text style={{marginVertical: 10, fontSize: 16}}>Target date: </Text>
+                    <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{marginVertical: 10, fontSize: 16}}>{t('target_date')}: </Text>
                     <DateTimePicker
+                      locale={i18n.language}
                     value={targetDate}
                     mode="datetime"
                     display="default"
@@ -180,7 +199,9 @@ export default function ViewGoalModal() {
                 </View>
             </View>
 
-            <Text style={styles.label}>Color</Text>
+            <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.label}>{t('error')}</Text>
             <ScrollView  horizontal style={{ flexDirection: 'row'}}
             showsHorizontalScrollIndicator={false}
             >

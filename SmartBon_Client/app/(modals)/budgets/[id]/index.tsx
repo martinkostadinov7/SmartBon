@@ -18,6 +18,7 @@ import { Subcategory } from "../../../types/subcategory";
 import { Budget } from "../../../types/budget";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import { Category } from "../../../types/category";
+import { useTranslation } from "react-i18next";
 
 const dateRangeFromNumber: Record<number, string> = {
   0: "Daily",
@@ -55,7 +56,7 @@ export default function ViewBudgetModal() {
   const [isEditing, setIsEditing] = useState(false);
     const [isPremium, setIsPremium] = useState(false);
   
-        const ranges = ["Weekly", "Monthly", "Yearly", "Daily", "Custom"];
+        const ranges = ["Daily", "Weekly", "Monthly", "Yearly", "Custom"];
   const colors = [
     "#EF9A9A", // Soft Red
     "#FFAB91", // Soft Deep Orange
@@ -78,6 +79,7 @@ export default function ViewBudgetModal() {
     "#E0E0E0", // Soft Grey
   ]
   const [selectedColor, setSelectedColor] = useState(colors[0]);
+const { t, i18n } = useTranslation();
 
 const formatDate = (dateString: string | Date): string => {
   const date = new Date(dateString);
@@ -87,7 +89,7 @@ const formatDate = (dateString: string | Date): string => {
   const currentYear = new Date().getFullYear();
   const dateYear = date.getFullYear();
 
-  return date.toLocaleDateString('en-US', {
+  return date.toLocaleDateString(i18n.language, {
     month: 'short',
     day: 'numeric',
     // Only show year if it's not the current year
@@ -128,7 +130,7 @@ loadCategories();
 
       const response = await apiFetch(`/Budgets/${id}`);
       if (!response.ok) {
-        throw new Error("Failed to load budget");
+        throw new Error(`${t('error_occured')}`);
       }
       const budget = await response.json();
       setBudget(budget);
@@ -189,8 +191,8 @@ loadCategories();
   async function handleSaveBudget(){
       if(!name || !selectedLimit || !selectedDateRange){
           Alert.alert(
-              "Input error",
-              "Fill out required fields!",
+              `${t('error')}`,
+              `${t('fill_out_fields')}`,
               [{ text: "OK" }]
             );
         }
@@ -221,13 +223,13 @@ loadCategories();
         if (!response.ok) 
         {
             const errorData = await response.json(); 
-            throw new Error(errorData.message || "An unknown error occurred");
+            throw new Error(errorData.message || `${t('error_occured')}`);
         }
         router.back();
     } catch (e: any) {
 
     Alert.alert(
-        "Error",
+        `${t('error')}`,
         e?.message,
         [{ text: "OK" }]
         );
@@ -237,12 +239,12 @@ loadCategories();
 
   async function handleDeleteBudget() {
     Alert.alert(
-      "Delete Budget",
-      "Are you sure you want to delete this record?",
+      `${t('delete_budget')}`,
+      `${t('delete_record_message')}`,
       [
-        { text: "Cancel", style: "cancel" },
+        { text: `${t('cancel')}`, style: "cancel" },
         {
-          text: "Delete",
+          text: `${t('delete')}`,
           style: "destructive",
           onPress: async () => {
             try {
@@ -257,10 +259,10 @@ loadCategories();
                 setIsEditing(false);
                 router.back(); 
               } else {
-                Alert.alert("Error", "Could not delete the expense.");
+                Alert.alert(`${t('error')}`, `${t('could_not_delete')}`);
               }
             } catch (e) {
-              Alert.alert("Error", "An error occurred while trying to delete the expense!");
+              Alert.alert(`${t('error')}`, `${t('error_occured')}`);
               console.log("Network/API error:", e);
             }
           }
@@ -274,32 +276,44 @@ loadCategories();
           <Pressable style={styles.container} onPress={() => {}}>
             <View style={styles.header}>
               <TouchableOpacity onPress={() => router.back()}>
-                <Text style={styles.headerBtn}>Cancel</Text>
+                <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.headerBtn}>{t('cancel')}</Text>
               </TouchableOpacity>
 
               <TouchableOpacity onPress={handleDeleteBudget}>
-                <Text style={[styles.headerBtn, {color: "red"}]}>Delete</Text>
+                <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={[styles.headerBtn, {color: "red"}]}>{t('delete')}</Text>
               </TouchableOpacity>
 
             <TouchableOpacity onPress={isEditing ? handleSaveBudget : () => setIsEditing(true)}>
-                <Text style={styles.headerBtn}>{isEditing ? "Save" : "Edit"}</Text> 
+                <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.headerBtn}>{isEditing ? `${t('save')}` : `${t('edit')}`}</Text> 
             </TouchableOpacity>
             </View>
         <ScrollView>
         {isEditing ? 
         (<><View style={styles.row}>
             <View style={{marginRight: 20}}>
-                <Text style={[styles.label,{marginTop: 0}]}>Icon</Text>
+                <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={[styles.label,{marginTop: 0}]}>{t('icon')}</Text>
                 <TouchableOpacity
                 style={styles.iconButton}
                 onPress={() => setIsEmojiOpen(true)}
                 >
-                    <Text style={styles.iconText}>{selectedIcon}</Text>
+                    <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.iconText}>{selectedIcon}</Text>
                 </TouchableOpacity>
             </View>
 
             <View style={{width: 288}}>
-                <Text style={[styles.label, {marginTop: 0}]}>Name</Text>
+                <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={[styles.label, {marginTop: 0}]}>{t('name')}</Text>
                 <TextInput
                 style={styles.input}
                 value={name}
@@ -308,7 +322,9 @@ loadCategories();
             </View>
         </View>
 
-            <Text style={styles.label}>Description</Text>
+            <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.label}>{t('description')}</Text>
             <TextInput
               style={styles.input}
               value={description}
@@ -316,16 +332,22 @@ loadCategories();
               multiline
             />
 
-            <Text style={styles.label}>Progress</Text>
+            <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.label}>{t('progress')}</Text>
             <View style={styles.progressBarContainer}>
                 <View style={[styles.progressBarFill, { backgroundColor: progressBarColor, width: `${Number(percentage)}%`}]} />
                 <View style={styles.textContainer}>
-                    <Text style={styles.percentageText}>{percentage}%</Text>
+                    <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.percentageText}>{percentage}%</Text>
                 </View>
             </View>
              <View style={[styles.row, {justifyContent: "space-between"}]}>
                 <View>
-                    <Text style={styles.label}>Limit</Text>
+                    <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.label}>{t('limit')}</Text>
                     <TextInput
                     style={[styles.input, {minWidth: 75}]}
                     value={selectedLimit}
@@ -334,24 +356,38 @@ loadCategories();
                     keyboardType="decimal-pad"
                     />
                 </View>
-                <Text style={{marginTop: 30}}>-</Text>
+                <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{marginTop: 30}}>-</Text>
                 <View>
-                    <Text style={styles.label}>Spent</Text>
+                    <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.label}>{t('spent')}</Text>
                     <View style={[styles.input, {maxWidth: 100, borderWidth: 0}]}>
-                        <Text style={{fontSize: 16}}>{(Number(currentAmount)).toFixed(2)}</Text>
+                        <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{fontSize: 16}}>{(Number(currentAmount)).toFixed(2)}</Text>
                     </View>
                 </View>
-                <Text style={{marginTop: 30}}>=</Text>
+                <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{marginTop: 30}}>=</Text>
                 <View>
-                    <Text style={styles.label}>Remaining</Text>
+                    <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.label}>{t('remaining')}</Text>
                     <View style={[styles.input, {maxWidth: 100, borderWidth: 0}]}>
-                        <Text style={{fontSize: 16}}>{(Number(remaining))}</Text>
+                        <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{fontSize: 16}}>{(Number(remaining))}</Text>
                     </View>
                 </View>
                 
             </View>
             <View>
-                <Text style={{marginVertical: 10, fontSize: 16}}>Date range: {formatDate(from)} - {formatDate(to)}</Text>
+                <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{marginVertical: 10, fontSize: 16}}>{t('date_range')}: {formatDate(from)} - {formatDate(to)}</Text>
                 
                 <View style={styles.row}>
                     <ScrollView horizontal showsHorizontalScrollIndicator={false}>
@@ -379,12 +415,12 @@ loadCategories();
                                 onPress={() => {
                                 if (isLocked) {
                                     Alert.alert(
-                                    "Premium feature!",
-                                    "Choosing a daily or custom period is only available for Premium users.",
+                                    `${t('premium_feature')}`,
+                                    `${t('error_occured')}`,
                                     [
-                                        { text: "Cancel", style: "cancel" },
+                                        { text: `${t('cancel')}`, style: "cancel" },
                                         {
-                                        text: "Upgrade",
+                                        text: `${t('upgrade')}`,
                                         style: "default",
                                         onPress: async () => {
                                             router.push("(modals)/users/managePlan");
@@ -397,7 +433,9 @@ loadCategories();
                                 }
                                 }}
                             >
-                                <Text style={{ 
+                                <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{ 
                                     textAlign: "center", 
                                     fontSize: 14, 
                                     textTransform: 'capitalize',
@@ -419,8 +457,9 @@ loadCategories();
                 {selectedDateRange == "Custom" ? 
                 (<>
                     <View style={[styles.row, {width: 250, justifyContent: "space-between", marginVertical: 5}]}>
-                        <Text>From</Text>
+                        <Text>{t('from')}</Text>
                         <DateTimePicker
+                          locale={i18n.language}
                         style={{}}
                         value={from} // Подсигури се, че е Date обект
                         mode="datetime"
@@ -431,8 +470,9 @@ loadCategories();
                         />
                     </View>
                     <View style={[styles.row, {width: 250, justifyContent: "space-between"}]}>
-                        <Text>To</Text>
+                        <Text>{t('to')}</Text>
                         <DateTimePicker
+                          locale={i18n.language}
                         value={to} // Подсигури се, че е Date обект
                         mode="datetime"
                         display="default"
@@ -446,7 +486,9 @@ loadCategories();
             </View>
 
 
-            <Text style={{fontSize: 16, marginTop: 10, marginBottom: 5}}>Included Categories</Text>
+            <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{fontSize: 16, marginTop: 10, marginBottom: 5}}>{t('included_categories')}</Text>
                     <View style={{ overflow: "hidden" }}>
                       <ScrollView
                         horizontal
@@ -459,13 +501,17 @@ loadCategories();
                               setSelectedCategoryIds([]);
                             }}
                           >
-                            <Text style={{textAlign: "center", fontSize: 16}}>Select</Text>
-                            <Text style={{textAlign: "center", fontSize: 16}}>All</Text>
+                            <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{textAlign: "center", fontSize: 16}}>{t('select')}</Text>
+                            <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{textAlign: "center", fontSize: 16}}>{t('all')}</Text>
                           </TouchableOpacity>
                         {categories.map(category => (
                           <CategoryBox
                             key={category.id}
-                            name={category.name}
+                            name={t(category.name)}
                             icon={category.icon}
                             fontSize={12}
                             iconSize={30}
@@ -483,7 +529,9 @@ loadCategories();
                       </ScrollView>
                     </View>
                     {(selectedCategoryIds.length == 1) && ( <>
-                      <Text style={{fontSize: 16, marginBottom: 5}}>Included Subcategories</Text>
+                      <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{fontSize: 16, marginBottom: 5}}>{t('included_subcategories')}</Text>
                       <View style={{ overflow: "hidden" }}>
                         <ScrollView
                         horizontal
@@ -497,13 +545,17 @@ loadCategories();
                               setSelectedSubcategoryIds([]);
                             }}
                           >
-                            <Text style={{textAlign: "center", fontSize: 16}}>Select</Text>
-                            <Text style={{textAlign: "center", fontSize: 16}}>All</Text>
+                            <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{textAlign: "center", fontSize: 16}}>Select</Text>
+                            <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{textAlign: "center", fontSize: 16}}>All</Text>
                           </TouchableOpacity>
                             {subcategories.map(subcategory => (
                             <CategoryBox
                             key={subcategory.id}
-                            name={subcategory.name}
+                            name={t(subcategory.name)}
                             icon={subcategory.icon}
                             fontSize={12}
                             iconSize={30}
@@ -519,7 +571,9 @@ loadCategories();
                       </ScrollView>
                     </View>
                   </> )}
-            <Text style={styles.label}>Color</Text>
+            <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.label}>{t('color')}</Text>
             <ScrollView  horizontal style={{ flexDirection: 'row'}}
             showsHorizontalScrollIndicator={false}
             >
@@ -537,61 +591,95 @@ loadCategories();
         (<>
         <View style={styles.row}>
             <View style={{marginRight: 20}}>
-                <Text style={[styles.label,{marginTop: 0}]}>Icon</Text>
+                <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={[styles.label,{marginTop: 0}]}>{t('icon')}</Text>
                 <View
                 style={[styles.iconButton, {borderColor: "#eaeaea"}]}
                 >
-                    <Text style={styles.iconText}>{selectedIcon}</Text>
+                    <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.iconText}>{selectedIcon}</Text>
                 </View>
             </View>
 
             <View style={{width: 288}}>
-                <Text style={[styles.label, {marginTop: 0}]}>Name</Text>
+                <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={[styles.label, {marginTop: 0}]}>{t('name')}</Text>
                 <View
                 style={[styles.input, {borderColor: "#eaeaea"}]}>
-                <Text style={{fontSize: 16}}>{name}</Text>
+                <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{fontSize: 16}}>{name}</Text>
                 </View>
             </View>
         </View>
 
-            <Text style={styles.label}>Description</Text>
+            <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.label}>{t('description')}</Text>
             <View style={[styles.input, {borderColor: "#eaeaea"}]}>
-                <Text style={{fontSize: 16}}>{description}</Text>
+                <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{fontSize: 16}}>{description}</Text>
             </View>
 
-            <Text style={styles.label}>Progress</Text>
+            <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.label}>{t('progress')}</Text>
             <View style={styles.progressBarContainer}>
                 <View style={[styles.progressBarFill, { backgroundColor: progressBarColor, width: `${Number(percentage)}%`}]} />
                 <View style={styles.textContainer}>
-                    <Text style={styles.percentageText}>{percentage}%</Text>
+                    <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.percentageText}>{percentage}%</Text>
                 </View>
             </View>
 
             <View style={[styles.row, {justifyContent: "space-between"}]}>
                 <View>
-                    <Text style={[styles.label, {marginLeft: 12}]}>Limit</Text>
+                    <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={[styles.label, {marginLeft: 12}]}>{t('limit')}</Text>
                     <View style={[styles.input, {maxWidth: 100, borderColor: "#eaeaea"}]}
                     >
-                        <Text style={{fontSize: 16}}>{selectedLimit}</Text>
+                        <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{fontSize: 16}}>{selectedLimit}</Text>
                     </View>
                 </View>
-                <Text style={{marginTop: 30}}>-</Text>
+                <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{marginTop: 30}}>-</Text>
                 <View>
-                    <Text style={styles.label}>Spent</Text>
+                    <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.label}>{t('spent')}</Text>
                     <View style={[styles.input, {maxWidth: 100, borderWidth: 0, paddingLeft: 0}]}>
-                        <Text style={{fontSize: 16}}>{Number(currentAmount).toFixed(2)}</Text>
+                        <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{fontSize: 16}}>{Number(currentAmount).toFixed(2)}</Text>
                     </View>
                 </View>
-                <Text style={{marginTop: 30}}>=</Text>
+                <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{marginTop: 30}}>=</Text>
                 <View>
-                    <Text style={styles.label}>Remaining</Text>
+                    <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.label}>{t('remaining')}</Text>
                     <View style={[styles.input, {maxWidth: 100, borderWidth: 0, paddingLeft: 0}]}>
-                        <Text style={{fontSize: 16}}>{(Number(selectedLimit) - Number(currentAmount)).toFixed(2)}</Text>
+                        <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{fontSize: 16}}>{(Number(selectedLimit) - Number(currentAmount)).toFixed(2)}</Text>
                     </View>
                 </View>
             </View>
             <View>
-                <Text style={{marginVertical: 10, fontSize: 16}}>Date range: {formatDate(from)} - {formatDate(to)}</Text>
+                <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{marginVertical: 10, fontSize: 16}}>{t('date_range')}: {formatDate(from)} - {formatDate(to)}</Text>
                 
                <View style={styles.row}>
                     {ranges.map((range) => (
@@ -605,7 +693,9 @@ loadCategories();
                         borderColor: selectedDateRange === range ? "black" : "#eaeaea"
                         }}
                     >
-                        <Text style={{ textAlign: "center", fontSize: 14, textTransform: 'capitalize', color: selectedDateRange === range ? "black" : "#8c8c8c", fontWeight: selectedDateRange === range ? 700 : 400}}>
+                        <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{ textAlign: "center", fontSize: 14, textTransform: 'capitalize', color: selectedDateRange === range ? "black" : "#8c8c8c", fontWeight: selectedDateRange === range ? 700 : 400}}>
                         {range}
                         </Text>
                     </View>
@@ -614,12 +704,13 @@ loadCategories();
                 {selectedDateRange == "Custom" ? 
                 (<>
                     <View style={[styles.row, {width: 250, justifyContent: "space-between", marginVertical: 5}]}>
-                        <Text>From</Text>
+                        <Text>{t('from')}</Text>
                         <View style={{
                             opacity: 0.7
                         }}>
                             <View pointerEvents="none">
                                 <DateTimePicker
+                                  locale={i18n.language}
                                     value={from}
                                     mode="datetime"
                                     display="default"
@@ -631,12 +722,13 @@ loadCategories();
                         </View>
                     </View>
                     <View style={[styles.row, {width: 250, justifyContent: "space-between"}]}>
-                        <Text>To</Text>
+                        <Text>{t('to')}</Text>
                         <View style={{
                             opacity: 0.7
                         }}>
                             <View pointerEvents="none">
                                 <DateTimePicker
+                                  locale={i18n.language}
                                     value={to}
                                     mode="datetime"
                                     display="default"
@@ -651,7 +743,9 @@ loadCategories();
                 (<></>)}
             </View>
 
-            <Text style={{fontSize: 16, marginTop: 10, marginBottom: 5}}>Included Categories</Text>
+            <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{fontSize: 16, marginTop: 10, marginBottom: 5}}>{t('included_categories')}</Text>
                     <View style={{ overflow: "hidden" }}>
                       <ScrollView
                         horizontal
@@ -660,7 +754,7 @@ loadCategories();
                         {categories.filter(category => selectedCategoryIds.includes(category.id)).map(category => (
                         <CategoryBox
                             key={category.id}
-                            name={category.name}
+                            name={t(category.name)}
                             icon={category.icon}
                             fontSize={12}
                             iconSize={30}
@@ -674,7 +768,9 @@ loadCategories();
                       </ScrollView>
                     </View>
                     {(selectedCategoryIds.length == 1) && ( <>
-                      <Text style={{fontSize: 16, marginBottom: 5}}>Included Subcategories</Text>
+                      <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{fontSize: 16, marginBottom: 5}}>{t('included_subcategories')}</Text>
                       <View style={{ overflow: "hidden" }}>
                         <ScrollView
                         horizontal
@@ -683,7 +779,7 @@ loadCategories();
                             {subcategories.filter(subcategory => selectedSubcategoryIds.includes(subcategory.id)).map(subcategory => (
                             <CategoryBox
                             key={subcategory.id}
-                            name={subcategory.name}
+                            name={t(subcategory.name)}
                             icon={subcategory.icon}
                             fontSize={12}
                             readOnly={true}
@@ -697,7 +793,9 @@ loadCategories();
                       </ScrollView>
                     </View>
                   </> )}
-            <Text style={styles.label}>Color</Text>
+            <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.label}>{t('color')}</Text>
             <ScrollView  horizontal style={{ flexDirection: 'row'}}
             showsHorizontalScrollIndicator={false}
             >
@@ -710,9 +808,6 @@ loadCategories();
                     );
                   })}
             </ScrollView></>)}
-            {/* <TouchableOpacity style={styles.button} onPress={handleDeleteBudget}>
-                <Text style={{ color: "white", fontSize: 20 }}>Delete</Text>
-              </TouchableOpacity> */}
         </ScrollView>
           </Pressable>
       </Pressable>

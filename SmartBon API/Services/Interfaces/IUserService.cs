@@ -19,5 +19,7 @@ namespace Services.Interfaces
         Task<List<User>> GetAllUsersForMonthlyReportAsync();
 
         Task<bool> DeleteAccount();
+
+        Task<bool> ChangeLanguage(string language);
     }
 }

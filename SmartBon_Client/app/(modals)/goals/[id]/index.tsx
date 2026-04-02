@@ -21,6 +21,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { Goal } from "../../../types/goal";
 import { GoalContribution } from "../../../types/goalContribution";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
+import { useTranslation } from "react-i18next";
 
 export default function ViewGoalModal() {
   const [goal, setGoal] = useState<Goal | null>(null);
@@ -39,6 +40,7 @@ export default function ViewGoalModal() {
   const [contributionEditingId, setContributionEditing] = useState(0);
   const [screenHeight, setScreenHeight] = useState(490);
   const { id } = useLocalSearchParams<{ id: string}>();
+  const { t, i18n } = useTranslation();
   const [isEditing, setIsEditing] = useState(false);
   const colors = [
     "#EF9A9A", // Soft Red
@@ -70,7 +72,7 @@ const formatDate = (dateString: string | Date): string => {
   const currentYear = new Date().getFullYear();
   const dateYear = date.getFullYear();
 
-  return date.toLocaleDateString('en-US', {
+  return date.toLocaleDateString(i18n.language, {
     month: 'short',
     day: 'numeric',
     // Only show year if it's not the current year
@@ -90,8 +92,8 @@ function formatDateContribution(dateString: string) {
       a.getMonth() === b.getMonth() &&
       a.getDate() === b.getDate();
 
-    if (isSameDay(date, today)) return "Today";
-    if (isSameDay(date, yesterday)) return "Yesterday";
+    if (isSameDay(date, today)) return t("today");
+    if (isSameDay(date, yesterday)) return t("yesterday");
 
     return date.toLocaleDateString();
   }
@@ -113,7 +115,7 @@ const fetchGoalData = useCallback(async () => {
   try {
     const response = await apiFetch(`/Goals/${id}`);
       if (!response.ok) {
-        throw new Error("Failed targetDate load goal");
+        throw new Error(`${t('error_occured')}`);
       }
       const goal = await response.json();
       setGoal(goal);
@@ -142,7 +144,7 @@ useFocusEffect(
 useEffect(() => {(async () => {
       const response = await apiFetch(`/Goals/${id}`);
       if (!response.ok) {
-        throw new Error("Failed targetDate load goal");
+        throw new Error(`${t('error_occured')}`);
       }
       const goal = await response.json();
       setGoal(goal);
@@ -171,7 +173,7 @@ useEffect(() => {(async () => {
     if (!isNaN(numLimit) && numLimit >= numCurrent) {
         setConfirmedLimit(selectedLimit);
     } else {
-        Alert.alert("Error", "Invalid limit");
+        Alert.alert(`${t('error')}`, `${t('invalid_limit')}`);
         setSelectedLimit(confirmedLimit);
     }
 }
@@ -179,10 +181,10 @@ useEffect(() => {(async () => {
 async function handleSaveContribution(contributionId: number){
     if(!contributionAmount){
           Alert.alert(
-              "Input error",
-              "Fill out required fields!",
-              [{ text: "OK" }]
-            );
+          `${t('error')}`,
+          `${t('fill_out_fields')}`,
+          [{ text: "OK" }]
+          );
         }
         const normalizedAmount = contributionAmount.replace(",", ".").trim();
         const amount = parseFloat(normalizedAmount);
@@ -202,7 +204,7 @@ async function handleSaveContribution(contributionId: number){
         if (!response.ok) 
         {
             const errorData = await response.json(); 
-            throw new Error(errorData.message || "An unknown error occurred");
+            throw new Error(errorData.message || `${t('error_occured')}`);
         }
         router.back();
         } catch (e: any) {
@@ -219,9 +221,9 @@ async function handleSaveContribution(contributionId: number){
   async function handleSaveGoal(){
       if(!name || !selectedLimit){
           Alert.alert(
-              "Input error",
-              "Fill out required fields!",
-              [{ text: "OK" }]
+            `${t('error')}`,
+            `${t('fill_out_fields')}`,
+            [{ text: "OK" }]
             );
         }
         const normalizedLimit = selectedLimit.replace(",", ".").trim();
@@ -246,7 +248,7 @@ async function handleSaveContribution(contributionId: number){
         if (!response.ok) 
         {
             const errorData = await response.json(); 
-            throw new Error(errorData.message || "An unknown error occurred");
+            throw new Error(errorData.message || `${t('error_occured')}`);
         }
         router.back();
     } catch (e: any) {
@@ -261,12 +263,12 @@ async function handleSaveContribution(contributionId: number){
   }
   async function handleDeleteContribution(contributionId: number){
     Alert.alert(
-      "Delete Goal",
-      "Are you sure you want targetDate delete this record?",
+      `${t('delete_goal')}`,
+      `${t('delete_record_message')}`,
       [
-        { text: "Cancel", style: "cancel" },
+        { text: `${t('cancel')}`, style: "cancel" },
         {
-          text: "Delete",
+          text: `${t('delete')}`,
           style: "destructive",
           onPress: async () => {
             try {
@@ -282,7 +284,7 @@ async function handleSaveContribution(contributionId: number){
                 try {
                     const response = await apiFetch(`/Goals/${id}`);
                     if (!response.ok) {
-                        throw new Error("Failed targetDate load goal");
+                        throw new Error(`${t('error_occured')}`);
                     }
                     const goal = await response.json();
                     setGoal(goal);
@@ -300,10 +302,10 @@ async function handleSaveContribution(contributionId: number){
                     console.error("Error fetching goal:", error);
                 }
               } else {
-                Alert.alert("Error", "Could not delete the contribution.");
+                Alert.alert(`${t('error')}`, `${t('error_occured')}`);
               }
             } catch (e) {
-              Alert.alert("Error", "An error occurred while trying targetDate delete the expense!");
+              Alert.alert(`${t('error')}`, `${t('error_occured')}`);
               console.log("Network/API error:", e);
             }
           }
@@ -324,12 +326,12 @@ function handleAddContribution(goalId: number, goalName: string){
 
   async function handleDeleteGoal() {
     Alert.alert(
-      "Delete Goal",
-      "Are you sure you want targetDate delete this record?",
+      `${t('delete_goal')}`,
+      `${t('delete_record_message')}`,
       [
-        { text: "Cancel", style: "cancel" },
+        { text: `${t('cancel')}`, style: "cancel" },
         {
-          text: "Delete",
+          text: `${t('delete')}`,
           style: "destructive",
           onPress: async () => {
             try {
@@ -344,10 +346,10 @@ function handleAddContribution(goalId: number, goalName: string){
                 setIsEditing(false);
                 router.back();
               } else {
-                Alert.alert("Error", "Could not delete the goal.");
+                Alert.alert(`${t('error')}`, `${t('error_occured')}`);
               }
             } catch (e) {
-              Alert.alert("Error", "An error occurred while trying targetDate delete the expense!");
+              Alert.alert(`${t('error')}`, `${t('error_occured')}`);
               console.log("Network/API error:", e);
             }
           }
@@ -372,15 +374,21 @@ function handleAddContribution(goalId: number, goalName: string){
             >
             <View style={styles.header}>
               <TouchableOpacity onPress={() => router.back()}>
-                <Text style={styles.headerBtn}>Cancel</Text>
+                <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.headerBtn}>{t('cancel')}</Text>
               </TouchableOpacity>
 
               <TouchableOpacity onPress={handleDeleteGoal}>
-                <Text style={[styles.headerBtn, {color: "red"}]}>Delete</Text>
+                <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={[styles.headerBtn, {color: "red"}]}>{t('delete')}</Text>
               </TouchableOpacity>
 
             <TouchableOpacity onPress={isEditing ? handleSaveGoal : () => setIsEditing(true)}>
-                <Text style={styles.headerBtn}>{isEditing ? "Save" : "Edit"}</Text> 
+                <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.headerBtn}>{isEditing ? `${t('save')}` : `${t('edit')}`}</Text> 
             </TouchableOpacity>
             </View>
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ flexGrow: 1, paddingBottom: 40 }}>
@@ -389,17 +397,23 @@ function handleAddContribution(goalId: number, goalName: string){
         {isEditing ? 
         (<><View style={styles.row}>
             <View style={{marginRight: 20}}>
-                <Text style={[styles.label,{marginTop: 0}]}>Icon</Text>
+                <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={[styles.label,{marginTop: 0}]}>{t('icon')}</Text>
                 <TouchableOpacity
                 style={styles.iconButtargetDaten}
                 onPress={() => setIsEmojiOpen(true)}
                 >
-                    <Text style={styles.iconText}>{selectedIcon}</Text>
+                    <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.iconText}>{selectedIcon}</Text>
                 </TouchableOpacity>
             </View>
 
             <View style={{width: 288}}>
-                <Text style={[styles.label, {marginTop: 0}]}>Name</Text>
+                <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={[styles.label, {marginTop: 0}]}>{t('name')}</Text>
                 <TextInput
                 style={styles.input}
                 value={name}
@@ -408,7 +422,9 @@ function handleAddContribution(goalId: number, goalName: string){
             </View>
         </View>
 
-            <Text style={styles.label}>Description</Text>
+            <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.label}>{t('description')}</Text>
             <TextInput
               style={styles.input}
               value={description}
@@ -416,16 +432,22 @@ function handleAddContribution(goalId: number, goalName: string){
               multiline
             />
 
-            <Text style={styles.label}>Progress</Text>
+            <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.label}>{t('progress')}</Text>
             <View style={styles.progressBarContainer}>
                 <View style={[styles.progressBarFill, { backgroundColor: progressBarColor, width: `${Number(percentage)}%`}]} />
                 <View style={styles.textContainer}>
-                    <Text style={styles.percentageText}>{percentage}%</Text>
+                    <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.percentageText}>{percentage}%</Text>
                 </View>
             </View>
              <View style={[styles.row, {justifyContent: "space-between"}]}>
                 <View>
-                    <Text style={styles.label}>Goal</Text>
+                    <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.label}>{t('goal')}</Text>
                     <TextInput
                     style={[styles.input, {minWidth: 75}]}
                     value={selectedLimit}
@@ -435,26 +457,41 @@ function handleAddContribution(goalId: number, goalName: string){
                     keyboardType="decimal-pad"
                     />
                 </View>
-                <Text style={{marginTop: 30}}>-</Text>
+                <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{marginTop: 30}}>-</Text>
                 <View>
-                    <Text style={styles.label}>Saved</Text>
+                    <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.label}>{t('saved')}</Text>
                     <View style={[styles.input, {maxWidth: 100, borderWidth: 0}]}>
-                        <Text style={{fontSize: 16}}>{(Number(currentAmount)).toFixed(2)}</Text>
+                        <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{fontSize: 16}}>{(Number(currentAmount)).toFixed(2)}</Text>
                     </View>
                 </View>
-                <Text style={{marginTop: 30}}>=</Text>
+                <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{marginTop: 30}}>=</Text>
                 <View>
-                    <Text style={styles.label}>Remaining</Text>
+                    <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.label}>{t('remaining')}</Text>
                     <View style={[styles.input, {maxWidth: 100, borderWidth: 0}]}>
-                        <Text style={{fontSize: 16}}>{(Number(remaining))}</Text>
+                        <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{fontSize: 16}}>{(Number(remaining))}</Text>
                     </View>
                 </View>
                 
             </View>
             <View>
                 <View style={[styles.row, {width: 250, justifyContent: "space-between"}]}>
-                    <Text style={{marginVertical: 10, fontSize: 16}}>Target date: </Text>
+                    <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{marginVertical: 10, fontSize: 16}}>{t('target_date')}: </Text>
                     <DateTimePicker
+                      locale={i18n.language}
                     value={targetDate}
                     mode="datetime"
                     display="default"
@@ -465,7 +502,9 @@ function handleAddContribution(goalId: number, goalName: string){
                 </View>
             </View>
 
-            <Text style={styles.label}>Color</Text>
+            <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.label}>{t('color')}</Text>
             <ScrollView  horizontal style={{ flexDirection: 'row'}}
             showsHorizontalScrollIndicator={false}
             >
@@ -483,64 +522,99 @@ function handleAddContribution(goalId: number, goalName: string){
         (<>
         <View style={styles.row} pointerEvents="box-none">
             <View style={{marginRight: 20}} pointerEvents="box-none">
-                <Text style={[styles.label,{marginTop: 0}]}>Icon</Text>
+                <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={[styles.label,{marginTop: 0}]}>{t('icon')}</Text>
                 <View
                 style={[styles.iconButtargetDaten, {borderColor: "#eaeaea"}]}
                 >
-                    <Text style={styles.iconText}>{selectedIcon}</Text>
+                    <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.iconText}>{selectedIcon}</Text>
                 </View>
             </View>
 
             <View style={{width: 288}} pointerEvents="box-none">
-                <Text style={[styles.label, {marginTop: 0}]}>Name</Text>
+                <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={[styles.label, {marginTop: 0}]}>{t('name')}</Text>
                 <View
                 style={[styles.input, {borderColor: "#eaeaea"}]}>
-                <Text style={{fontSize: 16}}>{name}</Text>
+                <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{fontSize: 16}}>{name}</Text>
                 </View>
             </View>
         </View>
 
-            <Text style={styles.label}>Description</Text>
+            <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.label}>{t('description')}</Text>
             <View style={[styles.input, {borderColor: "#eaeaea"}]} pointerEvents="box-none">
-                <Text style={{fontSize: 16}}>{description}</Text>
+                <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{fontSize: 16}}>{description}</Text>
             </View>
 
-            <Text style={styles.label} >Progress</Text>
+            <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.label} >{t('progress')}</Text>
             <View style={styles.progressBarContainer} pointerEvents="box-none">
                 <View style={[styles.progressBarFill, { backgroundColor: progressBarColor, width: `${Number(percentage)}%`}]} />
                 <View style={styles.textContainer}>
-                    <Text style={styles.percentageText}>{percentage}%</Text>
+                    <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.percentageText}>{percentage}%</Text>
                 </View>
             </View>
 
             <View style={[styles.row, {justifyContent: "space-between"}]} pointerEvents="box-none">
                 <View>
-                    <Text style={[styles.label, {marginLeft: 12}]}>Goal</Text>
+                    <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={[styles.label, {marginLeft: 12}]}>{t('goal')}</Text>
                     <View style={[styles.input, {maxWidth: 100, borderColor: "#eaeaea"}]}
                     >
-                        <Text style={{fontSize: 16}}>{selectedLimit}</Text>
+                        <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{fontSize: 16}}>{selectedLimit}</Text>
                     </View>
                 </View>
-                <Text style={{marginTop: 30}}>-</Text>
+                <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{marginTop: 30}}>-</Text>
                 <View>
-                    <Text style={styles.label}>Saved</Text>
+                    <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.label}>{t('saved')}</Text>
                     <View style={[styles.input, {maxWidth: 100, borderWidth: 0, paddingLeft: 0}]}>
-                        <Text style={{fontSize: 16}}>{Number(currentAmount).toFixed(2)}</Text>
+                        <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{fontSize: 16}}>{Number(currentAmount).toFixed(2)}</Text>
                     </View>
                 </View>
-                <Text style={{marginTop: 30}}>=</Text>
+                <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{marginTop: 30}}>=</Text>
                 <View>
-                    <Text style={styles.label}>Remaining</Text>
+                    <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.label}>{t('remaining')}</Text>
                     <View style={[styles.input, {maxWidth: 100, borderWidth: 0, paddingLeft: 0}]}>
-                        <Text style={{fontSize: 16}}>{(Number(selectedLimit) - Number(currentAmount)).toFixed(2)}</Text>
+                        <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{fontSize: 16}}>{(Number(selectedLimit) - Number(currentAmount)).toFixed(2)}</Text>
                     </View>
                 </View>
             </View>
             <View style={styles.row} pointerEvents="box-none">
-                <Text style={{marginVertical: 10, fontSize: 16}}>Target date: </Text>
+                <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{marginVertical: 10, fontSize: 16}}>{t('target_date')}: </Text>
                 <View style={{opacity: 0.7}}>
                     <View pointerEvents="none">
                         <DateTimePicker
+                          locale={i18n.language}
                             value={targetDate}
                             mode="datetime"
                             display="default"
@@ -552,7 +626,9 @@ function handleAddContribution(goalId: number, goalName: string){
                 </View>
             </View>
                     
-            <Text style={styles.label}>Color</Text>
+            <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.label}>{t('color')}</Text>
             <ScrollView  horizontal style={{ flexDirection: 'row'}}
             showsHorizontalScrollIndicator={false} pointerEvents="box-none"
             >
@@ -566,9 +642,13 @@ function handleAddContribution(goalId: number, goalName: string){
             })}
             </ScrollView>
             <View style={[styles.row, {alignItems: 'center'}]}>
-                <Text style={[styles.label, {marginBottom: 10}]} >Contributions</Text>
+                <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={[styles.label, {marginBottom: 10}]} >{t('contributions')}</Text>
                 <TouchableOpacity style={{marginLeft: 10}} onPress={() => handleAddContribution(Number(id), name)}>
-                    <Text style={{color: "#3077ce", fontWeight: "600", fontSize: 16}}>+ Add New</Text>
+                    <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{color: "#3077ce", fontWeight: "600", fontSize: 16}}>+ {t('add_new')}</Text>
                 </TouchableOpacity>
             </View>
             <View style={styles.contributionList} >
@@ -585,7 +665,9 @@ function handleAddContribution(goalId: number, goalName: string){
                         keyboardType="decimal-pad"
                         />) : 
                         (
-                            <Text style={{ fontSize: 16 }}>{Number(c.amount).toFixed(2)}</Text>
+                            <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{ fontSize: 16 }}>{Number(c.amount).toFixed(2)}</Text>
                         )}
                       
                       <Text>{formatDateContribution(String(c.dateTime))}</Text>
@@ -604,7 +686,9 @@ function handleAddContribution(goalId: number, goalName: string){
                     </View>
                   ))
                 ) : (
-                  <Text style={{ color: '#999', fontStyle: 'italic' }}>No contributions yet.</Text>
+                  <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{ color: '#999', fontStyle: 'italic' }}>{t('no_contributions_left')}</Text>
                 )}
               </View>
             </>)}

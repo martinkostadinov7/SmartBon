@@ -3,6 +3,7 @@ import React, { useCallback, useState } from 'react'
 import { router, useFocusEffect } from 'expo-router';
 import { apiFetch } from '../../services/api';
 import { Currency } from '../../types/expense';
+import { useTranslation } from 'react-i18next';
 
 const currencyFromNumber: Record<number, Currency> = {
   0: "EUR",
@@ -19,14 +20,14 @@ export default function ChangeCategory() {
     const [newPassword, setNewPassword] = useState("");
     const [repeatedNewPassword, setRepeatedNewPassword] = useState("");
     const [screenHeight, setScreenHeight] = useState(345);
-
+const { t, i18n } = useTranslation();
     function handleCloseScreen(){
            router.back();
        }
        async function handleSave(){
             try {
                 if(newPassword != repeatedNewPassword){
-                    throw new Error("Password do not match!");
+                    throw new Error(`${t('passwords_dont_match')}`);
                 }
 
                 const passwordChange = {
@@ -44,13 +45,13 @@ export default function ChangeCategory() {
                 if (!response.ok) 
                 {
                    const errorData = await response.json(); 
-                    throw new Error(errorData.message || "An unknown error occurred");
+                    throw new Error(errorData.message || `${t('error_occured')}`);
                 }
                 handleCloseScreen();
             } catch (e: any) {
 
             Alert.alert(
-                "Error",
+                `${t('error')}`,
                 e?.message,
                 [{ text: "OK" }]
                 );
@@ -68,15 +69,21 @@ export default function ChangeCategory() {
             <Pressable style={[styles.container, {height: screenHeight}]} onPress={() => {}}>
                 <View style={styles.header}>
                     <TouchableOpacity onPress={handleCloseScreen}>
-                    <Text style={styles.headerBtn}>Cancel</Text>
+                    <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.headerBtn}>{t('cancel')}</Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity onPress={handleSave}>
-                    <Text style={styles.headerBtn}>Save</Text> 
+                    <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.headerBtn}>{t('save')}</Text> 
                     </TouchableOpacity>
                 </View>
 
-                <Text style={styles.text}>Old password</Text>
+                <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.text}>{t('old_password')}</Text>
                 <TextInput
                     style={styles.input}
                     onChangeText={oldPassword => setOldPassword(oldPassword)}
@@ -85,7 +92,9 @@ export default function ChangeCategory() {
                     onBlur={() => setScreenHeight(345)}
                 />
 
-                <Text style={styles.text}>New password</Text>
+                <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.text}>{t('new_password')}</Text>
                 <TextInput
                     style={styles.input}
                     onChangeText={newPassword => setNewPassword(newPassword)}
@@ -95,7 +104,9 @@ export default function ChangeCategory() {
                 />
 
                 
-                <Text style={styles.text}>Repeat password</Text>
+                <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.text}>{t('repeat_password')}</Text>
                 <TextInput
                     style={styles.input}
                     onChangeText={repeatedNewPassword => setRepeatedNewPassword(repeatedNewPassword)}

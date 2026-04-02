@@ -26,8 +26,10 @@ namespace Data.Models
 
         public DateTime RefreshTokenExpiryTime { get; set; } = DateTime.Now;
 
+        public string Language { get; set; }
+
         private User() { }
-        public User(string email, string passwordHash, string name, bool isPremium, Currency defaultCurrency, bool receiveMonthlyReportEmail)
+        public User(string email, string passwordHash, string name, bool isPremium, Currency defaultCurrency, bool receiveMonthlyReportEmail, string language)
         {
             Email = email;
             PasswordHash = passwordHash;
@@ -37,6 +39,7 @@ namespace Data.Models
             DefaultCurrency = defaultCurrency;
             ReceiveMonthlyReportEmail = receiveMonthlyReportEmail;
             ReceiptScansCount = 0;
+            Language = language;
         }
     }
 }

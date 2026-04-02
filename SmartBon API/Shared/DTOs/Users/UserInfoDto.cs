@@ -15,5 +15,7 @@ namespace Shared.DTOs.Users
         public DateTime CreatedAt { get; set; }
 
         public int ReceiptScansCount { get; set; }
+
+        public string Language { get; set; }
     }
 }

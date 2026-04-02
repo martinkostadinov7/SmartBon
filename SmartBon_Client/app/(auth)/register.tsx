@@ -68,19 +68,29 @@ export default function LoginPage() {
 
   return (
       <View style = {[styles.container]}>
-        <Text style= {styles.appTitle}>SmartBon</Text>  
-        <Text style= {styles.title}>Sign Up</Text>
-        <Text style = {error ? styles.error : {display: "none"}}>{error}</Text>
+        <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style= {styles.appTitle}>SmartBon</Text>  
+        <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style= {styles.title}>Sign Up</Text>
+        <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style = {error ? styles.error : {display: "none"}}>{error}</Text>
       <View>
 
-            <Text style = {styles.label}>Email</Text>
+            <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style = {styles.label}>Email</Text>
                 <TextInput
                   style = {styles.input}
                   onChangeText={newEmail => setEmail(newEmail)}
                   placeholder="Email"
                   value={email}>
                 </TextInput>
-            <Text style = {styles.label}>Password</Text>
+            <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style = {styles.label}>Password</Text>
                 <TextInput
                   style = {styles.input}
                   onChangeText={newPassword => setPassword(newPassword)}
@@ -88,7 +98,9 @@ export default function LoginPage() {
                   secureTextEntry
                   value={password}>
                 </TextInput> 
-            <Text style = {styles.label}>Confirm Password</Text>
+            <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style = {styles.label}>Confirm Password</Text>
             <TextInput
               style = {styles.input}
               onChangeText={newConfirmPassword => setConfirmPassword(newConfirmPassword)}
@@ -97,14 +109,18 @@ export default function LoginPage() {
               value={confirmPassword}>
             </TextInput>
 
-            <Text style = {styles.label}>Name</Text>
+            <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style = {styles.label}>Name</Text>
                 <TextInput
                   style = {styles.input}
                   onChangeText={newName => setName(newName)}
                   placeholder="Name"
                   value={name}>
               </TextInput>
-            <Text style={styles.label}>Default currency</Text>
+            <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.label}>Default currency</Text>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
               <TouchableOpacity
                 style={[
@@ -113,7 +129,9 @@ export default function LoginPage() {
                 ]}
                 onPress={() => setSelectedCurrency("EUR")}
               >
-                <Text style={selectedCurrency === "EUR" ? styles.activeText : styles.textPicker}>
+                <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={selectedCurrency === "EUR" ? styles.activeText : styles.textPicker}>
                   EUR
                 </Text>
               </TouchableOpacity>
@@ -125,13 +143,17 @@ export default function LoginPage() {
                 ]}
                 onPress={() => setSelectedCurrency("USD")}
               >
-                <Text style={selectedCurrency === "USD" ? styles.activeText : styles.textPicker}>
+                <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={selectedCurrency === "USD" ? styles.activeText : styles.textPicker}>
                   USD
                 </Text>
               </TouchableOpacity>
             </View> 
             
-            <Text style={styles.label}>Select plan</Text>
+            <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.label}>Select plan</Text>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
               <TouchableOpacity
                 style={[
@@ -140,7 +162,9 @@ export default function LoginPage() {
                 ]}
                 onPress={() => setSelectedPlan("Free")}
               >
-                <Text style={selectedPlan === "Free" ? styles.activeText : styles.textPicker}>
+                <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={selectedPlan === "Free" ? styles.activeText : styles.textPicker}>
                   Free
                 </Text>
               </TouchableOpacity>
@@ -152,7 +176,9 @@ export default function LoginPage() {
                 ]}
                 onPress={() => setSelectedPlan("Premium")}
               >
-                <Text style={selectedPlan === "Premium" ? styles.activeText : styles.textPicker}>
+                <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={selectedPlan === "Premium" ? styles.activeText : styles.textPicker}>
                   Premium
                 </Text>
               </TouchableOpacity>
@@ -163,7 +189,9 @@ export default function LoginPage() {
             pressed && styles.buttonPressed,
           ]} 
             onPress={handleRegister}>
-          <Text style={styles.buttonText}>Register</Text>
+          <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.buttonText}>Register</Text>
         </Pressable>
           <Link style={styles.link} href="/">Have an account? Sign in</Link>
         </View>

@@ -8,6 +8,7 @@ import { apiFetch } from '../../../services/api';
 import { Category } from '../../../types/category';
 import { Subcategory } from '../../../types/subcategory';
 import { useExpenseStore } from '../../../services/store';
+import { useTranslation } from 'react-i18next';
 
 const paymentTypeFromNumber: Record<number, PaymentType> = {
   0: "Cash",
@@ -52,6 +53,7 @@ export default function ExpenseViewScreen() {
     { value: "Card", label: "Card" },
     { value: "Transfer", label: "Transfer" },
     ];
+const { t, i18n } = useTranslation();
 
     const [paymentType, setPaymentType] = useState<PaymentType>("Cash");
     const currentPaymentLabel = paymentOptions.find(p => p.value === paymentType)?.label ?? paymentType;
@@ -131,7 +133,7 @@ useEffect(() => {
       if(!title || !cost){
           Alert.alert(
           "Input error",
-          "Fill out title and cost fields!",
+          "Fill out required fields!",
           [{ text: "OK" }]
           );
       }
@@ -167,8 +169,8 @@ const localISOTime = new Date(date.getTime() - offset).toISOString().slice(0, -1
       } catch (e: any) {
 
         Alert.alert(
-          "Error",
-          "An error occured while trying to save the expense!",
+          `${t('error')}`,
+          `${t('error_occured')}`,
           [{ text: "OK" }]
           );
           console.log("Network/API error:", e?.message ?? e);
@@ -182,12 +184,12 @@ const localISOTime = new Date(date.getTime() - offset).toISOString().slice(0, -1
     
       async function handleDeleteExpense() {
   Alert.alert(
-    "Delete Expense",
-    "Are you sure you want to delete this record?",
+    `${t('delete_expense')}`,
+    `${t('delete_record_message')}`,
     [
-      { text: "Cancel", style: "cancel" },
+      { text: `${t('cancel')}`, style: "cancel" },
       {
-        text: "Delete",
+        text: `${t('delete')}`,
         style: "destructive",
         onPress: async () => {
           try {
@@ -205,11 +207,11 @@ const localISOTime = new Date(date.getTime() - offset).toISOString().slice(0, -1
               router.back(); 
               // или handleCloseScreen(); ако тя прави същото
             } else {
-              Alert.alert("Error", "Could not delete the expense.");
+              Alert.alert(`${t('error')}`, `${t('error_occured')}`);
             }
           } catch (e) {
             // 3. Логика при мрежова грешка
-            Alert.alert("Error", "An error occurred while trying to delete the expense!");
+            Alert.alert(`${t('error')}`, `${t('error_occured')}`);
             console.log("Network/API error:", e);
           }
         }
@@ -233,15 +235,21 @@ const localISOTime = new Date(date.getTime() - offset).toISOString().slice(0, -1
                    >
             <View style={styles.header}>
                 <TouchableOpacity onPress={handleCloseScreen}>
-                <Text style={styles.headerBtn}>Cancel</Text>
+                <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.headerBtn}>{t('cancel')}</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity onPress={handleDeleteExpense}>
-                  <Text style={[styles.headerBtn, {color: "red"}]}>Delete</Text>
+                  <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={[styles.headerBtn, {color: "red"}]}>{t('delete')}</Text>
                 </TouchableOpacity>
                 
                 <TouchableOpacity onPress={isEditing ? handleSaveExpense : () => setIsEditing(true)}>
-                 <Text style={styles.headerBtn}>{isEditing ? "Save" : "Edit"}</Text> 
+                 <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.headerBtn}>{isEditing ? `${t('save')}` : `${t('edit')}`}</Text> 
                 </TouchableOpacity>
             </View>
 
@@ -250,7 +258,7 @@ const localISOTime = new Date(date.getTime() - offset).toISOString().slice(0, -1
             <View>
               <View style={styles.row}>
                 <CategoryBox 
-                  name={category?.name ?? "Undefined"} 
+                  name={t(category?.name ?? "Undefined")} 
                   icon={category?.icon ?? "Undefined"} 
                   color={category?.colorHex ?? "Undefined"} 
                   selected={false} 
@@ -270,11 +278,13 @@ const localISOTime = new Date(date.getTime() - offset).toISOString().slice(0, -1
                     onBlur={Keyboard.dismiss}
                   /> :
                   
-                  <Text numberOfLines={1} ellipsizeMode="tail" style={[styles.input,{marginBottom: 7}] }>{title}</Text>}
+                  <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit ellipsizeMode="tail" style={[styles.input,{marginBottom: 7}] }>{title}</Text>}
 
                   {subcategory != null && (
                     <CategoryBox 
-                      name={subcategory?.name ?? "Undefined"} 
+                      name={t(subcategory?.name ?? "Undefined")} 
                       icon={subcategory?.icon ?? "Undefined"} 
                       color={subcategory?.colorHex ?? "Undefined"} 
                       selected={false} 
@@ -287,7 +297,9 @@ const localISOTime = new Date(date.getTime() - offset).toISOString().slice(0, -1
                   )}
                 </View>
               </View>
-              <Text style={styles.label}>Cost</Text>
+              <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.label}>{t('cost')}</Text>
 
               {isEditing ?
                   <TextInput
@@ -298,10 +310,14 @@ const localISOTime = new Date(date.getTime() - offset).toISOString().slice(0, -1
                     onBlur={Keyboard.dismiss}
                     multiline={false}
                   /> :
-                  <Text style={[styles.input]}>{cost}</Text>
+                  <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={[styles.input]}>{cost}</Text>
                   }
 
-              <Text style={styles.label}>Description</Text>
+              <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.label}>{t('description')}</Text>
 
               {isEditing ?
                   <TextInput
@@ -312,12 +328,17 @@ const localISOTime = new Date(date.getTime() - offset).toISOString().slice(0, -1
                     onFocus={() => setScreenHeight(685)}
                     onBlur={() => setScreenHeight(685)}
                   /> :
-                  <Text style={[styles.input]}>{description}</Text>
+                  <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={[styles.input]}>{description}</Text>
                   }
 
-              <Text style={styles.label}>Date</Text>
+              <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.label}>{t('date')}</Text>
               {isEditing ? (
                 <DateTimePicker
+                  locale={i18n.language}
                   themeVariant="light"
                   value={new Date(date)} // Подсигури се, че е Date обект
                   mode="datetime"
@@ -332,6 +353,7 @@ const localISOTime = new Date(date.getTime() - offset).toISOString().slice(0, -1
                 }}>
                     <View pointerEvents="none">
                         <DateTimePicker
+                          locale={i18n.language}
                             themeVariant="light"
                             value={date}
                             mode="datetime"
@@ -344,7 +366,9 @@ const localISOTime = new Date(date.getTime() - offset).toISOString().slice(0, -1
                 </View>
               )}
 
-              <Text style={styles.label}>Currency</Text>
+              <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.label}>{t('currency')}</Text>
               {isEditing ? (
               <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                 <TouchableOpacity
@@ -354,8 +378,10 @@ const localISOTime = new Date(date.getTime() - offset).toISOString().slice(0, -1
                   ]}
                   onPress={() => setSelectedCurrency("EUR")}
                 >
-                  <Text style={selectedCurrency === "EUR" ? styles.activeText : styles.textPicker}>
-                    EUR
+                  <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={selectedCurrency === "EUR" ? styles.activeText : styles.textPicker}>
+                    {t('eur')}
                   </Text>
                 </TouchableOpacity>
 
@@ -366,8 +392,10 @@ const localISOTime = new Date(date.getTime() - offset).toISOString().slice(0, -1
                   ]}
                   onPress={() => setSelectedCurrency("USD")}
                 >
-                  <Text style={selectedCurrency === "USD" ? styles.activeText : styles.textPicker}>
-                    USD
+                  <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={selectedCurrency === "USD" ? styles.activeText : styles.textPicker}>
+                    {t('usd')}
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -378,7 +406,9 @@ const localISOTime = new Date(date.getTime() - offset).toISOString().slice(0, -1
                     styles.buttonPicker, styles.activeButton
                   ]}
                 >
-                  <Text style={styles.activeText}>
+                  <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.activeText}>
                     {selectedCurrency}
                   </Text>
                 </View>
@@ -390,7 +420,9 @@ const localISOTime = new Date(date.getTime() - offset).toISOString().slice(0, -1
               )}
 
 
-              <Text style={styles.label}>Payment Type</Text>
+              <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.label}>{t('payment_type')}</Text>
               {isEditing ? (
                 <View style={{ marginTop: 10, flexDirection: "row", gap: 10}}>
                 {paymentOptions.map(opt => {
@@ -408,8 +440,10 @@ const localISOTime = new Date(date.getTime() - offset).toISOString().slice(0, -1
                         backgroundColor: selected ? "#3077ceff" : "white",
                       }}
                     >
-                      <Text style={{ fontSize: 16, color: selected ? "white" : "#3077ceff" }}>
-                        {opt.value}
+                      <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{ fontSize: 16, color: selected ? "white" : "#3077ceff" }}>
+                        {t(opt.value)}
                       </Text>
                     </Pressable>
                   );
@@ -429,8 +463,10 @@ const localISOTime = new Date(date.getTime() - offset).toISOString().slice(0, -1
                       backgroundColor: "#3077ceff"
                       }}
                     >
-                    <Text style={{ fontSize: 16, color: "white"}}>
-                      {paymentType}
+                    <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{ fontSize: 16, color: "white"}}>
+                      {t(paymentType)}
                     </Text>
                   </Pressable>
                 </View>

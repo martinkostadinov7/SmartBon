@@ -3,9 +3,17 @@ import React, { useCallback, useEffect, useState } from "react";
 import { BarChart, LineChart, PieChart } from "react-native-chart-kit";
 import { router, useFocusEffect } from "expo-router";
 import { apiFetch } from "../../services/api";
-import { Currency } from "../../types/expense";
+import { Currency, PaymentType } from "../../types/expense";
 import DateTimePicker from '@react-native-community/datetimepicker';
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
+import { useTranslation } from "react-i18next";
+
+const paymentTypeFromNumber: Record<number, PaymentType> = {
+  0: "Cash",
+  1: "Card",
+  2: "Transfer",
+};
+
 
 const currencyFromNumber: Record<number, Currency> = {
   0: "EUR",
@@ -69,6 +77,7 @@ const [categoriesDateRange, setCategoriesDateRange] = useState<[Date, Date]>(() 
   
   return [start, end];
 });  
+const { t, i18n } = useTranslation();
 
 const [paymentTypeDateRange, setPaymentTypeDateRange] = useState<[Date, Date]>(() => {
  const end = new Date();
@@ -97,7 +106,7 @@ const [expensesDateRange, setExpensesDateRange] = useState("Daily");
 
 async function loadUserData(){
       const userResponse = await apiFetch(`/Users/me`);
-      if (!userResponse.ok) throw new Error("Failed");
+      if (!userResponse.ok) throw new Error(t("error_occured"));
       const profileData = await userResponse.json();
       const currencyStr = currencyFromNumber[profileData.defaultCurrency];
       setUserDefaultCurrency(currencyStr);
@@ -106,12 +115,12 @@ async function loadUserData(){
 
 function handlePremiumFeaturePress(message: string){
   Alert.alert(
-      "Premium feature",
-      `${message} Would you like to upgrade to Premium for unlimited?`,
+      `${t('premium_feature')}`,
+      `${message} ${t('would_you_like_to_upgrade_message')}`,
       [
-        { text: "Cancel", style: "cancel" },
+        { text: `${t('cancel')}`, style: "cancel" },
         {
-          text: "Upgrade",
+          text: `${t('upgrade')}`,
           style: "default",
           onPress: async () => {
             router.push("(modals)/users/managePlan");
@@ -131,7 +140,7 @@ const query = new URLSearchParams({
 
       const categoriesPieChartResponse = await apiFetch(`/statistics/categoriesPieChart?${query.toString()}`);
       if (!categoriesPieChartResponse.ok) {
-        throw new Error("Failed to load categories pie charts");
+        throw new Error(`${t('error_occured')}`);
       }
       await categoriesPieChartResponse.json().then(setCategoriesPieChartData);
 }
@@ -146,7 +155,7 @@ const query = new URLSearchParams({
 
       const paymentTypePieChartResponse = await apiFetch(`/statistics/paymentTypePieChart?${query.toString()}`);
       if (!paymentTypePieChartResponse.ok) {
-        throw new Error("Failed to load paymentType pie charts");
+        throw new Error(`${t('error_occured')}`);
       }
       await paymentTypePieChartResponse.json().then(setPaymentTypePieChartData);
 }
@@ -154,7 +163,7 @@ const query = new URLSearchParams({
   async function loadExpenseLineChartData(){
     const еxpensesLineChartDataResponse = await apiFetch(`/statistics/expensesLineChart?range=${expensesDateRange}`);
       if (!еxpensesLineChartDataResponse.ok) {
-        throw new Error("Failed to load expenses line charts");
+        throw new Error(`${t('error_occured')}`);
       }
       await еxpensesLineChartDataResponse.json().then(setExpensesLineChartData);
   }
@@ -162,7 +171,7 @@ const query = new URLSearchParams({
   async function loadDaysBarChartData(){
     const daysBarChartDataResponse = await apiFetch(`/statistics/daysBarChart`);
       if (!daysBarChartDataResponse.ok) {
-        throw new Error("Failed to load days bar charts");
+        throw new Error(`${t('error_occured')}`);
       }
       await daysBarChartDataResponse.json().then(setDaysBarChartData);
   }
@@ -170,16 +179,22 @@ const query = new URLSearchParams({
   async function loadMonthlyReportData(){
     const monthlyReportResponse = await apiFetch(`/statistics/monthlyReport`);
       if (!monthlyReportResponse.ok) {
-        throw new Error("Failed to load monthly report");
+        throw new Error(`${t('error_occured')}`);
       }
       await monthlyReportResponse.json().then(setMonthlyReportData);
   }
 
   const formatCost = (amount: number, currencyCode: string) => {
-  return new Intl.NumberFormat('en-US', {
+  return new Intl.NumberFormat(i18n.language, {
     style: 'currency',
-    currency: currencyCode,
+    currency: currencyCode || "EUR",
   }).format(amount);
+};
+const getCurrencySymbol = (code: string) => {
+  return new Intl.NumberFormat(i18n.language, {
+    style: 'currency',
+    currency: code || 'EUR',
+  }).format(0).replace(/\d|[,.]/g, '').trim();
 };
 
     const loadData = useCallback(async () => {
@@ -200,24 +215,56 @@ const query = new URLSearchParams({
       }, [loadData])
     );
 
+const translatedCategoryData = categoriesPieChartData?.categoryData.map(item => ({
+  ...item,
+  name: `${t(item.name)}: ${formatCost(item.population, userDefaultCurrency)}`, 
+  color: item.color,
+  legendFontColor: "#7F7F7F",
+  legendFontSize: 12
+}));
+const translatedSubcategoryData = categoriesPieChartData?.subcategoryData.map(item => ({
+  ...item,
+  name: `${t(item.name)}: ${formatCost(item.population, userDefaultCurrency)}`, 
+  color: item.color,
+  legendFontColor: "#7F7F7F",
+  legendFontSize: 12
+}));
+const translatedPaymentTypeData = paymentTypePieChartData?.paymentTypePieChartData.map(item => ({
+  ...item,
+  name: `${t(item.name)}: ${formatCost(item.population, userDefaultCurrency)}`, 
+  color: item.color,
+  legendFontColor: "#7F7F7F",
+  legendFontSize: 12
+}));
+
+
+
+const translatedLabels = daysBarChartData?.labels.map(label => t(label));
+
   return (<>
     <View style={[{padding: 15, backgroundColor: "#3077ceff"}]}>
-        <Text style={{fontSize: 32, color: "white"}}>Statistics</Text>
+        <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{fontSize: 32, color: "white"}}>{t('statistics')}</Text>
     </View>
 
     <ScrollView style={{padding: 10}}>
 
 {!monthlyReportData ? (
-  <View style={styles.card}><Text>Loading report...</Text></View>
+  <View style={styles.card}><Text>{t('loading')}...</Text></View>
 ) : (
   <View style={styles.card}>
     <View style={styles.header}>
-      <Text style={styles.title}>Report for {monthlyReportData.monthName}</Text>
+      <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.title}>{t('report_for')} {t(monthlyReportData.monthName)}</Text>
       <View style={[
         styles.badge, 
         (monthlyReportData.percentageChange ?? 0) > 0 ? styles.badgeRed : styles.badgeGreen
       ]}>
-        <Text style={styles.badgeText}>
+        <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.badgeText}>
           {(monthlyReportData.percentageChange ?? 0) > 0 ? '↑' : '↓'} 
           {Math.abs(monthlyReportData.percentageChange ?? 0)}%
         </Text>
@@ -227,46 +274,74 @@ const query = new URLSearchParams({
     <View style={styles.divider} />
 
     <View style={styles.mainStatContainer}>
-      <Text style={styles.label}>Total Spent</Text>
-      <Text style={styles.totalAmount}>
+      <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.label}>{t('total_spent')}</Text>
+      <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.totalAmount}>
         {formatCost(Number(monthlyReportData.totalSpent?.toFixed(2) ?? "0.00"), userDefaultCurrency)}
       </Text>
-      <Text style={styles.subLabel}>
+      <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.subLabel}>
         {(monthlyReportData.totalSpentDifference ?? 0) > 0 ? '+' : ''}
-        {formatCost(monthlyReportData.totalSpentDifference ?? 0, userDefaultCurrency)} vs previous month
+        {formatCost(monthlyReportData.totalSpentDifference ?? 0, userDefaultCurrency)} {t('vs_previous_month')}
       </Text>
     </View>
 
     <View style={styles.grid}>
       <View style={styles.gridItem}>
-        <Text style={styles.gridLabel}>Transactions</Text>
-        <Text style={styles.gridValue}>{monthlyReportData.totalTransactionsCount ?? 0}</Text>
+        <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.gridLabel}>{t('transactions')}</Text>
+        <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.gridValue}>{monthlyReportData.totalTransactionsCount ?? 0}</Text>
       </View>
       <View style={styles.gridItem}>
-        <Text style={styles.gridLabel}>No-Spend Days</Text>
-        <Text style={styles.gridValue}>{monthlyReportData.noSpendDaysCount ?? 0}</Text>
+        <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.gridLabel}>{t('no_spend_days')}</Text>
+        <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.gridValue}>{monthlyReportData.noSpendDaysCount ?? 0}</Text>
       </View>
       <View style={styles.gridItem}>
-        <Text style={styles.gridLabel}>Daily Average</Text>
-        <Text style={styles.gridValue}>
+        <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.gridLabel}>{t('daily_average')}</Text>
+        <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.gridValue}>
           {formatCost(Number(monthlyReportData.averageSpentPerDay?.toFixed(2) ?? "0.00"), userDefaultCurrency)}
         </Text>
       </View>
       <View style={styles.gridItem}>
-        <Text style={styles.gridLabel}>Preferred Payment</Text>
-        <Text style={styles.gridValue}>
-          {monthlyReportData.preferredPaymentMethod === 1 ? 'Card' : 'Cash'}
+        <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.gridLabel}>{t('preferred_payment')}</Text>
+        <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.gridValue}>
+          {t(paymentTypeFromNumber[monthlyReportData.preferredPaymentMethod])}
         </Text>
       </View>
     </View>
 
     <View style={styles.highlightBox}>
-      <Text style={styles.highlightTitle}>Most Expensive Day</Text>
-      <Text style={styles.highlightValue}>
+      <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.highlightTitle}>{t('most_expensive_day')}</Text>
+      <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.highlightValue}>
         {monthlyReportData.mostExpensiveDay 
-          ? new Date(monthlyReportData.mostExpensiveDay).toLocaleDateString('en-US') 
+          ? new Date(monthlyReportData.mostExpensiveDay).toLocaleDateString('bg-BG') 
           : 'N/A'}
-        <Text style={{ fontWeight: '400' }}>
+        <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{ fontWeight: '400' }}>
           {' — '}{formatCost(Number(monthlyReportData.mostExpensiveDayAmount?.toFixed(2) ?? "0.00"), userDefaultCurrency)}
         </Text>
       </Text>
@@ -274,7 +349,9 @@ const query = new URLSearchParams({
   </View>
 )}
 
-    <Text style={{fontSize: 20, marginBottom: 10, fontWeight: '700'}}>Expenses</Text>
+    <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{fontSize: 20, marginBottom: 10, fontWeight: '700'}}>{t('expenses')}</Text>
     <View style={styles.row}>
       <ScrollView horizontal showsHorizontalScrollIndicator={false}>
 
@@ -295,13 +372,15 @@ const query = new URLSearchParams({
               }}
               onPress={() => setExpensesDateRange(range)}
           >
-              <Text style={{ 
+              <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{ 
                   textAlign: "center", 
                   fontSize: 14, 
                   textTransform: 'capitalize',
                   fontWeight: expensesDateRange === range ? 'bold' : 'normal',
               }}>
-              {range}
+              {t(range)}
               </Text>
           </TouchableOpacity>
           );
@@ -314,6 +393,7 @@ const query = new URLSearchParams({
             labels: еxpensesLineChartData.labels,
             datasets: еxpensesLineChartData.datasets
           }}
+          yAxisSuffix={` ${getCurrencySymbol(userDefaultCurrency)}`}
           width={Dimensions.get("window").width - 30}
           height={220}
           chartConfig={{
@@ -329,13 +409,16 @@ const query = new URLSearchParams({
         />
       ) : (
         <View style={{ height: 220, justifyContent: 'center', alignItems: 'center' }}>
-          <Text>No data available for this period</Text>
+          <Text>{t('no_data_available')}</Text>
         </View>
       )}
 
-      <Text style={{fontSize: 20, marginTop: 20, marginBottom: 10, fontWeight: '700'}}>Categories</Text>
+      <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{fontSize: 20, marginTop: 20, marginBottom: 10, fontWeight: '700'}}>{t('categories')}</Text>
       <View style={styles.row}>
           <DateTimePicker
+            locale={i18n.language}
             style={styles.dateInput}
             value={categoriesDateRange[0]}
             mode="date" 
@@ -343,8 +426,11 @@ const query = new URLSearchParams({
               if (selectedDate) setCategoriesDateRange([selectedDate, categoriesDateRange[1]]);
             }}
           />
-          <Text style={{ fontSize: 18, marginBottom: 5 }}>-</Text>
+          <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{ fontSize: 18, marginBottom: 5 }}>-</Text>
           <DateTimePicker
+            locale={i18n.language}
             style={styles.dateInput}
             value={categoriesDateRange[1]}
             mode="date" 
@@ -356,53 +442,58 @@ const query = new URLSearchParams({
       
       {categoriesPieChartData?.categoryData && categoriesPieChartData.categoryData.length > 0 ? (
         <PieChart
-          data={categoriesPieChartData.categoryData}
-          width={Dimensions.get("window").width - 25}
+          data={translatedCategoryData || categoriesPieChartData?.categoryData}
+          width={Dimensions.get("window").width}
           height={220}
           chartConfig={{ color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})` }}
           accessor={"population"}
           backgroundColor={"transparent"}
-          paddingLeft={"15"}
-          center={[10, 10]}
-          absolute
+          paddingLeft={"-45"}
+          center={[35, 10]}
         />
       ) : (
         <View style={{ height: 220, justifyContent: 'center', alignItems: 'center' }}>
-          <Text>No category data found</Text>
+          <Text>{t('no_data_available')}</Text>
         </View>
       )}
 
-      <Text style={{fontSize: 16, marginTop: 20, marginBottom: 10, fontWeight: '700'}}>Subcategories</Text>
+      <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{fontSize: 16, marginTop: 20, marginBottom: 10, fontWeight: '700'}}>{t('subcategories')}</Text>
 
       {isPremium ? 
       (categoriesPieChartData?.subcategoryData && categoriesPieChartData.subcategoryData.length > 0 ? (
               <PieChart
-                data={categoriesPieChartData.subcategoryData}
-                width={Dimensions.get("window").width - 25}
+                data={translatedSubcategoryData|| categoriesPieChartData.subcategoryData}
+                width={Dimensions.get("window").width}
                 height={220}
                 chartConfig={{ color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})` }}
                 accessor={"population"}
                 backgroundColor={"transparent"}
-                paddingLeft={"15"}
-                center={[10, 10]}
-                absolute
+                paddingLeft={"-45"}
+          center={[35, 10]}
               />
             ) : (
               <View style={{ height: 220, justifyContent: 'center', alignItems: 'center' }}>
-                <Text>No category data found</Text>
+                <Text>{t('no_data_available')}</Text>
               </View>
             )
       ) : 
-      (<TouchableOpacity onPress={() => handlePremiumFeaturePress("Subcategories statistics is a premium feature!")} style={{backgroundColor:"rgba(48, 119, 206, 0.37)", height: 220, alignItems:"center", justifyContent:"center", borderRadius: 30}}>
+      (<TouchableOpacity onPress={() => handlePremiumFeaturePress(`${t('premium_feature_subcategories_statistics')}`)} style={{backgroundColor:"rgba(48, 119, 206, 0.37)", height: 220, alignItems:"center", justifyContent:"center", borderRadius: 30}}>
         <FontAwesome6 name="lock" size={40} color="#3077ceff"/>
-        <Text style={{fontSize: 20, fontWeight: "700", marginTop: 10}}>Premium Feature</Text>
+        <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{fontSize: 20, fontWeight: "700", marginTop: 10}}>{t('premium_feature')}</Text>
       </TouchableOpacity>) 
       }
             
 
-    <Text style={{fontSize: 20, marginTop: 20, marginBottom: 10, fontWeight: '700'}}>Payment Types</Text>
+    <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{fontSize: 20, marginTop: 20, marginBottom: 10, fontWeight: '700'}}>{t('payment_types')}</Text>
       <View style={styles.row}>
           <DateTimePicker
+            locale={i18n.language}
             style={styles.dateInput}
             value={paymentTypeDateRange[0]}
             mode="date" 
@@ -410,8 +501,11 @@ const query = new URLSearchParams({
               if (selectedDate) setPaymentTypeDateRange([selectedDate, paymentTypeDateRange[1]]);
             }}
           />
-          <Text style={{ fontSize: 18, marginBottom: 5 }}>-</Text>
+          <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{ fontSize: 18, marginBottom: 5 }}>-</Text>
           <DateTimePicker
+            locale={i18n.language}
             style={styles.dateInput}
             value={paymentTypeDateRange[1]}
             mode="date" 
@@ -423,32 +517,34 @@ const query = new URLSearchParams({
 
       {paymentTypePieChartData?.paymentTypePieChartData && paymentTypePieChartData?.paymentTypePieChartData.length > 0 ? (
         <PieChart
-          data={paymentTypePieChartData?.paymentTypePieChartData}
-          width={Dimensions.get("window").width - 25}
+          data={translatedPaymentTypeData || paymentTypePieChartData?.paymentTypePieChartData}
+          width={Dimensions.get("window").width}
           height={220}
           chartConfig={{ color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})` }}
           accessor={"population"}
           backgroundColor={"transparent"}
-          paddingLeft={"15"}
-          center={[10, 10]}
-          absolute
+          paddingLeft={"-45"}
+          center={[35, 10]}
         />
       ) : (
         <View style={{ height: 220, justifyContent: 'center', alignItems: 'center' }}>
-          <Text>No subcategory data found</Text>
+          <Text>{t('no_data_available')}</Text>
         </View>
       )}
 
-    <Text style={{fontSize: 20, marginTop: 20, marginBottom: 10, fontWeight: '700'}}>Average daily spending</Text>
+    <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{fontSize: 20, marginTop: 20, marginBottom: 10, fontWeight: '700'}}>{t('average_daily_spending')}</Text>
 
 
  {isPremium ? 
       (daysBarChartData && daysBarChartData.datasets[0].data.length > 0 ? (
         <BarChart
           data={{
-            labels: daysBarChartData.labels,
+            labels: translatedLabels || daysBarChartData.labels,
             datasets: daysBarChartData.datasets
           }}
+          yAxisSuffix={` ${getCurrencySymbol(userDefaultCurrency)}`}
           width={Dimensions.get("window").width - 30}
           height={220}
           chartConfig={{
@@ -463,18 +559,19 @@ const query = new URLSearchParams({
           style={{ marginVertical: 8, borderRadius: 16 }}
           verticalLabelRotation={0}
           yAxisLabel=""
-          yAxisSuffix=""
           fromZero={true}
         />
       ) : (
         <View style={{ height: 220, justifyContent: 'center', alignItems: 'center' }}>
-          <Text>No data available for this period</Text>
+          <Text>{t('no_data_available')}</Text>
         </View>
       )
       ) : 
-      (<TouchableOpacity onPress={() => handlePremiumFeaturePress("Average daily spending statistics is a premium feature!")} style={{backgroundColor:"rgba(48, 119, 206, 0.37)", height: 220, alignItems:"center", justifyContent:"center", borderRadius: 30}}>
+      (<TouchableOpacity onPress={() => handlePremiumFeaturePress(`${t('premium_feature_daily_spending')}`)} style={{backgroundColor:"rgba(48, 119, 206, 0.37)", height: 220, alignItems:"center", justifyContent:"center", borderRadius: 30}}>
         <FontAwesome6 name="lock" size={40} color="#3077ceff"/>
-        <Text style={{fontSize: 20, fontWeight: "700", marginTop: 10}}>Premium Feature</Text>
+        <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{fontSize: 20, fontWeight: "700", marginTop: 10}}>`${t('premium_feature')}`</Text>
       </TouchableOpacity>) 
       }
 

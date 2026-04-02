@@ -9,6 +9,7 @@ import { Currency } from '../../types/expense';
 import * as ImagePicker from 'expo-image-picker';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import { Category } from '../../types/category';
+import { useTranslation } from 'react-i18next';
 const paymentTypeMap: Record<string, number> = {
   Cash: 0,
   Card: 1,
@@ -49,7 +50,7 @@ export default function AddExpense() {
     const [selectedFrequency, setSelectedFrequency] = useState<string | null>();
     const frequencies = ["Daily", "Weekly", "Monthly", "Yearly"];
     const [isPremium, setIsPremium] = useState(false);
-
+const { t, i18n } = useTranslation();
     type PaymentType = "Cash" | "Card" | "Transfer";
 
     const paymentOptions: { value: PaymentType; label: string }[] = [
@@ -127,12 +128,12 @@ async function sendPhotoToApi(photoToUpload: ImagePicker.ImagePickerAsset) {
         if (!response.ok) 
         {
             const errorData = await response.json(); 
-            throw new Error(errorData.message || "An unknown error occurred");
+            throw new Error(errorData.message || `${t('error_occured')}`);
         }
     } catch (e: any) {
   
     Alert.alert(
-        "Error",
+        `${t('error')}`,
         e?.message,
         [{ text: "OK" }]
         );
@@ -142,12 +143,12 @@ async function sendPhotoToApi(photoToUpload: ImagePicker.ImagePickerAsset) {
 
    function handlePremiumFeaturePress(message: string){
      Alert.alert(
-         "Premium feature",
-         `${message} Would you like to upgrade to Premium for unlimited?`,
+         `${t('premium_feature')}`,
+         `${message} ${t('would_you_like_to_upgrade_message')}`,
          [
-           { text: "Cancel", style: "cancel" },
+           { text: `${t('cancel')}`, style: "cancel" },
            {
-             text: "Upgrade",
+             text: `${t('delete')}`,
              style: "default",
              onPress: async () => {
                router.push("(modals)/users/managePlan");
@@ -162,17 +163,17 @@ async function sendPhotoToApi(photoToUpload: ImagePicker.ImagePickerAsset) {
         const costNumber = parseFloat(normalizedCost);
 
         if(!title || !cost || selectedCategoryId == -1){
-            Alert.alert(
-            "Input error",
-            "Fill out title, cost category fields!",
-            [{ text: "OK" }]
-            );
+          Alert.alert(
+          `${t('error')}`,
+          `${t('fill_out_fields')}`,
+          [{ text: "OK" }]
+          );
         }
           
         if(isRecurring && !selectedFrequency){
             Alert.alert(
-            "Input error",
-            "Select frequency for recurring expense!",
+            `${t('error')}`,
+            `${t('select_frequency')}`,
             [{ text: "OK" }]
             );
         }
@@ -201,8 +202,8 @@ async function sendPhotoToApi(photoToUpload: ImagePicker.ImagePickerAsset) {
             if(response.status == 400){
               let message = await response.json();
               Alert.alert(
-                "Budget limit",
-                `${message?.message}`,
+                `${t('budget_limit')}`,
+                `${t(message?.message)}`,
                 [{ text: "OK" }]
                 );
                 if(goalId) {
@@ -231,7 +232,7 @@ async function sendPhotoToApi(photoToUpload: ImagePicker.ImagePickerAsset) {
             if(response.status == 400){
               let message = await response.json();
               Alert.alert(
-                "Budget limit",
+                `${t('budget_limit')}`,
                 `${message?.message}`,
                 [{ text: "OK" }]
                 );
@@ -249,7 +250,7 @@ async function sendPhotoToApi(photoToUpload: ImagePicker.ImagePickerAsset) {
 
 async function loadCategories(){
    const response = await apiFetch(`/Categories`);
-    if (!response.ok) throw new Error("Failed");
+    if (!response.ok) throw new Error(`${t('error_occured')}`);
     const data = await response.json();
     setCategories(data);
 }
@@ -260,9 +261,9 @@ async function loadCategories(){
              try {
 
               loadCategories();
-              
+
                const response = await apiFetch(`/Users/me`);
-               if (!response.ok) throw new Error("Failed");
+               if (!response.ok) throw new Error(`${t('error_occured')}`);
                const profileData = await response.json();
                const currencyStr = currencyFromNumber[profileData.defaultCurrency];
                 setUserDefaultCurrency(currencyStr);
@@ -309,14 +310,20 @@ async function loadCategories(){
               >
               <View style={styles.header}>
                 <TouchableOpacity onPress={() => router.back()}>
-                  <Text style={styles.headerBtn}>Cancel</Text>
+                  <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.headerBtn}>{t('cancel')}</Text>
                 </TouchableOpacity>
 
-              <Text style={styles.title}>Add Expense</Text>
+              <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.title}>{t('add_expense')}</Text>
                 
   
               <TouchableOpacity onPress={handleAddExpense}>
-                  <Text style={styles.headerBtn}>Add</Text> 
+                  <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.headerBtn}>{t('add')}</Text> 
               </TouchableOpacity>
               </View>
           <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ flexGrow: 1, paddingBottom: 40 }}>
@@ -324,7 +331,9 @@ async function loadCategories(){
         
     <View style={[styles.row, {justifyContent:"space-between"}]}>
       <View style={{width: 100}}>
-        <Text style={styles.label}>Cost</Text>
+        <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.label}>{t('Cost')}</Text>
         <TextInput
           style={[styles.input, {maxWidth: 100}]}
           onChangeText={newCost => setCost(newCost)}
@@ -337,12 +346,16 @@ async function loadCategories(){
 <View style={styles.row}>
   {isReceiptDataLoading && (<ActivityIndicator size="large" color="#3077ceff" />)}
       <TouchableOpacity style={[styles.photoButton, {marginLeft: 10}]} onPress={takePhoto}>
-        <Text style={styles.buttonText}><FontAwesome6 name="camera" size={18}/>  Scan Receipt</Text>
+        <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.buttonText}><FontAwesome6 name="camera" size={18}/>  {t('scan_receipt')}</Text>
       </TouchableOpacity>
 </View>
     </View>
 
-        <Text style={styles.label}>Title</Text>
+        <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.label}>{t('Title')}</Text>
         <TextInput
           style={styles.input}
           onChangeText={newTitle => setTitle(newTitle)}
@@ -351,7 +364,9 @@ async function loadCategories(){
         />
 
 
-        <Text style={styles.label}>Description</Text>
+        <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.label}>{t('description')}</Text>
         <TextInput
           style={styles.input}
           onChangeText={newDescription => setDescription(newDescription)}
@@ -360,8 +375,11 @@ async function loadCategories(){
         />
 
         <View style={[styles.row, {marginTop: 15}]}>
-          <Text style={[styles.label, {marginRight: 10}]}>Date</Text>
+          <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={[styles.label, {marginRight: 10}]}>{t('Date')}</Text>
           <DateTimePicker
+            locale={i18n.language}
             value={date}
             mode="datetime"
             onChange={(event, selectedDate) => {
@@ -375,7 +393,9 @@ async function loadCategories(){
 (
 <View style={[styles.row, {marginTop: 5}]}>
   <FontAwesome6 name= "rotate-right"  size={21} color="black"/>
-  <Text style={[styles.label, {marginRight: 10, marginLeft: 10}]}>Recurring</Text>
+  <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={[styles.label, {marginRight: 10, marginLeft: 10}]}>{t('recurring')}</Text>
   <Switch
     style={{margin:7}}
     trackColor={{ false: "#b1b1b1", true: "#00ae34" }}
@@ -387,14 +407,16 @@ async function loadCategories(){
 ) : 
 (
     <Pressable 
-  onPress={() => handlePremiumFeaturePress("Recurring expenses is a premium feature!")} 
+  onPress={() => handlePremiumFeaturePress(`${t('premium_feature_recurring')}`)} 
   style={({ pressed }) => [
     { opacity: pressed ? 0.5 : 0.7 }, 
   ]}
 >
   <View style={[styles.row, { marginTop: 5 }]}>
     <FontAwesome6 name="lock" size={21} color="black" />
-    <Text style={[styles.label, { marginRight: 10, marginLeft: 10 }]}>
+    <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={[styles.label, { marginRight: 10, marginLeft: 10 }]}>
       Recurring
     </Text>
     
@@ -414,7 +436,9 @@ async function loadCategories(){
 {(isRecurring) && 
 (
 <>
-  <Text style={[styles.label, {marginRight: 10}]}>Frequency</Text>
+  <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={[styles.label, {marginRight: 10}]}>{t('frequency')}</Text>
   <View style={styles.row}>
     <ScrollView horizontal showsHorizontalScrollIndicator={false}>
 
@@ -434,13 +458,15 @@ async function loadCategories(){
                 }}
                 onPress={() => setSelectedFrequency(frequency)}
             >
-                <Text style={{ 
+                <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{ 
                     textAlign: "center", 
                     fontSize: 14, 
                     textTransform: 'capitalize',
                     fontWeight: selectedFrequency === frequency ? 'bold' : 'normal'
                 }}>
-                {frequency}
+                {t(frequency)}
                 </Text>
             </TouchableOpacity>
             );
@@ -452,7 +478,9 @@ async function loadCategories(){
 </>
         )}
 
-        <Text style={styles.label}>Category</Text>
+        <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.label}>{t('category')}</Text>
         <View style={{ overflow: "hidden" }}>
           <ScrollView
             horizontal
@@ -462,7 +490,7 @@ async function loadCategories(){
             {categories.map(category => (
               <CategoryBox
                 key={category.id}
-                name={category.name}
+                name={t(category.name)}
                 icon={category.icon}
                 fontSize={12}
                 iconSize={30}
@@ -477,7 +505,7 @@ async function loadCategories(){
             ))}
             <CategoryBox
                 key={-2}
-                name="Add"
+                name={t('add')}
                 icon="+"
                 fontSize={12}
                 iconSize={30}
@@ -490,7 +518,9 @@ async function loadCategories(){
         </View>
         {selectedCategoryId != -1 && (
             <>
-            <Text style={styles.label}>Subcategory</Text>
+            <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.label}>{t('subcategory')}</Text>
 
             <View style={{ overflow: "hidden" }}>
                 <ScrollView
@@ -501,7 +531,7 @@ async function loadCategories(){
                 {subcategories.map(subcategory => (
                     <CategoryBox
                         key={subcategory.id}
-                        name={subcategory.name}
+                        name={t(subcategory.name)}
                         icon={subcategory.icon}
                         fontSize={12}
                         iconSize={30}
@@ -513,7 +543,7 @@ async function loadCategories(){
                 ))}
                 <CategoryBox
                     key={-2}
-                    name="Add"
+                    name={t('add')}
                     icon="+"
                     color={"#FFFFFF"}
                     fontSize={12}
@@ -526,7 +556,9 @@ async function loadCategories(){
             </View>
             </>
         )}
-        <Text style={styles.label}>Currency</Text>
+        <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.label}>{t('currency')}</Text>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
           <TouchableOpacity
             style={[
@@ -535,8 +567,10 @@ async function loadCategories(){
             ]}
             onPress={() => setSelectedCurrency("EUR")}
           >
-            <Text style={selectedCurrency === "EUR" ? styles.activeText : styles.textPicker}>
-              EUR
+            <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={selectedCurrency === "EUR" ? styles.activeText : styles.textPicker}>
+              {t('eur')}
             </Text>
           </TouchableOpacity>
 
@@ -547,13 +581,17 @@ async function loadCategories(){
             ]}
             onPress={() => setSelectedCurrency("USD")}
           >
-            <Text style={selectedCurrency === "USD" ? styles.activeText : styles.textPicker}>
-              USD
+            <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={selectedCurrency === "USD" ? styles.activeText : styles.textPicker}>
+              {t('usd')}
             </Text>
           </TouchableOpacity>
         </View>
 
-        <Text style={styles.label}>Payment Type</Text>
+        <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.label}>{t('payment_type')}</Text>
         <View style={{ marginBottom: 10, flexDirection: "row", gap: 10 }}>
           {paymentOptions.map(opt => {
             const selected = paymentType === opt.value;
@@ -570,8 +608,10 @@ async function loadCategories(){
                   backgroundColor: selected ? "#3077ceff" : "white",
                 }}
               >
-                <Text style={{ fontSize: 16, color: selected ? "white" : "#3077ceff" }}>
-                  {opt.label}
+                <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{ fontSize: 16, color: selected ? "white" : "#3077ceff" }}>
+                  {t(opt.label)}
                 </Text>
               </Pressable>
             );

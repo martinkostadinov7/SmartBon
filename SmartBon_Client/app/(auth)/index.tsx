@@ -62,18 +62,28 @@ export default function LoginPage() {
   return (
 
       <View style = {styles.container}>
-        <Text style= {styles.appTitle}>SmartBon</Text>  
-        <Text style= {styles.title}>Sign In</Text>
-        <Text style = {error ? styles.error : {display: "none"}}>{error}</Text>
+        <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style= {styles.appTitle}>SmartBon</Text>  
+        <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style= {styles.title}>Sign In</Text>
+        <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style = {error ? styles.error : {display: "none"}}>{error}</Text>
       <View>
-        <Text style = {styles.label}>Email</Text>
+        <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style = {styles.label}>Email</Text>
             <TextInput
               style = {styles.input}
               onChangeText={newEmail => setEmail(newEmail)}
               placeholder="Email"
               value={email}>
             </TextInput>
-        <Text style = {styles.label}>Password</Text>
+        <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style = {styles.label}>Password</Text>
             <TextInput
               style = {styles.input}
               onChangeText={newPassword => setPassword(newPassword)}
@@ -87,7 +97,9 @@ export default function LoginPage() {
         pressed && styles.buttonPressed,
       ]} 
         onPress={handleLogin}>
-      <Text style={styles.buttonText}>Sign In</Text>
+      <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.buttonText}>Sign In</Text>
     </Pressable>
       <Link style={styles.link} href="/register">Don't have an account? Sign Up</Link>
     </View>);

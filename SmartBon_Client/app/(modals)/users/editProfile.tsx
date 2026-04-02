@@ -3,6 +3,7 @@ import React, { useCallback, useState } from 'react'
 import { router, useFocusEffect } from 'expo-router';
 import { apiFetch } from '../../services/api';
 import { Currency } from '../../types/expense';
+import { useTranslation } from 'react-i18next';
 
 const currencyFromNumber: Record<number, Currency> = {
   0: "EUR",
@@ -20,7 +21,7 @@ export default function ChangeCategory() {
     const [userDefaultCurrency, setUserDefaultCurrency] = useState("Unidentified");
     const [selectedCurrency, setSelectedCurrency] = useState(userDefaultCurrency);
     const [screenHeight, setScreenHeight] = useState(345);
-
+const { t, i18n } = useTranslation();
     function handleCloseScreen(){
            router.back();
        }
@@ -42,13 +43,13 @@ export default function ChangeCategory() {
                 if (!response.ok) 
                 {
                    const errorData = await response.json(); 
-                    throw new Error(errorData.message || "An unknown error occurred");
+                    throw new Error(errorData.message || `${t('error_occured')}`);
                 }
                 handleCloseScreen();
             } catch (e: any) {
 
             Alert.alert(
-                "Error",
+                `${t('error')}`,
                 e?.message,
                 [{ text: "OK" }]
                 );
@@ -61,7 +62,7 @@ export default function ChangeCategory() {
            const fetchProfile = async () => {
              try {
                const response = await apiFetch(`/Users/me`);
-               if (!response.ok) throw new Error("Failed");
+               if (!response.ok) throw new Error(`${t('error_occured')}`);
                const profileData = await response.json();
                setUserName(profileData.name);
                setUserEmail(profileData.email);
@@ -93,15 +94,21 @@ export default function ChangeCategory() {
             <Pressable style={[styles.container, {height: screenHeight}]} onPress={() => {}}>
                 <View style={styles.header}>
                     <TouchableOpacity onPress={handleCloseScreen}>
-                    <Text style={styles.headerBtn}>Cancel</Text>
+                    <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.headerBtn}>{t('cancel')}</Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity onPress={handleSave}>
-                    <Text style={styles.headerBtn}>Save</Text> 
+                    <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.headerBtn}>{t('save')}</Text> 
                     </TouchableOpacity>
                 </View>
 
-                <Text style={styles.text}>Name</Text>
+                <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.text}>{t('name')}</Text>
                 <TextInput
                     style={styles.input}
                     onChangeText={newName => setUserName(newName)}
@@ -110,7 +117,9 @@ export default function ChangeCategory() {
                     onBlur={() => setScreenHeight(345)}
                 />
 
-                <Text style={styles.text}>Email</Text>
+                <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.text}>{t('email')}</Text>
                 <TextInput
                     style={styles.input}
                     onChangeText={newEmail => setUserEmail(newEmail)}
@@ -119,7 +128,9 @@ export default function ChangeCategory() {
                     onBlur={() => setScreenHeight(345)}
                 />
 
-                <Text style={styles.text}>Default currency</Text>
+                <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.text}>{t('default_currency')}</Text>
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                     <TouchableOpacity
                     style={[
@@ -128,8 +139,10 @@ export default function ChangeCategory() {
                     ]}
                     onPress={() => setSelectedCurrency("EUR")}
                     >
-                    <Text style={selectedCurrency === "EUR" ? styles.activeText : styles.textPicker}>
-                        EUR
+                    <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={selectedCurrency === "EUR" ? styles.activeText : styles.textPicker}>
+                        {t('eur')}
                     </Text>
                     </TouchableOpacity>
         
@@ -140,8 +153,10 @@ export default function ChangeCategory() {
                     ]}
                     onPress={() => setSelectedCurrency("USD")}
                     >
-                    <Text style={selectedCurrency === "USD" ? styles.activeText : styles.textPicker}>
-                        USD
+                    <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={selectedCurrency === "USD" ? styles.activeText : styles.textPicker}>
+                        {t('usd')}
                     </Text>
                     </TouchableOpacity>
                 </View>

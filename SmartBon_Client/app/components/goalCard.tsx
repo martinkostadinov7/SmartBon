@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Alert } from "react-native";
 import { apiFetch } from "../services/api";
+import { useTranslation } from "react-i18next";
   export function GoalCard({
     id,
     icon,
@@ -21,13 +22,14 @@ import { apiFetch } from "../services/api";
   }: GoalCardProps) {
     const [isAdding, setIsAdding] = useState(false);
     const [amount, setAmount] = useState("");
+const { t, i18n } = useTranslation();
 
     async function handleAddContribution(){
         try {
             if(!amount){
                 Alert.alert(
-                "Input error",
-                "Amount field cannot be empty!",
+                `${t('error')}`,
+                `${t('amount_cannot_be_empty')}`,
                 [{ text: "OK" }]
                 );
                 return;
@@ -51,45 +53,52 @@ import { apiFetch } from "../services/api";
             if (!response.ok) 
             {
                 const errorData = await response.json(); 
-                throw new Error(errorData.message || "An unknown error occurred");
+                throw new Error(errorData.message || `${t('error_occured')}`);
             }
         } catch (e: any) {
 
         Alert.alert(
-            "Error",
+            `${t('error')}`,
             e?.message,
             [{ text: "OK" }]
             );
-            console.log("Network/API error:", e?.message.message ?? e);
         }
     }   
     return (
       <TouchableOpacity onPress={onPress} style={[styles.card, {backgroundColor: colorHex}]}>
         <View style={[styles.row,{marginBottom: 5, justifyContent: 'space-between'}]}>
-            <Text style={{fontSize: 40}}>{icon}</Text>
+            <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{fontSize: 40}}>{icon}</Text>
             <Text
              numberOfLines={1}
             ellipsizeMode="tail" style={{fontSize: 20, marginRight: 10, maxWidth: 290}}>{name}</Text>
         </View>
         <View style={[styles.row, {marginTop: 10, justifyContent: 'space-between'}]}>
             <View>
-                <Text style={{fontSize: 13, color: "#616161"}}>Target date</Text>
+                <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{fontSize: 13, color: "#616161"}}>{t('target_date')}</Text>
                 <Text>{to}</Text>
             </View>
             <View style={{alignContent: "flex-end"}}>
                 <View style={styles.row}>
-                    <Text style={{fontWeight:"700"}}>{currentAmount}</Text>
+                    <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{fontWeight:"700"}}>{currentAmount}</Text>
                     <Text> / </Text>
                     <Text>{limit}</Text>
                 </View>
                 {remaining ? 
-                (<Text>Remaining: {remainingAmount}</Text>) : 
-                (<Text>Extra: {remainingAmount.slice(1, remainingAmount.length)}</Text>)}
+                (<Text>{t('remaining')}: {remainingAmount}</Text>) : 
+                (<Text>{t('extra')}: {remainingAmount.slice(1, remainingAmount.length)}</Text>)}
             </View>
         </View>
         {percentage >= 100 && !realised ? 
         (<TouchableOpacity onPress={onRealiseGoalButtonPress} style={styles.realiseGoalButton}>
-            <Text style={styles.realiseGoalText}>Realise goal</Text>
+            <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.realiseGoalText}>{t('realise_goal')}</Text>
         </TouchableOpacity>) : 
         (<>
         <View style={[styles.row, {marginTop: 5}]}>
@@ -104,7 +113,9 @@ import { apiFetch } from "../services/api";
                 <View style={[styles.progressBarFill, {backgroundColor: progressBarColor, width: `${Math.min(percentage, 100)}%`}]}>
                 </View>
                     <View style={styles.textContainer}>
-                        <Text style={styles.percentageText}>{percentage}%</Text>
+                        <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.percentageText}>{percentage}%</Text>
                     </View>
             </View>)}
             {!realised && (

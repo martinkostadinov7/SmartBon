@@ -76,7 +76,7 @@ namespace Services.UserServices
             if (userFromDb != null)
                 throw new BadRequestException("User with this email already exists");
             
-            User user = new User(userToRegister.Email, "temp", userToRegister.Name, userToRegister.IsPremium ,userToRegister.DefaultCurrency, true);
+            User user = new User(userToRegister.Email, "temp", userToRegister.Name, userToRegister.IsPremium ,userToRegister.DefaultCurrency, true, "en");
 
             string hashedPassword = new PasswordHasher<User>().HashPassword(user, userToRegister.Password);
             user.PasswordHash = hashedPassword;

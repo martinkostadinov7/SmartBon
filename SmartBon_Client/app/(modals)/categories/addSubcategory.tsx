@@ -16,13 +16,15 @@ import EmojiPickerModal from "../../components/emojiPicker";
 import { apiFetch } from "../../services/api";
 import { CategoryBox } from "../../components/categoryBox";
 import { Category } from "../../types/category";
+import { useTranslation } from "react-i18next";
 
 export default function AddCategoryModal() {
-  const [name, setName] = useState("Subcategory");
+  const { t, i18n } = useTranslation();
+  const [name, setName] = useState(`${t("subcategory")}`);
   const [icon, setIcon] = useState("📌");
   const [isEmojiOpen, setIsEmojiOpen] = useState(false);
   const { categoryId } = useLocalSearchParams<{ categoryId?: string }>();
-    const [categories, setCategories] = useState<Category[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
 
   const colors = [
     "#EF9A9A", // Soft Red
@@ -58,8 +60,8 @@ async function loadCategories(){
 
     if(!name){
         Alert.alert(
-        "Input error",
-        "Fill out name field!",
+        `${t('error')}`,
+        `${t('fill_out_fields')}`,
         [{ text: "OK" }]
         );
     }
@@ -86,8 +88,7 @@ async function loadCategories(){
             console.log("Network/API error:", e?.message ?? e);
         }
   }
-
-
+  
   return (
     <>
       <Pressable style={styles.overlay} onPress={() => router.back()}>
@@ -98,29 +99,39 @@ async function loadCategories(){
           <Pressable style={styles.container} onPress={() => {}}>
             <View style={styles.header}>
               <TouchableOpacity onPress={() => router.back()}>
-                <Text style={styles.headerBtn}>Cancel</Text>
+                <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.headerBtn}>{t('cancel')}</Text>
               </TouchableOpacity>
 
-              <Text style={styles.title}>Add Subcategory</Text>
+              <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.title}>{t('add_subcategory')}</Text>
 
               <TouchableOpacity onPress={handleAddSubcategory}>
-                <Text style={styles.headerBtn}>Save</Text>
+                <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.headerBtn}>{t('save')}</Text>
               </TouchableOpacity>
             </View>
 
             <View style={styles.row}>
                 <View style={{marginBottom: 0}}>
-                    <Text style={styles.label}>Icon</Text>
+                    <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.label}>{t('icon')}</Text>
                         <TouchableOpacity
                             style={styles.iconButton}
                             onPress={() => setIsEmojiOpen(true)}
                             >
-                        <Text style={styles.iconText}>{icon}</Text>
+                        <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.iconText}>{icon}</Text>
                     </TouchableOpacity>
                 </View>
                 <View>
                     <CategoryBox 
-                        name={name} 
+                        name={t(name)} 
                         icon={icon} 
                         color={selectedColor} 
                         selected={false} 
@@ -128,7 +139,9 @@ async function loadCategories(){
                 </View>
             </View>
 
-            <Text style={styles.label}>Name</Text>
+            <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.label}>{t('name')}</Text>
             <TextInput
               style={styles.input}
               value={name}
@@ -136,7 +149,9 @@ async function loadCategories(){
               placeholder="e.g. Food"
             />
 
-            <Text style={styles.label}>Color</Text>
+            <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.label}>{t('color')}</Text>
             <ScrollView horizontal style={{ flexDirection: 'row', height: 30}}
             showsHorizontalScrollIndicator={false}
             >

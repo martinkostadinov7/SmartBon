@@ -1,4 +1,6 @@
-  import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+  import { t } from "i18next";
+import { useTranslation } from "react-i18next";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 
   export function ExpenseCard({
     recurringFrequency = "",
@@ -13,6 +15,7 @@
     subcategoryColor,
     onPress
   }: ExpenseCardProps) {
+    const { t, i18n } = useTranslation();
     const hexToRGBA = (hex: string | undefined, opacity: number) => {
     // Връщаме лек сив цвят по подразбиране, ако няма цвят от базата
     if (!hex) return `rgba(200, 200, 200, ${opacity})`;
@@ -25,24 +28,30 @@
     return (
       <TouchableOpacity onPress={onPress} style={[styles.card, {backgroundColor: hexToRGBA(categoryColor, 0.7)}]}>
         <View style={[styles.iconContainer, {backgroundColor: categoryColor}]}>
-          <Text style={styles.categoryEmoji}>{categoryEmoji}</Text>
+          <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.categoryEmoji}>{categoryEmoji}</Text>
         </View>
 
         <View style={styles.content}>
           <Text 
-            numberOfLines={1}
+  numberOfLines={1} 
+  adjustsFontSizeToFit 
             ellipsizeMode="tail"
             style={styles.title}>{title}</Text>
 
           <View style={styles.categoryRow}>
             <Text 
+  adjustsFontSizeToFit 
             numberOfLines={2}
             ellipsizeMode="tail"
             style={styles.categoryText}>{categoryName}</Text>
 
             {subcategoryEmoji && (
               <View style={[styles.subcategoryBadge, {backgroundColor: subcategoryColor}]}>
-                <Text style={styles.subcategoryEmoji}>
+                <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.subcategoryEmoji}>
                   {subcategoryEmoji}
                 </Text>
                 <Text
@@ -58,10 +67,16 @@
         </View>
 
         <View style={styles.right}>
-          <Text style={styles.amount}>{amount}</Text>
+          <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.amount}>{amount}</Text>
           {recurringFrequency.length > 0 ? 
-          (<Text style={styles.date}>{recurringFrequency}</Text>): 
-          (<Text style={styles.date}>{formatDate(date)}</Text>)}
+          (<Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.date}>{t(recurringFrequency)}</Text>): 
+          (<Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.date}>{formatDate(date)}</Text>)}
         </View>
       </TouchableOpacity>
     );
@@ -95,8 +110,8 @@
       a.getMonth() === b.getMonth() &&
       a.getDate() === b.getDate();
 
-    if (isSameDay(date, today)) return "Today";
-    if (isSameDay(date, yesterday)) return "Yesterday";
+    if (isSameDay(date, today)) return `${t('today')}`;
+    if (isSameDay(date, yesterday)) return `${t('yesterday')}`;
 
     return date.toLocaleDateString();
   }

@@ -9,6 +9,7 @@ import { ExpenseCard } from '../../../../components/expense';
 import { Category } from '../../../../types/category';
 import { useExpenseStore } from '../../../../services/store';
 import { Subcategory } from '../../../../types/subcategory';
+import { useTranslation } from 'react-i18next';
 
 const paymentTypeFromNumber: Record<number, PaymentType> = {
   0: "Cash",
@@ -73,7 +74,7 @@ const { id } = useLocalSearchParams<{ id: string}>();
     const currentPaymentLabel = paymentOptions.find(p => p.value === paymentType)?.label ?? paymentType;
 
     const frequencies = ["Daily", "Weekly", "Monthly", "Yearly"];
-
+const { t, i18n } = useTranslation();
 async function loadCategories(){
    const response = await apiFetch(`/Categories`);
     if (!response.ok) throw new Error("Failed");
@@ -86,7 +87,7 @@ async function loadCategories(){
     loadCategories();
       const response = await apiFetch(`/Expenses/recurring/${id}`);
       if (!response.ok) {
-        throw new Error("Failed to load recurring expense");
+        throw new Error(`${t('error')}`);
       }
       const expense = await response.json();
       setExpense(expense);
@@ -181,11 +182,11 @@ useEffect(() => {
       const costNumber = parseFloat(normalizedCost);
 
       if(!title || !cost){
-          Alert.alert(
-          "Input error",
-          "Fill out title and cost fields!",
-          [{ text: "OK" }]
-          );
+        Alert.alert(
+        `${t('error')}`,
+        `${t('fill_out_fields')}`,
+        [{ text: "OK" }]
+        );
       }
 
 const offset = nextExecutionDate.getTimezoneOffset() * 60000; 
@@ -221,18 +222,17 @@ const localISOTime = new Date(nextExecutionDate.getTime() - offset).toISOString(
           setIsEditing(false);
           handleCloseScreen();
       } catch (e: any) {
-
-        Alert.alert(
-          "Error",
-          "An error occured while trying to save the expense!",
-          [{ text: "OK" }]
-          );
+            Alert.alert(
+            `${t('error')}`,
+            `${t('error_occured')}`,
+            [{ text: "OK" }]
+            );
           console.log("Network/API error:", e?.message ?? e);
       }
     }
 
 const formatCost = (amount: number, currencyCode: string) => {
-  return new Intl.NumberFormat('en-US', {
+  return new Intl.NumberFormat(i18n.language, {
     style: 'currency',
     currency: currencyCode, // Тук подаваш директно "EUR", "BGN" или "USD"
   }).format(amount);
@@ -245,16 +245,15 @@ const formatCost = (amount: number, currencyCode: string) => {
     
       async function handleDeleteExpense() {
   Alert.alert(
-    "Delete recurring Expense",
-    "Are you sure you want to delete this recurring expense?",
+    `${t('delete_record')}`,
+    `${t('delete_record_message')}`,
     [
-      { text: "Cancel", style: "cancel" },
+      { text: `${t('cancel')}`, style: "cancel" },
       {
-        text: "Delete",
+        text: `${t('delete')}`,
         style: "destructive",
         onPress: async () => {
           try {
-            // 1. Изпращаме само ЕДНА заявка
             const response = await apiFetch(`/Expenses/recurring/${id}`, {
               method: "DELETE",
               headers: {
@@ -268,11 +267,11 @@ const formatCost = (amount: number, currencyCode: string) => {
               router.back(); 
               // или handleCloseScreen(); ако тя прави същото
             } else {
-              Alert.alert("Error", "Could not delete the expense.");
+              Alert.alert(`${t('error')}`, `${t('error_occured')}`);
             }
           } catch (e) {
             // 3. Логика при мрежова грешка
-            Alert.alert("Error", "An error occurred while trying to delete the expense!");
+            Alert.alert(`${t('error')}`, `${t('error_occured')}`);
             console.log("Network/API error:", e);
           }
         }
@@ -296,15 +295,21 @@ const formatCost = (amount: number, currencyCode: string) => {
                    >
             <View style={styles.header}>
                 <TouchableOpacity onPress={handleCloseScreen}>
-                <Text style={styles.headerBtn}>Cancel</Text>
+                <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.headerBtn}>{t('cancel')}</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity onPress={handleDeleteExpense}>
-                  <Text style={[styles.headerBtn, {color: "red"}]}>Delete</Text>
+                  <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={[styles.headerBtn, {color: "red"}]}>{t('delete')}</Text>
                 </TouchableOpacity>
                 
                 <TouchableOpacity onPress={isEditing ? handleSaveExpense : () => setIsEditing(true)}>
-                 <Text style={styles.headerBtn}>{isEditing ? "Save" : "Edit"}</Text> 
+                 <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.headerBtn}>{isEditing ? `${t('save')}` : `${t('edit')}`}</Text> 
                 </TouchableOpacity>
             </View>
 
@@ -313,7 +318,7 @@ const formatCost = (amount: number, currencyCode: string) => {
             <View>
               <View style={styles.row}>
                 <CategoryBox 
-                  name={category?.name ?? "Undefined"} 
+                  name={t(category?.name ?? "Undefined")} 
                   icon={category?.icon ?? "Undefined"} 
                   color={category?.colorHex ?? "Undefined"} 
                   selected={false} 
@@ -333,11 +338,13 @@ const formatCost = (amount: number, currencyCode: string) => {
                     onBlur={Keyboard.dismiss}
                   /> :
                   
-                  <Text numberOfLines={1} ellipsizeMode="tail" style={[styles.input,{marginBottom: 7}] }>{title}</Text>}
+                  <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit ellipsizeMode="tail" style={[styles.input,{marginBottom: 7}] }>{title}</Text>}
 
                   {subcategory != null && (
                     <CategoryBox 
-                      name={subcategory?.name ?? "Undefined"} 
+                      name={t(subcategory?.name ?? "Undefined")} 
                       icon={subcategory?.icon ?? "Undefined"} 
                       color={subcategory?.colorHex ?? "Undefined"} 
                       selected={false} 
@@ -350,7 +357,9 @@ const formatCost = (amount: number, currencyCode: string) => {
                   )}
                 </View>
               </View>
-              <Text style={styles.label}>Cost</Text>
+              <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.label}>{t('Cost')}</Text>
 
               {isEditing ?
                   <TextInput
@@ -361,10 +370,14 @@ const formatCost = (amount: number, currencyCode: string) => {
                     onBlur={Keyboard.dismiss}
                     multiline={false}
                   /> :
-                  <Text style={[styles.input]}>{cost}</Text>
+                  <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={[styles.input]}>{cost}</Text>
                   }
 
-              <Text style={styles.label}>Description</Text>
+              <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.label}>{t('description')}</Text>
 
               {isEditing ?
                   <TextInput
@@ -375,10 +388,14 @@ const formatCost = (amount: number, currencyCode: string) => {
                     onFocus={() => setScreenHeight(685)}
                     onBlur={() => setScreenHeight(685)}
                   /> :
-                  <Text style={[styles.input]}>{description}</Text>
+                  <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={[styles.input]}>{description}</Text>
                   }
 
-                <Text style={[styles.label, {marginBottom: 10}]}>Frequency</Text>
+                <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={[styles.label, {marginBottom: 10}]}>{t('frequency')}</Text>
                 {isEditing ? 
                 (<>
 <ScrollView horizontal showsHorizontalScrollIndicator={false}>
@@ -399,13 +416,15 @@ const formatCost = (amount: number, currencyCode: string) => {
               }}
               onPress={() => setFrequency(frequency)}
           >
-              <Text style={{ 
+              <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{ 
                   textAlign: "center", 
                   fontSize: 14, 
                   textTransform: 'capitalize',
                   fontWeight: selectedFrequency === frequency ? 'bold' : 'normal'
               }}>
-              {frequency}
+              {t(frequency)}
               </Text>
               
           </TouchableOpacity>
@@ -429,18 +448,23 @@ const formatCost = (amount: number, currencyCode: string) => {
                         borderColor: selectedFrequency === frequency ? "black" : "gray",
                         }}
                     >
-                        <Text style={{ textAlign: "center", fontSize: 14, textTransform: 'capitalize', color: selectedFrequency === frequency ? "black" : "#8c8c8c", fontWeight: selectedFrequency === frequency ? 700 : 400}}>
-                        {frequency}
+                        <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{ textAlign: "center", fontSize: 14, textTransform: 'capitalize', color: selectedFrequency === frequency ? "black" : "#8c8c8c", fontWeight: selectedFrequency === frequency ? 700 : 400}}>
+                        {t(frequency)}
                         </Text>
                     </View>
                     ))}
                 </View>
                 </>)}
 
-              <Text style={styles.label}>Start date</Text>
+              <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.label}>{t('start_date')}</Text>
               <View style={{opacity: 0.7}}>
                 <View pointerEvents="none">
                     <DateTimePicker
+                      locale={i18n.language}
                     themeVariant="light"
                         value={startDate}
                         mode="datetime"
@@ -451,10 +475,13 @@ const formatCost = (amount: number, currencyCode: string) => {
                     />
                 </View>
               </View>
-              <Text style={styles.label}>Next execution date</Text>
+              <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.label}>{t('next_execution_date')}</Text>
 
               {isEditing ? (
                 <DateTimePicker
+                  locale={i18n.language}
                 themeVariant="light" // Това ще форсира светъл режим на самия пикър
   textColor="black"
                   value={new Date(nextExecutionDate)} // Подсигури се, че е Date обект
@@ -468,6 +495,7 @@ const formatCost = (amount: number, currencyCode: string) => {
             <View style={{opacity: 0.7}}>
                 <View pointerEvents="none">
                     <DateTimePicker
+                      locale={i18n.language}
                     themeVariant="light"
                         style={styles.dateInput}
                         value={nextExecutionDate}
@@ -481,7 +509,9 @@ const formatCost = (amount: number, currencyCode: string) => {
             </View>
               )}
 
-              <Text style={styles.label}>Currency</Text>
+              <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.label}>{t('currency')}</Text>
               {isEditing ? (
               <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                 <TouchableOpacity
@@ -491,8 +521,10 @@ const formatCost = (amount: number, currencyCode: string) => {
                   ]}
                   onPress={() => setSelectedCurrency("EUR")}
                 >
-                  <Text style={selectedCurrency === "EUR" ? styles.activeText : styles.textPicker}>
-                    EUR
+                  <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={selectedCurrency === "EUR" ? styles.activeText : styles.textPicker}>
+                    {t('eur')}
                   </Text>
                 </TouchableOpacity>
 
@@ -503,8 +535,10 @@ const formatCost = (amount: number, currencyCode: string) => {
                   ]}
                   onPress={() => setSelectedCurrency("USD")}
                 >
-                  <Text style={selectedCurrency === "USD" ? styles.activeText : styles.textPicker}>
-                    USD
+                  <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={selectedCurrency === "USD" ? styles.activeText : styles.textPicker}>
+                    {t('usd')}
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -515,7 +549,9 @@ const formatCost = (amount: number, currencyCode: string) => {
                     styles.buttonPicker, styles.activeButton
                   ]}
                 >
-                  <Text style={styles.activeText}>
+                  <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.activeText}>
                     {selectedCurrency}
                   </Text>
                 </View>
@@ -527,7 +563,9 @@ const formatCost = (amount: number, currencyCode: string) => {
               )}
 
 
-              <Text style={styles.label}>Payment Type</Text>
+              <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.label}>{t('payment_type')}</Text>
               {isEditing ? (
                 <View style={{ marginTop: 10, flexDirection: "row", gap: 10}}>
                 {paymentOptions.map(opt => {
@@ -545,8 +583,10 @@ const formatCost = (amount: number, currencyCode: string) => {
                         backgroundColor: selected ? "#3077ceff" : "white",
                       }}
                     >
-                      <Text style={{ fontSize: 16, color: selected ? "white" : "#3077ceff" }}>
-                        {opt.value}
+                      <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{ fontSize: 16, color: selected ? "white" : "#3077ceff" }}>
+                        {t(opt.value)}
                       </Text>
                     </Pressable>
                   );
@@ -566,8 +606,10 @@ const formatCost = (amount: number, currencyCode: string) => {
                       backgroundColor: "#3077ceff"
                       }}
                     >
-                    <Text style={{ fontSize: 16, color: "white"}}>
-                      {paymentType}
+                    <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{ fontSize: 16, color: "white"}}>
+                      {t(paymentType)}
                     </Text>
                   </Pressable>
                 </View>
@@ -576,7 +618,9 @@ const formatCost = (amount: number, currencyCode: string) => {
             {isEditing ? 
             (<></>) : 
             (<>
-            <Text style={{fontSize: 20, marginVertical: 10, fontWeight: '700'}}>Expenses</Text>
+            <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{fontSize: 20, marginVertical: 10, fontWeight: '700'}}>{t('expenses')}</Text>
                   {expenses.length > 0 ? 
                   (expenses.map(expense => {
                     const category = categories.find(c => c.id === expense.categoryId);
@@ -589,7 +633,7 @@ const formatCost = (amount: number, currencyCode: string) => {
                         title={expense.title}
                         amount={formatCost(expense.cost, currencyFromNumber[expense.currency])}
                         date={String(expense.expenseDate)}
-                        categoryName= {category?.name ?? "Unknown"}
+                        categoryName= {t(category?.name ?? "Unknown")}
                         categoryEmoji={category?.icon ?? "❌"}
                         categoryColor={category?.colorHex ?? "x"}
                         subcategoryEmoji={subcategory?.icon}
@@ -600,7 +644,7 @@ const formatCost = (amount: number, currencyCode: string) => {
                     );
                   })) : 
                   (<View style={{ height: 100, justifyContent: 'center', alignItems: 'center' }}>
-                <Text>No expenses added yet.</Text>
+                <Text>{t('no_expenses_left')}</Text>
             </View>
             )}
         </>

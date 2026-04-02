@@ -1,8 +1,10 @@
 import { Tabs, useSegments } from "expo-router";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
+import { useTranslation } from "react-i18next";
 
 export default function AppLayout() {
   const segments = useSegments();
+const { t, i18n } = useTranslation();
 
   return (
     <Tabs
@@ -32,10 +34,10 @@ export default function AppLayout() {
         },
       })}
     >
-      <Tabs.Screen name="home" options={{ title: "Home" }} />
-      <Tabs.Screen name="expenses" options={{ title: "Expenses" }} />
-      <Tabs.Screen name="statistics" options={{ title: "Statistics" }} />
-      <Tabs.Screen name="settings" options={{ title: "Settings" }} />
+      <Tabs.Screen name="home" options={{ title: `${t("home")}` }} />
+      <Tabs.Screen name="expenses" options={{ title: `${t("expenses")}` }} />
+      <Tabs.Screen name="statistics" options={{ title: `${t("statistics")}` }} />
+      <Tabs.Screen name="settings" options={{ title: `${t("settings")}` }} />
       
     </Tabs>
   );

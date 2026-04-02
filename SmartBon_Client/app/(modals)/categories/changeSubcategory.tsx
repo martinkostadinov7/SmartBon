@@ -5,15 +5,17 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { Category } from '../../types/category';
 import { useExpenseStore } from '../../services/store';
 import { apiFetch } from '../../services/api';
+import { useTranslation } from 'react-i18next';
 export default function ChangeCategory() {
     const { categoryId } = useLocalSearchParams<{ categoryId: string}>();
       const [categories, setCategories] = useState<Category[]>([]);
   const { clearTempData } = useExpenseStore();
  const setTempSubcategoryId = useExpenseStore((state) => state.setTempSubcategoryId);
- 
+ const { t, i18n } = useTranslation();
+
 async function loadCategories(){
    const response = await apiFetch(`/Categories`);
-    if (!response.ok) throw new Error("Failed");
+    if (!response.ok) throw new Error(`${t('error_occured')}`);
     const data = await response.json();
     setCategories(data);
 }
@@ -41,10 +43,10 @@ async function loadCategories(){
     function handleSubcategoryAdd(){
         if(selectedCategoryId == -1){
             Alert.alert(
-            "Error",
-            "Choose category first!",
-            [{ text: "OK" }]
-            );
+              `${t('error')}`,
+              `${t('choose_category')}`,
+              [{ text: "OK" }]
+              );
         }
         else{
             router.push({
@@ -65,11 +67,15 @@ async function loadCategories(){
             <Pressable style={styles.container} onPress={() => {}}>
             <View style={styles.header}>
                 <TouchableOpacity onPress={() => handleCloseScreen}>
-                <Text style={styles.headerBtn}>Cancel</Text>
+                <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.headerBtn}>{t('cancel')}</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity onPress={handleSave}>
-                <Text style={styles.headerBtn}>Save</Text> 
+                <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.headerBtn}>{t('save')}</Text> 
                 </TouchableOpacity>
             </View>
 
@@ -80,7 +86,7 @@ async function loadCategories(){
                 {subcategories.map(subcategory => (
                     <CategoryBox
                         key={subcategory.id}
-                        name={subcategory.name}
+                        name={t(subcategory.name)}
                         icon={subcategory.icon}
                         fontSize={16}
                         color={subcategory.colorHex}
@@ -90,7 +96,7 @@ async function loadCategories(){
                 ))}
                 <CategoryBox
                     key={-2}
-                    name="Add"
+                    name={t("add")}
                     icon="+"
                     color={"#FFFFFF"}
                     fontSize={16}

@@ -6,6 +6,7 @@ import { Goal } from '../../types/goal';
 import { GoalCard } from '../../components/goalCard';
 import { Currency } from '../../types/expense';
 import { Category } from '../../types/category';
+import { useTranslation } from 'react-i18next';
 
 const currencyFromNumber: Record<number, Currency> = {
   0: "EUR",
@@ -13,12 +14,13 @@ const currencyFromNumber: Record<number, Currency> = {
 };
 
 export default function ChangeCategory() {
+  const { t, i18n } = useTranslation();
     const [goals, setGoals] = useState<Goal[]>([]);
   const [userDefaultCurrency, setUserDefaultCurrency] = useState("EUR");
         const [categories, setCategories] = useState<Category[]>([]);
 
       const formatCost = (amount: number, currencyCode: string) => {
-  return new Intl.NumberFormat('en-US', {
+  return new Intl.NumberFormat(i18n.language, {
     style: 'currency',
     currency: currencyCode, // Тук подаваш директно "EUR", "BGN" или "USD"
   }).format(amount);
@@ -38,7 +40,7 @@ const formatDate = (dateString: string | Date): string => {
   const currentYear = new Date().getFullYear();
   const dateYear = date.getFullYear();
 
-  return date.toLocaleDateString('en-US', {
+  return date.toLocaleDateString(i18n.language, {
     month: 'short',
     day: 'numeric',
     // Only show year if it's not the current year
@@ -48,7 +50,7 @@ const formatDate = (dateString: string | Date): string => {
 
 async function loadCategories(){
    const response = await apiFetch(`/Categories`);
-    if (!response.ok) throw new Error("Failed");
+    if (!response.ok) throw new Error(`${t('error_occured')}`);
     const data = await response.json();
     setCategories(data);
 }
@@ -60,13 +62,13 @@ async function loadCategories(){
 loadCategories();
 
             const response = await apiFetch(`/Goals/realised`);
-            if (!response.ok) throw new Error("Failed");
+            if (!response.ok) throw new Error(`${t('error_occured')}`);
             const data = await response.json()
             setGoals(data);
 
 
             const userResponse = await apiFetch(`/Users/me`);
-            if (!userResponse.ok) throw new Error("Failed");
+            if (!userResponse.ok) throw new Error(`${t('error_occured')}`);
             const profileData = await userResponse.json();
             const currencyStr = currencyFromNumber[profileData.defaultCurrency];
             setUserDefaultCurrency(currencyStr);
@@ -91,7 +93,9 @@ loadCategories();
             style={styles.wrapper}
         >
             <Pressable style={[styles.container]} onPress={() => {}}>
-                {goals.length <= 0 && (<Text style={{ color: '#999', fontStyle: 'italic' }}>No archived goals yet.</Text>)}
+                {goals.length <= 0 && (<Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{ color: '#999', fontStyle: 'italic' }}>{t('no_achieved_goals')}</Text>)}
                 <ScrollView>
                     {
                     goals.map(goal => {

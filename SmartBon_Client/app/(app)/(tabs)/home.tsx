@@ -12,7 +12,7 @@ import { GoalCard } from "../../components/goalCard";
 import { ContributionGraph } from "react-native-chart-kit";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import { Category } from "../../types/category";
-
+import { useTranslation } from 'react-i18next';
 const currencyFromNumber: Record<number, Currency> = {
   0: "EUR",
   1: "USD"
@@ -40,12 +40,20 @@ export default function HomeScreen() {
   const [budgets, setBudgets] = useState<Budget[]>([]);
   const [goals, setGoals] = useState<Goal[]>([]);
   const [userDefaultCurrency, setUserDefaultCurrency] = useState("Unidentified");
+  const [userName, setUserName] = useState("");
   const [isPremium, setIsPremium] = useState(false);
   const [reload, setReload] = useState(false);
   const [contributionGraphData, setContributionGraphData] = useState<ContributionGraphResponse | null>(null);
   const [isHeatmapAmount, setIsHeatmapAmount] = useState(false);
-// Дефинираме типа за избраната точка
 const [selectedDay, setSelectedDay] = useState<{ date: string; count: number } | null>(null);
+
+const { t, i18n } = useTranslation();
+  const [language, setLanguage] = useState();
+
+  const toggleLanguage = () => {
+    const newLang = i18n.language === 'bg' ? 'en' : 'bg';
+    i18n.changeLanguage(newLang);
+  };
 
 useEffect(() => {
     loadData();
@@ -67,7 +75,8 @@ loadCategories();
     const currencyStr = currencyFromNumber[profileData.defaultCurrency];
     setUserDefaultCurrency(currencyStr);
     setIsPremium(profileData.isPremium);
-    
+    setUserName(profileData.name.split(" ")[0]);
+        i18n.changeLanguage(profileData.language);
     const goalResponse = await apiFetch("/Goals");
     if (!goalResponse.ok) {
       throw new Error("Failed to load goals");
@@ -94,10 +103,11 @@ loadCategories();
   }, []);
   useFocusEffect(
     useCallback(() => {
+      
       loadData();
     }, [loadData])
   );
-
+const firstName = userName.trim().split(' ')[0];
   
   function handleAddExpense() {
     router.push("../../(modals)/expenses/addExpense");
@@ -154,14 +164,18 @@ loadCategories();
         router.push(`/(modals)/goals/addGoal`);
       }
   }
-
+const shortMonths = [
+  t('Jan_short'), t('Feb_short'), t('Mar_short'), t('Apr_short'),
+  t('May_short'), t('Jun_short'), t('Jul_short'), t('Aug_short'),
+  t('Sep_short'), t('Oct_short'), t('Nov_short'), t('Dec_short')
+];
 
   function handleExpenseView(id: number){
     router.push(`/(modals)/expenses/${id}`);
   }
 
   const formatCost = (amount: number, currencyCode: string) => {
-  return new Intl.NumberFormat('en-US', {
+  return new Intl.NumberFormat(i18n.language, {
     style: 'currency',
     currency: currencyCode, // Тук подаваш директно "EUR", "BGN" или "USD"
   }).format(amount);
@@ -216,7 +230,7 @@ const getEndDate = () => {
   const currentYear = new Date().getFullYear();
   const dateYear = date.getFullYear();
 
-  return date.toLocaleDateString('en-US', {
+  return date.toLocaleDateString(i18n.language, {
     month: 'short',
     day: 'numeric',
     year: dateYear !== currentYear ? 'numeric' : undefined 
@@ -224,14 +238,29 @@ const getEndDate = () => {
 };
   return (<>
     <View style={[{padding: 15, backgroundColor: "#3077ceff"}]}>
-        <Text style={{fontSize: 32, color: "white", fontWeight: '600'}}>SmartBon</Text>
+        <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{fontSize: 32, color: "white", fontWeight: '600'}}>SmartBon</Text>
     </View>
     <ScrollView style={{padding: 12}}>
+      <View style={styles.headerContainer}>
+    <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.greeting}>{t('greeting')},</Text>
+    <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.userName}>{firstName} 👋</Text>
+    
+  </View>
       <View>
         <View style={styles.row}>
-          <Text style={{fontSize: 20, marginVertical: 10, fontWeight: '700'}}>Budgets</Text>
+          <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{fontSize: 20, marginVertical: 10, fontWeight: '700'}}>{t('budgets')}</Text>
           <TouchableOpacity style={{marginLeft: 10}} onPress={handleBudgetCreate}>
-            <Text style={{color: "#3077ce", fontWeight: "600", fontSize: 16}}>+ Add New</Text>
+            <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{color: "#3077ce", fontWeight: "600", fontSize: 16}}>+ {t('add_new')}</Text>
           </TouchableOpacity>
         </View>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
@@ -289,9 +318,13 @@ const getEndDate = () => {
       </View>
       <View>
         <View style={styles.row}>
-          <Text style={{fontSize: 20, marginVertical: 10, fontWeight: '700'}}>Goals</Text>
+          <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{fontSize: 20, marginVertical: 10, fontWeight: '700'}}>{t('goals')}</Text>
           <TouchableOpacity style={{marginLeft: 10}} onPress={handleGoalCreate}>
-            <Text style={{color: "#3077ce", fontWeight: "600", fontSize: 16}}>+ Add New</Text>
+            <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{color: "#3077ce", fontWeight: "600", fontSize: 16}}>+ {t('add_new')}</Text>
           </TouchableOpacity>
         </View>
         <ScrollView horizontal>
@@ -336,14 +369,14 @@ const getEndDate = () => {
 
 <View style={{}}>
   <View style={[styles.row, {marginVertical: 10,}]}>
-    <Text  style={{fontSize: 20, fontWeight: '700'}}>Heatmap</Text>
-
-    <TouchableOpacity onPress={() => {setIsHeatmapAmount(prev => !prev); setSelectedDay(null)}} style={{backgroundColor: "#3077ce3f", borderRadius: 10, marginHorizontal: 10, paddingHorizontal: 10, paddingVertical: 5}}>
-      <Text style={{fontSize: 15}}><FontAwesome6 name="repeat" size={16} color="black" /> {isHeatmapAmount ? "Amount" : "Count"}</Text>
-    </TouchableOpacity>
+    <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit  style={{fontSize: 20, fontWeight: '700'}}>{t('heatmap')}</Text>
 
     {selectedDay ? (
-      <Text style={{ textAlign: "center", fontSize: 16, fontWeight: '600', color: '#3077ce'}}>
+      <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{marginLeft: 10, textAlign: "center", fontSize: 16, fontWeight: '600', color: '#3077ce'}}>
         
         {new Date(selectedDay.date).toLocaleDateString('bg-BG', { 
   day: '2-digit', 
@@ -353,14 +386,21 @@ const getEndDate = () => {
         {isHeatmapAmount ? (
           formatCost(selectedDay.count, userDefaultCurrency)
         ) : (
-          `${selectedDay.count} ${selectedDay.count === 1 ? 'expense' : 'expenses'}`
+          `${selectedDay.count} ${selectedDay.count === 1 ? `${t('expense')}` : `${t('expenses')}`}`
         )}
       </Text>
     ) : (
-      <Text style={{ fontSize: 14, color: '#8E8E93' }}></Text>
+      <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{ fontSize: 14, color: '#8E8E93' }}></Text>
     )}
   </View>
 
+    <TouchableOpacity onPress={() => {setIsHeatmapAmount(prev => !prev); setSelectedDay(null)}} style={{justifyContent:"space-between", backgroundColor: "#3077ce3f", borderRadius: 10, marginHorizontal: 10, paddingHorizontal: 10, paddingVertical: 5, maxWidth: 100, marginBottom: 10}}>
+      <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{fontSize: 15, textAlign: "center"}}><FontAwesome6 name="repeat" size={16} color="black" /> {isHeatmapAmount ? `${t('amount')}` : `${t('count')}`}</Text>
+    </TouchableOpacity>
   <ContributionGraph
     values={(!isHeatmapAmount ? contributionGraphData?.pointsCount : contributionGraphData?.pointsAmount.map(p => ({
     date: p.date,
@@ -378,6 +418,7 @@ const getEndDate = () => {
         setSelectedDay(null);
       }
     }}
+    getMonthLabel={(monthIndex) => t(shortMonths[monthIndex])}
     style={{borderRadius: 20, marginTop: 0, marginBottom: 10, shadowColor: '#000',
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.15,
@@ -400,7 +441,9 @@ const getEndDate = () => {
   
 </View>
 
-      <Text style={{fontSize: 20, marginVertical: 10, fontWeight: '700'}}>Recent expenses</Text>
+      <Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={{fontSize: 20, marginVertical: 10, fontWeight: '700'}}>{t('recent_expenses')}</Text>
       {recentExpenses.length > 0 ? 
       (recentExpenses.map(expense => {
         const category = categories.find(c => c.id === expense.categoryId);
@@ -413,7 +456,7 @@ const getEndDate = () => {
             title={expense.title}
             amount={formatCost(expense.cost, currencyFromNumber[expense.currency])}
             date={String(expense.expenseDate)}
-            categoryName= {category?.name ?? "Unknown"}
+            categoryName= {t(category?.name ?? "Unknown")}
             categoryEmoji={category?.icon ?? "❌"}
             categoryColor={category?.colorHex ?? "x"}
             subcategoryEmoji={subcategory?.icon}
@@ -424,8 +467,8 @@ const getEndDate = () => {
         );
       })) : 
       (<View style={{ height: 100, justifyContent: 'center', alignItems: 'center' }}>
-        <Text>No expenses added yet.</Text>
-        <Text>Use the + button to add a new expense</Text>
+        <Text>{t('no_expenses_added')}</Text>
+        <Text>{t('use_plus_button')}</Text>
       </View>)}
       
     </ScrollView>
@@ -437,6 +480,20 @@ const getEndDate = () => {
 }
 
 const styles = StyleSheet.create({
+  headerContainer: {
+    padding: 5,
+    marginBottom: 10,
+  },
+  greeting: {
+    fontSize: 20,
+    color: '#595959', // По-светло сиво
+    fontWeight: '400',
+  },
+  userName: {
+    fontSize: 26,
+    fontWeight: 'bold',
+    color: '#000000', // Почти черно
+  },
   card: {
     backgroundColor: "#fff",
     padding: 16,
