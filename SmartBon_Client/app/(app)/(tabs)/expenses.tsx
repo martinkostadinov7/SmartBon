@@ -241,8 +241,8 @@ setIsLoadingNextPage(true);
       "AfterValue": afterValue,
       "AfterDate": new Date(lastExpense.expenseDate + "Z").toISOString(),
       "PageSize": "10",
-      "FilterParams.StartDate": dateRange[0].toISOString(),
-      "FilterParams.EndDate": dateRange[1].toISOString(),
+      "FilterParams.StartDate": formatToLocalISO(dateRange[0]),
+      "FilterParams.EndDate": formatToLocalISO(dateRange[1]),
       "SortParams.Descending": selectedOrder === "Descending" ? "true" : "false",
       "SortParams.SortBy": String(sortByMap[selectedSortBy]),
     });
@@ -344,9 +344,14 @@ setIsLoadingNextPage(true);
                   color={category.colorHex}
                   selected={selectedCategoryIds.includes(category.id)}
                   onPress={() => {
-                    selectedCategoryIds.includes(category.id) ? 
-                    setSelectedCategoryIds(prev => prev.filter(num => num !== category.id)) :
-                    setSelectedCategoryIds(prevCategories => [...prevCategories, category.id]);
+                    if (selectedCategoryIds.includes(category.id)) {
+                      setSelectedCategoryIds(prev => prev.filter(num => num !== category.id));
+                    } else {
+                      setSelectedCategoryIds(prevCategories => [...prevCategories, category.id]);
+                    }
+                    
+                    // КРИТИЧНО: Винаги нулирай подкатегориите, когато пипаш главните категории
+                    setSelectedSubcategoryIds([]); 
                   }}
                 />
               ))}

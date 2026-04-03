@@ -111,7 +111,7 @@ useEffect(() => {
 
                 <Text 
   numberOfLines={1} 
-  adjustsFontSizeToFit style={{fontSize: 18, marginVertical: 10}}>{t('subcategory    ')}</Text>
+  adjustsFontSizeToFit style={{fontSize: 18, marginVertical: 10}}>{t('subcategory')}</Text>
             
             <ScrollView
                 horizontal

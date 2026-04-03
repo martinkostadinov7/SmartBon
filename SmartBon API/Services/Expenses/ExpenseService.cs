@@ -414,6 +414,7 @@ namespace Services.Expenses
         public async Task<RecurringExpenseReadDto> GetRecurringExpenseById(int id)
         {
             RecurringExpense recurringExpense = await recurringExpenseRepository.GetRecurringExpenseByIdAsync(id) ?? throw new NotFoundException("Recurring expense was not found!");
+            recurringExpense.Expenses = recurringExpense.Expenses.OrderByDescending(e => e.ExpenseDate).ToList();
             return mapper.Map<RecurringExpenseReadDto>(recurringExpense);
         }
 

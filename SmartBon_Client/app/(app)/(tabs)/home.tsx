@@ -398,7 +398,7 @@ const getEndDate = () => {
     )}
   </View>
 
-    <TouchableOpacity onPress={() => {setIsHeatmapAmount(prev => !prev); setSelectedDay(null)}} style={{justifyContent:"space-between", backgroundColor: "#3077ce3f", borderRadius: 10, marginHorizontal: 10, paddingHorizontal: 10, paddingVertical: 5, maxWidth: 100, marginBottom: 10}}>
+    <TouchableOpacity onPress={() => {setIsHeatmapAmount(prev => !prev); setSelectedDay(null)}} style={{justifyContent:"space-between", backgroundColor: "#3077ce3f", borderRadius: 10, marginHorizontal: 10, paddingHorizontal: 10, paddingVertical: 5,alignSelf: 'flex-start', marginBottom: 10}}>
       <Text 
   numberOfLines={1} 
   adjustsFontSizeToFit style={{fontSize: 15, textAlign: "center"}}><FontAwesome6 name="repeat" size={16} color="black" /> {isHeatmapAmount ? `${t('amount')}` : `${t('count')}`}</Text>

@@ -99,119 +99,77 @@ export default function ChangeCategory() {
             <Pressable style={[styles.container, {height: screenHeight}]} onPress={() => {}}>
                 <View style={styles.header}>
                     <TouchableOpacity onPress={handleCloseScreen}>
-                    <Text 
-  numberOfLines={1} 
-  adjustsFontSizeToFit style={styles.headerBtn}>{t('cancel')}</Text>
+                    <Text style={styles.headerBtn}>{t('cancel')}</Text>
                     </TouchableOpacity>
                 </View>
                 <ScrollView showsVerticalScrollIndicator={false}>
 <TouchableOpacity activeOpacity={1}>
 
                 <View style={{borderWidth: isUserPremium ? 1 : 3, borderRadius: 15, padding: 10, backgroundColor: "#ececec"}}>
-                    <Text 
-  numberOfLines={1} 
-  adjustsFontSizeToFit style={{fontSize: 24, textAlign: "center", fontWeight: "bold", marginBottom: 15}}>{t('free')}</Text>
+                    <Text style={{fontSize: 24, textAlign: "center", fontWeight: "bold", marginBottom: 15}}>{t('free')}</Text>
                     <View style={styles.row}>
-                        <FontAwesome6 name="chart-simple" size={21} color="black" /><Text 
-  numberOfLines={1} 
-  adjustsFontSizeToFit style={{fontSize: 16, }}>  {t('basic_stats')}</Text>
+                        <FontAwesome6 name="chart-simple" size={21} color="black" /><Text style={{fontSize: 16, marginHorizontal: 5, paddingHorizontal: 5}}>{t('basic_stats')}</Text>
                     </View>
                     <View style={styles.row}>
-                        <FontAwesome6 name="calendar-days" size={21} color="black" /><Text 
-  numberOfLines={1} 
-  adjustsFontSizeToFit style={{fontSize: 16}}>  {t('flexible_budgets')}</Text>
+                        <FontAwesome6 name="calendar-days" size={21} color="black" /><Text style={{fontSize: 16, marginHorizontal: 5, paddingHorizontal: 5}}>{t('flexible_budgets')}</Text>
                     </View>
                     <View style={styles.row}>
-                        <FontAwesome6 name="camera" size={21} color="black" /><Text 
-  numberOfLines={1} 
-  adjustsFontSizeToFit style={{fontSize: 16}}>  {t('scan_receipts')}</Text>
+                        <FontAwesome6 name="camera" size={21} color="black" /><Text style={{fontSize: 16, marginHorizontal: 5, paddingHorizontal: 5}}>{t('scan_receipts')}</Text>
                     </View>
                     <View style={styles.row}>
-                        <FontAwesome6 name="bullseye" size={21} color="black" /><Text 
-  numberOfLines={1} 
-  adjustsFontSizeToFit style={{fontSize: 16}}>   {t('savings_goals')}</Text>
+                        <FontAwesome6 name="bullseye" size={21} color="black" /><Text style={{fontSize: 16, marginHorizontal: 5, paddingHorizontal: 5}}> {t('savings_goals')}</Text>
                     </View>
                     <View style={styles.row}>
-                        <FontAwesome6 name="filter" size={21} color="black" /><Text 
-  numberOfLines={1} 
-  adjustsFontSizeToFit style={{fontSize: 16}}>  {t('smart_filters')}</Text>
+                        <FontAwesome6 name="filter" size={21} color="black" /><Text style={{fontSize: 16, marginHorizontal: 5, paddingHorizontal: 5}}>{t('smart_filters')}</Text>
                     </View>
                     <View style={styles.row}>
-                        <FontAwesome6 name="bell" size={21} color="black" /><Text 
-  numberOfLines={1} 
-  adjustsFontSizeToFit style={{fontSize: 16}}>  {t('budget_limit_alerts')}</Text>
+                        <FontAwesome6 name="bell" size={21} color="black" /><Text style={{fontSize: 16, marginHorizontal: 5, paddingHorizontal: 5}}>{t('budget_limit_alerts')}</Text>
                     </View>
                     
                     {isUserPremium ? 
                     (<TouchableOpacity  onPress={handleSwitchToFree} style={{backgroundColor: "#909090", borderRadius: 10, marginTop: 1, borderWidth: 1}}>
-                        <Text 
-  numberOfLines={1} 
-  adjustsFontSizeToFit style={{fontSize: 20, textAlign: "center", margin: 10}}>{t('switch_to_free')}</Text>
+                        <Text style={{fontSize: 20, textAlign: "center", margin: 10}}>{t('switch_to_free')}</Text>
                     </TouchableOpacity>) : 
                     (<View style={{backgroundColor: "#b8b8b8", borderRadius: 10, marginTop: 1, borderWidth: 1}}>
-                        <Text 
-  numberOfLines={1} 
-  adjustsFontSizeToFit style={{fontSize: 20, textAlign: "center", margin: 10}}>{t('current_plan')}</Text>
+                        <Text style={{fontSize: 20, textAlign: "center", margin: 10}}>{t('current_plan')}</Text>
                     </View>)}
                 </View>
 
                 <View style={{borderWidth: isUserPremium ? 3 : 1, borderRadius: 15, padding: 10, backgroundColor: "rgba(48, 119, 206, 0.62)", marginTop: 15}}>
                     <View style={[styles.row, {justifyContent: "center", marginBottom: 15}]}>
-                        <FontAwesome6 name="crown" size={25} color="yellow" /><Text 
-  numberOfLines={1} 
-  adjustsFontSizeToFit style={{fontSize: 24, textAlign: "center", fontWeight: "bold"}}>   {t('premium')}</Text>
+                        <FontAwesome6 name="crown" size={25} color="yellow" /><Text style={{fontSize: 24, textAlign: "center", fontWeight: "bold"}}> {t('premium')}</Text>
                     </View>
                     <View style={styles.row}>
-                        <FontAwesome6 name="star" size={21} color="black" /><Text 
-  numberOfLines={1} 
-  adjustsFontSizeToFit style={{fontSize: 16, }}>  {t('all_free_features')}</Text>
+                        <FontAwesome6 name="star" size={21} color="black" /><Text style={{fontSize: 16, marginHorizontal: 5, paddingHorizontal: 5}}>{t('all_free_features')}</Text>
                     </View>
                     <View style={styles.row}>
-                        <FontAwesome6 name="infinity" size={21} color="black" /><Text 
-  numberOfLines={1} 
-  adjustsFontSizeToFit style={{fontSize: 16}}>  {t('unlimited_scans')}</Text>
+                        <FontAwesome6 name="infinity" size={21} color="black" /><Text style={{fontSize: 16, marginHorizontal: 5, paddingHorizontal: 5}}>{t('unlimited_scans')}</Text>
                     </View>
                     <View style={styles.row}>
-                        <FontAwesome6 name="chart-line" size={21} color="black" /><Text 
-  numberOfLines={1} 
-  adjustsFontSizeToFit style={{fontSize: 16}}>  {t('full_analytics')}</Text>
+                        <FontAwesome6 name="chart-line" size={21} color="black" /><Text style={{fontSize: 16, marginHorizontal: 5, paddingHorizontal: 5}}>{t('full_analytics')}</Text>
                     </View>
                     <View style={styles.row}>
-                        <FontAwesome6 name="tags" size={21} color="black" /><Text 
-  numberOfLines={1} 
-  adjustsFontSizeToFit style={{fontSize: 16}}>  {t('custom_categories')}</Text>
+                        <FontAwesome6 name="tags" size={21} color="black" /><Text style={{fontSize: 16, marginHorizontal: 5, paddingHorizontal: 5}}>{t('custom_categories')}</Text>
                     </View>
                     <View style={styles.row}>
-                        <FontAwesome6 name="rotate-right" size={21} color="black" /><Text 
-  numberOfLines={1} 
-  adjustsFontSizeToFit style={{fontSize: 16}}>  {t('recurring_bills')}</Text>
+                        <FontAwesome6 name="rotate-right" size={21} color="black" /><Text style={{fontSize: 16, marginHorizontal: 5, paddingHorizontal: 5}}>{t('recurring_bills')}</Text>
                     </View>
                     <View style={styles.row}>
-                        <FontAwesome6 name="file-export" size={21} color="black" /><Text 
-  numberOfLines={1} 
-  adjustsFontSizeToFit style={{fontSize: 16}}>  {t('csv_export_import')}</Text>
+                        <FontAwesome6 name="file-export" size={21} color="black" /><Text style={{fontSize: 16, marginHorizontal: 5, paddingHorizontal: 5}}>{t('csv_export_import')}</Text>
                     </View>
                     <View style={styles.row}>
-                        <FontAwesome6 name="envelope" size={21} color="black" /><Text 
-  numberOfLines={1} 
-  adjustsFontSizeToFit style={{fontSize: 16}}>  {t('email_reports')}</Text>
+                        <FontAwesome6 name="envelope" size={21} color="black" /><Text style={{fontSize: 16, marginHorizontal: 5, paddingHorizontal: 5}}>{t('email_reports')}</Text>
                     </View>
                     <View style={styles.row}>
-                        <FontAwesome6 name="gem" size={21} color="black" /><Text 
-  numberOfLines={1} 
-  adjustsFontSizeToFit style={{fontSize: 16}}>  {t('unlimited_goals')}</Text>
+                        <FontAwesome6 name="gem" size={21} color="black" /><Text style={{fontSize: 16, marginHorizontal: 5, paddingHorizontal: 5}}>{t('unlimited_goals')}</Text>
                     </View>
 
                     {isUserPremium ? 
                     (<View style={{backgroundColor: "rgba(48, 119, 206, 0.69)", borderRadius: 10, marginTop: 10, borderWidth: 2}}>
-                        <Text 
-  numberOfLines={1} 
-  adjustsFontSizeToFit style={{fontSize: 20, textAlign: "center", margin: 10}}>{t('current_plan')}</Text>
+                        <Text style={{fontSize: 20, textAlign: "center", margin: 10}}>{t('current_plan')}</Text>
                     </View>) : 
                     (<TouchableOpacity onPress={handleUpgradePlan} style={{backgroundColor: "yellow", borderRadius: 10, marginTop: 10, borderWidth: 2}}>
-                        <Text 
-  numberOfLines={1} 
-  adjustsFontSizeToFit style={{fontSize: 20, textAlign: "center", margin: 10}}>{t('upgrade')}</Text>
+                        <Text style={{fontSize: 20, textAlign: "center", margin: 10}}>{t('upgrade')}</Text>
                     </TouchableOpacity>)}
                 </View>
 </TouchableOpacity>

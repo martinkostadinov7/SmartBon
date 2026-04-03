@@ -146,7 +146,6 @@ async function loadCategories(){
               style={styles.input}
               value={name}
               onChangeText={setName}
-              placeholder="e.g. Food"
             />
 
             <Text 

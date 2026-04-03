@@ -35,8 +35,7 @@ import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 
         <View style={styles.content}>
           <Text 
-  numberOfLines={1} 
-  adjustsFontSizeToFit 
+  numberOfLines={1}
             ellipsizeMode="tail"
             style={styles.title}>{title}</Text>
 

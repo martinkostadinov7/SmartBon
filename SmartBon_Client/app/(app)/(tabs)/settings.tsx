@@ -250,7 +250,7 @@ return (<>
       <Text 
   numberOfLines={1} 
   adjustsFontSizeToFit style={{fontSize: 18, marginTop: 5}}>{userEmail}</Text>
-      <View style={[{marginTop: 10, borderRadius: 15, alignItems: "center"} , isPremium ? {backgroundColor: "#3077ceff", width: 110} : {backgroundColor: "gray", width: 60}]}>
+      <View style={[{marginTop: 10, borderRadius: 15, alignItems: "center", paddingHorizontal: 5 ,alignSelf: 'flex-start'} , isPremium ? {backgroundColor: "#3077ceff"} : {backgroundColor: "gray"}]}>
         <Text 
   numberOfLines={1} 
   adjustsFontSizeToFit style={{fontSize: 16, color: "white", margin: 5}}>{isPremium ? <FontAwesome6 name="crown" size={21} color="yellow" /> : ""}{isPremium ? ` ${t('premium')}` : `${t('free')}`}</Text>
@@ -430,7 +430,7 @@ const styles = StyleSheet.create({
   button: {
     backgroundColor: "rgba(228, 67, 67, 0.85)",
     height: 40,
-    width: 100,
+    paddingHorizontal: 20,
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 30,
