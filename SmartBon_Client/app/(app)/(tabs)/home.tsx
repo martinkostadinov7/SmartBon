@@ -13,6 +13,8 @@ import { ContributionGraph } from "react-native-chart-kit";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import { Category } from "../../../types/category";
 import { useTranslation } from 'react-i18next';
+import * as SecureStore from "expo-secure-store";
+
 const currencyFromNumber: Record<number, Currency> = {
   0: "EUR",
   1: "USD"

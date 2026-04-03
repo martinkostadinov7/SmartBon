@@ -58,14 +58,11 @@ namespace Services.UserServices
             }
 
             var newAccessToken = CreateJwtToken(user);
-            var newRefreshToken = GenerateRefreshToken();
 
-            user.RefreshToken = newRefreshToken;
-            user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(30);
-;
+            await userRepo.UpdateAsync(user);
             LoginTokensDto loginTokensDto = new LoginTokensDto();
             loginTokensDto.JsonWebToken = newAccessToken;
-            loginTokensDto.RefreshToken = newRefreshToken;
+            loginTokensDto.RefreshToken = refreshToken;
             return loginTokensDto;
         }
 

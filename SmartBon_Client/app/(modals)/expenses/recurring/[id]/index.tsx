@@ -101,7 +101,7 @@ async function loadCategories(){
       setSelectedCurrency(currencyFromNumber[expense?.currency]);
       setExpenses(expense?.expenses);
     })();
-   }, [id, expenses]);
+   }, [id]);
 
     useEffect(() => {
   (async () => {
