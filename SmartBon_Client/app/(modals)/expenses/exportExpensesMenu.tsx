@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -98,7 +98,9 @@ const { t, i18n } = useTranslation();
     setCategories(data);
 }
 
-loadCategories();
+useEffect(() => {
+  loadCategories();
+}, []);
 
   async function handleExportExpenses(){
     if (selectedCategoryIds.length > 1) {

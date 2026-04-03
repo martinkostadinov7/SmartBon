@@ -6,6 +6,8 @@ import bg from './translations/bg.json';
 import de from './translations/de.json';
 import es from './translations/es.json';
 import ja from './translations/ja.json';
+import zh from './translations/zh.json';
+import fr from './translations/fr.json';
 
 i18n.use(initReactI18next).init({
   compatibilityJSON: 'v3',
@@ -15,6 +17,8 @@ i18n.use(initReactI18next).init({
     de: { translation: de },
     es: { translation: es },
     ja: { translation: ja },
+    zh: { translation: zh },
+    fr: { translation: fr} 
   },
   lng: 'bg', 
   fallbackLng: 'en',

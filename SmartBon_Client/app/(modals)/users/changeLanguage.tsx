@@ -8,11 +8,13 @@ export default function ChangeLanguage() {
 const { t, i18n } = useTranslation();
     const [selectedLanguage, setSelectedLanguage] = useState(i18n.language || 'bg');
 const languages = [
-  { code: 'bg', label: 'Български', flag: '🇧🇬' },
   { code: 'en', label: 'English', flag: '🇺🇸' },
+  { code: 'bg', label: 'Български', flag: '🇧🇬' },
   { code: 'de', label: 'Deutsch', flag: '🇩🇪' },
   { code: 'es', label: 'Español', flag: '🇪🇸' },
+  { code: 'fr', label: 'Français', flag: '🇫🇷' },
   { code: 'ja', label: '日本語', flag: '🇯🇵' },
+  { code: 'zh', label: '中文', flag: '🇨🇳' },
 ];
 
     function handleCloseScreen(){
@@ -149,7 +151,7 @@ const styles = StyleSheet.create({
     padding: 20,
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16,
-    height: 350,
+    height: 470,
   },
   header: {
     flexDirection: "row",

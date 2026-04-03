@@ -19,21 +19,19 @@ const { t, i18n } = useTranslation();
       {pressable ? (
         <TouchableOpacity activeOpacity={readOnly ? 1 : 0.3} onPress={onPress} style={[selected ? styles.selected : styles.box, {backgroundColor: color, width: boxSize, height: boxSize}]}>
           <Text 
-  numberOfLines={1} 
+  numberOfLines={2} 
   adjustsFontSizeToFit style={[styles.icon, {fontSize: iconSize}]}>{icon}</Text>
           <Text 
-  numberOfLines={1} 
-  adjustsFontSizeToFit ellipsizeMode="tail" style={[styles.name, {fontSize: fontSize}]}>{name}</Text>
+  numberOfLines={2} ellipsizeMode="tail" style={[styles.name, {fontSize: fontSize}]}>{name}</Text>
         </TouchableOpacity>
         ) :  
       (
       <View style={[selected ? styles.selected : styles.box, {backgroundColor: color, width: boxSize, height: boxSize}]}>
           <Text 
-  numberOfLines={1} 
+  numberOfLines={2} 
   adjustsFontSizeToFit style={[styles.icon, {fontSize: iconSize}]}>{icon}</Text>
           <Text 
-  numberOfLines={1} 
-  adjustsFontSizeToFit ellipsizeMode="tail" style={[styles.name, {fontSize: fontSize}]}>{t(name)}</Text>
+  numberOfLines={2} ellipsizeMode="tail" style={[styles.name, {fontSize: fontSize}]}>{t(name)}</Text>
       </View>)}
     </>
     );
