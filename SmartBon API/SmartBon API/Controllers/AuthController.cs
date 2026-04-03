@@ -37,5 +37,11 @@ namespace SmartBon_API.Controllers
         {
             return await authService.RefreshTokens(refreshToken);
         }
+
+        [HttpGet("test")]
+        public async Task<ActionResult> Test()
+        {
+            return Ok("Test was successful");
+        }
     }
 }
