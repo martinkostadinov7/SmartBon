@@ -1,7 +1,6 @@
 ﻿using Data;
+using DotNetEnv;
 using FeelBack.Api.Extentions;
-using FluentValidation;
-using FluentValidation.AspNetCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
@@ -13,7 +12,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddSwaggerGen();
-    
+builder.WebHost.UseUrls("http://0.0.0.0:5107");
 builder.Services.AddApplicationServices();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IUserAccessor, HttpContextUserAccessor>();
@@ -35,13 +34,12 @@ builder.Services.AddControllers(options =>
     options.Filters.Add<AsyncValidationFilter>();
 });
 
-// Важно: Трябва да имаш регистрирани валидаторите си
 //Log.Logger = new LoggerConfiguration()
 //    .ReadFrom.Configuration(builder.Configuration)
 //    .CreateLogger();
 
 //builder.Host.UseSerilog();
-
+Env.Load(); // Зарежда променливите от .env в обкръжението
 var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 builder.Services.AddHostedService<RecurringExpenseWorker>();
 builder.Services.AddHostedService<EmailSendingWorker>();
@@ -78,6 +76,7 @@ var app = builder.Build();
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
+// 2. ВТОРО: Swagger (в Development)
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -88,21 +87,17 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-using (var scope = app.Services.CreateScope())
-{
-    var services = scope.ServiceProvider;
-    var db = services.GetRequiredService<AppDbContext>();
+// 3. ТРЕТО: РУТИРАНЕ (Важно за CORS)
+app.UseRouting();
 
-    db.Database.Migrate();
-
-    SeedData.SeedAll(db);
-}
-//app.UseHttpsRedirection();
-
+// 4. ЧЕТВЪРТО: CORS - Трябва да е веднага след UseRouting и ПРЕДИ Authorization
 app.UseCors(MyAllowSpecificOrigins);
 
+// 5. ПЕТО: Auth
+app.UseAuthentication(); // Добави го изрично, ако го нямаше!
 app.UseAuthorization();
 
+// 6. ШЕСТО: Controllers
 app.MapControllers();
 
 app.Run();

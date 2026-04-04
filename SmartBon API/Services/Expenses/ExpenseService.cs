@@ -171,14 +171,14 @@ namespace Services.Expenses
 
         public async Task<ExpenseFilledFromImageDto> ExtractExpenseDataAsync(IFormFile image)
         {
-            User loggedUser = await userRepo.GetByIdAsync(user.Id) ?? throw new BadRequestException("Üser not found");
+            User loggedUser = await userRepo.GetByIdAsync(user.Id) ?? throw new BadRequestException("User not found");
             if (!loggedUser.IsPremium && loggedUser.ReceiptScansCount >= 5)
             {
                 throw new BadRequestException("Reached maximum receipt scans!");
             }
 
-            string apiKey = _configuration["ApiKeys:OPENAI_API_KEY"];
-            OpenAIClient client = new("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");
+            string apiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY") ?? throw new Exception("Configure api key in .env file!");
+            OpenAIClient client = new(apiKey);
 
             ChatClient chatClient = client.GetChatClient("gpt-4o");
 
