@@ -5,8 +5,10 @@ using Shared.ApiExceptions;
 
 namespace Data.Repositories
 {
+    /// <inheritdoc />
     public class GoalRepository(AppDbContext context) : EFRepository<Goal>(context), IGoalRepository
     {
+        /// <inheritdoc />
         public async Task<bool> DeleteAllAsync(int userId)
         {
             int rowsAffected = await _dbSet
@@ -15,6 +17,8 @@ namespace Data.Repositories
 
             return rowsAffected >= 0;
         }
+
+        /// <inheritdoc />
         public async Task<List<Goal>> GetAllAsync(int userId, bool? isActive = true)
         {
             IQueryable<Goal> query = _dbSet.AsQueryable().Include(g => g.Contributions);
@@ -26,6 +30,8 @@ namespace Data.Repositories
 
             return goals;
         }
+
+        /// <inheritdoc />
         public async override Task<Goal?> GetByIdAsync(int id)
         {
             var query = _dbSet.AsQueryable().Include(c => c.Contributions);
@@ -33,6 +39,7 @@ namespace Data.Repositories
             return await query.SingleOrDefaultAsync(x => EF.Property<int>(x, "Id") == id);
         }
 
+        /// <inheritdoc />
         public override async Task DeleteAsync(Goal goal)
         {
             var contributions = context.GoalContributions.Where(s => s.GoalId == goal.Id);

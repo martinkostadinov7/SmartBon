@@ -143,7 +143,7 @@ async function sendPhotoToApi(photoToUpload: ImagePicker.ImagePickerAsset) {
 
    function handlePremiumFeaturePress(message: string){
      Alert.alert(
-         `${t('premium_feature')}`,
+         `${t('premium_feature_alert')}`,
          `${message} ${t('would_you_like_to_upgrade_message')}`,
          [
            { text: `${t('cancel')}`, style: "cancel" },

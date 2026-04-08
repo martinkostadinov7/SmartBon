@@ -4,8 +4,10 @@ using Services.Interfaces;
 
 namespace Services.Data
 {
+    /// <inheritdoc />
     public class DataService(IUserAccessor user, IExpenseRepository expenseRepository, ICategoryRepository categoryRepository, ISubcategoryRepository subcategoryRepository, IBudgetRepository budgetRepository, IGoalRepository goalRepository, IRecurringExpenseRepository recurringExpenseRepository, IGoalContributionRepository goalContributionRepository) : IDataService
     {
+        /// <inheritdoc />
         public async Task<bool> DeleteAllData()
         {
             await expenseRepository.DeleteAllAsync(user.Id);

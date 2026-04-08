@@ -1,8 +1,6 @@
 ﻿using Data.Interfaces;
 using Data.Models;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using Services.Interfaces;
@@ -15,9 +13,11 @@ using System.Security.Cryptography;
 using System.Text;
 
 namespace Services.UserServices
-{       
+{
+    /// <inheritdoc />
     public class AuthService(IUserRepository userRepo, IConfiguration configuration) : IAuthService         
     {
+        /// <inheritdoc />
         public string GenerateRefreshToken()
         {
             var randomNumber = new byte[64];
@@ -25,6 +25,8 @@ namespace Services.UserServices
             rng.GetBytes(randomNumber);
             return Convert.ToBase64String(randomNumber);
         }
+
+        /// <inheritdoc />
         public async Task<LoginTokensDto> Login(UserLoginDto userToLogin)
         {
             User? user = userRepo.GetByEmail(userToLogin.Email);
@@ -47,6 +49,7 @@ namespace Services.UserServices
             return loginTokensDto;
         }
 
+        /// <inheritdoc />
         public async Task<LoginTokensDto> RefreshTokens(string refreshToken)
         {
             if (refreshToken == null) throw new BadRequestException("Invalid client request");
@@ -66,6 +69,7 @@ namespace Services.UserServices
             return loginTokensDto;
         }
 
+        /// <inheritdoc />
         public async Task<LoginTokensDto> RegisterAsync(UserRegisterDto userToRegister)
         {
             User? userFromDb = userRepo.GetByEmail(userToRegister.Email);
@@ -90,6 +94,7 @@ namespace Services.UserServices
             return loginTokensDto;
         }
 
+        /// <inheritdoc />
         private JsonWebToken CreateJwtToken(User user) 
         {
             var claims = new List<Claim>

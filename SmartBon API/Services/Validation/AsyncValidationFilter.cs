@@ -2,6 +2,10 @@
 using Microsoft.AspNetCore.Mvc.Filters;
 using FluentValidation;
 
+/// <summary>
+/// A global action filter that automatically validates incoming request payloads 
+/// using FluentValidation before the controller action executes.
+/// </summary>
 public class AsyncValidationFilter : IAsyncActionFilter
 {
     private readonly IServiceProvider _serviceProvider;
@@ -10,6 +14,11 @@ public class AsyncValidationFilter : IAsyncActionFilter
     {
         _serviceProvider = serviceProvider;
     }
+
+    /// <summary>
+    /// Intercepts the action execution to run validation. 
+    /// If validation fails, it short-circuits the pipeline and returns a 400 Bad Request with the validation errors.
+    /// </summary>
 
     public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
     {

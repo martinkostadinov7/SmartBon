@@ -8,10 +8,17 @@ using Shared.Enums;
 
 namespace Services.BackgroundTasks
 {
+    /// <summary>
+    /// A background worker service that periodically checks for pending recurring expenses and automatically processes them.
+    /// </summary>
     public class RecurringExpenseWorker(IServiceScopeFactory scopeFactory) : BackgroundService
     {
         private readonly TimeSpan _checkInterval = TimeSpan.FromHours(1);
 
+        /// <summary>
+        /// Executes the background task. Finds all pending recurring expenses, creates actual expense records, 
+        /// updates affected budgets, and schedules the next execution date.
+        /// </summary>
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             while (!stoppingToken.IsCancellationRequested)
@@ -53,6 +60,12 @@ namespace Services.BackgroundTasks
             }
         }
 
+        /// <summary>
+        /// Calculates the next execution date for a recurring expense based on its defined frequency.
+        /// </summary>
+        /// <param name="current">The current execution date.</param>
+        /// <param name="frequency">The frequency enum (Daily, Weekly, Monthly, Yearly).</param>
+        /// <returns>The calculated next execution date.</returns>
         private DateTime CalculateNextDate(DateTime current, RecurringExpenseFrequency frequency)
         {
             return frequency switch

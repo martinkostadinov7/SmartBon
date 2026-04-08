@@ -1,6 +1,11 @@
 ﻿using Shared.ApiExceptions;
 using SmartBon_API.Models;
 using System.Text.Json;
+
+/// <summary>
+/// A global error-handling middleware that intercepts unhandled exceptions across the application pipeline,
+/// logs them appropriately, and returns a standardized JSON <see cref="ApiErrorResponse"/> to the client.
+/// </summary>
 public class ExceptionHandlingMiddleware
 {
     private readonly RequestDelegate _next;

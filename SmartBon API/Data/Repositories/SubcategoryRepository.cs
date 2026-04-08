@@ -4,8 +4,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Data.Repositories
 {
+    /// <inheritdoc />
     public class SubcategoryRepository(AppDbContext context) : EFRepository<Subcategory>(context), ISubcategoryRepository
     {
+        /// <inheritdoc />
         public async Task<bool> DeleteAllAsync(int userId)
         {
             int rowsAffected = await _dbSet
@@ -14,6 +16,8 @@ namespace Data.Repositories
 
             return rowsAffected >= 0;
         }
+
+        /// <inheritdoc />
         public override async Task DeleteAsync(Subcategory subcategory)
         {
             var expenses = context.Expenses.Where(e => e.SubcategoryId == subcategory.Id);
@@ -24,6 +28,7 @@ namespace Data.Repositories
             await context.SaveChangesAsync();
         }
 
+        /// <inheritdoc />
         public async Task<List<Subcategory>> GetAllAsync(int userId, int categoryId)
         {
             IQueryable<Subcategory> query = _dbSet.AsQueryable();
@@ -34,6 +39,5 @@ namespace Data.Repositories
 
             return subcategories;
         }
-
     }
 }

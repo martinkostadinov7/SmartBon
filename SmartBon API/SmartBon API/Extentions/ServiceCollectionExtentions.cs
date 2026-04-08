@@ -15,8 +15,13 @@ using Services.UserServices;
 using Services.Validation.Expenses;
 namespace FeelBack.Api.Extentions
 {
+    /// <summary>
+    /// Provides extension methods for IServiceCollection to cleanly register application services, 
+    /// repositories, mappers, and validators into the dependency injection (DI) container.
+    /// </summary>
     public static class ServiceCollectionExtensions
     {
+        /// <summary> Registers all repositories and business logic services required by the application. </summary>
         public static IServiceCollection AddApplicationServices(this IServiceCollection services)
         {
             services.AddScoped<IAuthService, AuthService>();
@@ -52,6 +57,7 @@ namespace FeelBack.Api.Extentions
             return services;
         }
 
+        /// <summary> Registers AutoMapper profiles for converting between Domain Models and DTOs. </summary>
         public static IServiceCollection AddApplicationAutoMapper(this IServiceCollection services)
         {
             services.AddAutoMapper(cfg =>
@@ -64,6 +70,7 @@ namespace FeelBack.Api.Extentions
             return services;
         }
 
+        /// <summary> Registers all FluentValidation validators found within the application assembly. </summary>
         public static IServiceCollection AddApplicationValidators(this IServiceCollection services)
         {
             services.AddValidatorsFromAssemblyContaining<ExpenseCreateValidator>();

@@ -4,10 +4,14 @@ using Shared.DTOs.Users;
 
 namespace Services.Validation.Users
 {
+    /// <summary>
+    /// Validator for <see cref="UserRegisterDto"/> to ensure data integrity and uniqueness before registering a new user.
+    /// </summary>
     public class UserRegisterValidator : AbstractValidator<UserRegisterDto>
     {
         private readonly IUserRepository _userRepository;
 
+        /// <summary> Initializes validation rules for user registration, including password strength and email uniqueness. </summary>
         public UserRegisterValidator(IUserRepository userRepository)
         {
             _userRepository = userRepository;

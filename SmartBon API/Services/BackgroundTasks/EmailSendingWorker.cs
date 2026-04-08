@@ -6,10 +6,16 @@ using Shared.DTOs.Statistics;
 
 namespace Services.BackgroundTasks
 {
+    /// <summary>
+    /// A background worker service that periodically checks and sends automated monthly financial reports to subscribed users.
+    /// </summary>
     public class EmailSendingWorker(IServiceScopeFactory scopeFactory) : BackgroundService
     {
         private readonly TimeSpan _checkInterval = TimeSpan.FromDays(30);
 
+        /// <summary>
+        /// Executes the background task, running continuously until cancellation is requested.
+        /// </summary>
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             while (!stoppingToken.IsCancellationRequested)
@@ -51,7 +57,7 @@ namespace Services.BackgroundTasks
                 }
                 catch (Exception ex)
                 {
-                     Console.WriteLine($"Critical worker error: {ex.Message}");
+                    Console.WriteLine($"Critical worker error: {ex.Message}");
                 }
 
                 await Task.Delay(_checkInterval, stoppingToken);

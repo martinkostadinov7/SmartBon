@@ -115,7 +115,7 @@ async function loadUserData(){
 
 function handlePremiumFeaturePress(message: string){
   Alert.alert(
-      `${t('premium_feature')}`,
+      `${t('premium_feature_alert')}`,
       `${message} ${t('would_you_like_to_upgrade_message')}`,
       [
         { text: `${t('cancel')}`, style: "cancel" },
@@ -483,7 +483,7 @@ const translatedLabels = daysBarChartData?.labels.map(label => t(label));
         <FontAwesome6 name="lock" size={40} color="#3077ceff"/>
         <Text 
   numberOfLines={1} 
-  adjustsFontSizeToFit style={{fontSize: 20, fontWeight: "700", marginTop: 10}}>{t('premium_feature')}</Text>
+  adjustsFontSizeToFit style={{fontSize: 20, fontWeight: "700", marginTop: 10}}>{t('premium_feature_alert')}</Text>
       </TouchableOpacity>) 
       }
             
@@ -571,7 +571,7 @@ const translatedLabels = daysBarChartData?.labels.map(label => t(label));
         <FontAwesome6 name="lock" size={40} color="#3077ceff"/>
         <Text 
   numberOfLines={1} 
-  adjustsFontSizeToFit style={{fontSize: 20, fontWeight: "700", marginTop: 10}}>`${t('premium_feature')}`</Text>
+  adjustsFontSizeToFit style={{fontSize: 20, fontWeight: "700", marginTop: 10}}>`${t('premium_feature_alert')}`</Text>
       </TouchableOpacity>) 
       }
 

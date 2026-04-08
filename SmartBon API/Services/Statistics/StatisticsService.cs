@@ -15,8 +15,10 @@ using static Shared.DTOs.Statistics.PaymentTypePieChart;
 
 namespace Services.Statistics
 {
+    /// <inheritdoc />
     public class StatisticsService(IExpenseRepository expenseRepository, IUserAccessor user) : IStatisticsService
     {
+        /// <inheritdoc />
         public async Task<ContributionGraphData> GetContributionGraphAsync()
         {
             ExpenseQueryParams queryParams = new ExpenseQueryParams
@@ -64,6 +66,7 @@ namespace Services.Statistics
             return contributionGraphData;
         }
 
+        /// <inheritdoc />
         public async Task<CategoriesPieChart> GetCategoriesPieChartAsync(ExpenseQueryParams expenseQueryParams)
         {
             List<Expense> expenses = await expenseRepository.GetExpensesFromQueryAsync(user.Id, expenseQueryParams);
@@ -105,6 +108,7 @@ namespace Services.Statistics
             return categoriesPieChart;
         }
 
+        /// <inheritdoc />
         public async Task<ExpensesLineChart> GetExpensesLineChartAsync(string range)
         {
             DateTime to = DateTime.Now;
@@ -201,6 +205,7 @@ namespace Services.Statistics
 
         }
 
+        /// <inheritdoc />
         public async Task<PaymentTypePieChart> GetPaymentTypePieChartAsync(ExpenseQueryParams expenseQueryParams)
         {
             List<Expense> expenses = await expenseRepository.GetExpensesFromQueryAsync(user.Id, expenseQueryParams);
@@ -240,6 +245,7 @@ namespace Services.Statistics
             return paymentTypePieChart;
         }
 
+        /// <inheritdoc />
         public async Task<DaysBarChart> GetDaysBarChartAsync()
         {
             List<Expense> expenses = await expenseRepository.GetAllAsync(user.Id);
@@ -283,6 +289,7 @@ namespace Services.Statistics
             };
         }
 
+        /// <inheritdoc />
         public async Task<MonthlyReport> GetMonthlyReportAsync()
         {
             DateTime now = DateTime.Now;
@@ -362,6 +369,8 @@ namespace Services.Statistics
                 .FirstOrDefault();
             return monthlyReport;
         }
+
+        /// <inheritdoc />
         public async Task<MonthlyReport> GetMonthlyReportAsync(int id)
         {
             DateTime now = DateTime.Now;

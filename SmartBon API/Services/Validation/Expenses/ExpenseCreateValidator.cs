@@ -4,10 +4,14 @@ using Shared.DTOs.Expenses;
 
 namespace Services.Validation.Expenses
 {
+    /// <summary>
+    /// Validator for <see cref="ExpenseCreateDto"/> to ensure data integrity before creating an expense.
+    /// </summary>
     public class ExpenseCreateValidator : AbstractValidator<ExpenseCreateDto>
     {
         private readonly ICategoryService _categoryService;
 
+        /// <summary> Initializes validation rules for creating an expense. </summary>
         public ExpenseCreateValidator(ICategoryService categoryService)
         {
             _categoryService = categoryService;

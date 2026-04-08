@@ -10,8 +10,10 @@ using Shared.DTOs.Expenses.QueryParams;
 
 namespace Services.Budgets
 {
+    /// <inheritdoc />
     public class BudgetService(IBudgetRepository budgetRepository, IMapper mapper, IUserAccessor user, IExpenseRepository expenseRepository, ICategoryRepository categoryRepository) : IBudgetService
     {
+        /// <inheritdoc />
         public async Task<BudgetReadDto> CreateBudgetAsync(BudgetCreateDto budgetCreateDto)
         {
             Budget budget = mapper.Map<Budget>(budgetCreateDto);
@@ -54,6 +56,7 @@ namespace Services.Budgets
             return mapper.Map<BudgetReadDto>(budget);
         }
 
+        /// <inheritdoc />
         public async Task<BudgetReadDto> DeleteBudgetAsync(int id)
         {
             Budget budgetToDelete = await budgetRepository.GetByIdAsync(id) ?? throw new NotFoundException($"Budget with id {id} was not found!");
@@ -61,12 +64,14 @@ namespace Services.Budgets
             return mapper.Map<BudgetReadDto>(budgetToDelete);
         }
 
+        /// <inheritdoc />
         public async Task<BudgetReadDto> GetBudgetByIdAsync(int id)
         {
             Budget budget = await budgetRepository.GetByIdAsync(id) ?? throw new NotFoundException($"Budget with id {id} was not found!");
             return mapper.Map<BudgetReadDto>(budget);
         }
 
+        /// <inheritdoc />
         public async Task<List<BudgetReadDto>> GetActiveBudgetsAsync()
         {
             List<Budget> budgetsFromDb = await budgetRepository.GetAllAsync(user.Id, true);
@@ -74,6 +79,7 @@ namespace Services.Budgets
             return mapper.Map<List<BudgetReadDto>>(budgetsFromDb);
         }
 
+        /// <inheritdoc />
         public async Task<List<BudgetReadDto>> GetArchivedBudgetsAsync()
         {
             List<Budget> budgetsFromDb = await budgetRepository.GetAllAsync(user.Id, false);
@@ -81,6 +87,7 @@ namespace Services.Budgets
             return mapper.Map<List<BudgetReadDto>>(budgetsFromDb);
         }
 
+        /// <inheritdoc />
         public async Task<BudgetReadDto> UpdateBudgetAsync(int id, BudgetUpdateDto dto)
         {
             Budget budgetToUpdate = await budgetRepository.GetByIdAsync(id) ?? throw new NotFoundException($"Budget with id {id} was not found!");
@@ -126,6 +133,7 @@ namespace Services.Budgets
             return mapper.Map<BudgetReadDto>(budgetToUpdate);
         }
 
+        /// <inheritdoc />
         public async Task ArchiveBudgetAsync(int id)
         {
             Budget budget = await budgetRepository.GetByIdAsync(id) ?? throw new NotFoundException($"Budget with id {id} was not found!");

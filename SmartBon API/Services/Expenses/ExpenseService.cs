@@ -18,8 +18,10 @@ using System.Text;
 using System.Text.Json;
 namespace Services.Expenses
 {
+    /// <inheritdoc />
     public class ExpenseService(IUserRepository userRepo, IUserAccessor user, IExpenseRepository expenseRepository, IRecurringExpenseRepository recurringExpenseRepository, IMapper mapper, IBudgetRepository budgetRepository, IConfiguration _configuration, ICategoryRepository categoryRepository) : IExpenseService
     {
+        /// <inheritdoc />
         public async Task<ExpenseReadDto> CreateExpenseAsync(ExpenseCreateDto dto)
         {
             Expense expense = mapper.Map<Expense>(dto);
@@ -31,6 +33,7 @@ namespace Services.Expenses
             return mapper.Map<ExpenseReadDto>(expense);
         }
 
+        /// <inheritdoc />
         public async Task UpdateBudgetsCreate(Expense expense)
         {
             List<string> budgetNamesAlmost = new List<string>();
@@ -65,6 +68,7 @@ namespace Services.Expenses
             }
         }
 
+        /// <inheritdoc />
         public async Task<List<ExpenseReadDto>> GetExpensesAsync()
         {
             List<Expense> expensesFromDb = await expenseRepository.GetAllAsync(user.Id);
@@ -72,6 +76,7 @@ namespace Services.Expenses
             return mapper.Map<List<ExpenseReadDto>>(expensesFromDb);
         }
 
+        /// <inheritdoc />
         public async Task<ExpenseReadDto> GetExpenseByIdAsync(int id)
         {
             Expense expenseFromDb = await expenseRepository.GetByIdAsync(id) ?? throw new NotFoundException($"Expense with id {id} was not found");  
@@ -82,7 +87,7 @@ namespace Services.Expenses
             return mapper.Map<ExpenseReadDto>(expenseFromDb);
         }
 
-
+        /// <inheritdoc />
         public async Task<ExpenseReadDto> DeleteExpenseAsync(int id)
         {
             Expense expenseFromDb = await expenseRepository.GetByIdAsync(id) ?? throw new NotFoundException($"Expense with id {id} was not found");
@@ -107,6 +112,7 @@ namespace Services.Expenses
             return mapper.Map<ExpenseReadDto>(expenseFromDb);
         }
 
+        /// <inheritdoc />
         public async Task<ExpenseReadDto> UpdateExpenseAsync(int id, ExpenseUpdateDto dto)
         {
             Expense expenseFromDb = await expenseRepository.GetByIdAsync(id) ?? throw new NotFoundException($"Expense with id {id} was not found");
@@ -135,6 +141,7 @@ namespace Services.Expenses
             return mapper.Map<ExpenseReadDto>(expenseFromDb);
         }
 
+        /// <inheritdoc />
         public async Task<List<ExpenseReadDto>> GetRecentExpensesAsync(int count)
         {
             List<Expense> expensesFromDb = await expenseRepository.GetRecentExpensesAsync(user.Id, count);
@@ -142,6 +149,7 @@ namespace Services.Expenses
             return mapper.Map<List<ExpenseReadDto>>(expensesFromDb);
         }
 
+        /// <inheritdoc />
         public async Task<List<ExpenseReadDto>> GetExpensesWithQueryParamsAsync(ExpenseQueryParams queryParams)
         {
             if(queryParams?.FilterParams?.StartDate > queryParams?.FilterParams?.EndDate)
@@ -159,16 +167,19 @@ namespace Services.Expenses
             return mapper.Map<List<ExpenseReadDto>>(expensesFromDb);
         }
 
+        /// <inheritdoc />
         public async Task<CostRangeDto> GetCostRangeAsync()
         {
             return await expenseRepository.GetCostRangeAsync(user.Id);
         }
 
+        /// <inheritdoc />
         public async Task<DateRangeDto> GetDateRangeAsync()
         {
             return await expenseRepository.GetDateRangeAsync(user.Id);
         }
 
+        /// <inheritdoc />
         public async Task<ExpenseFilledFromImageDto> ExtractExpenseDataAsync(IFormFile image)
         {
             User loggedUser = await userRepo.GetByIdAsync(user.Id) ?? throw new BadRequestException("User not found");
@@ -221,8 +232,6 @@ namespace Services.Expenses
             };
 
             ChatCompletion completion = await chatClient.CompleteChatAsync(messages, options);
-            Console.WriteLine($"[ASSISTANT]: {completion.Content[0].Text}");
-
 
             string jsonResponse = completion.Content[0].Text;
 
@@ -238,6 +247,7 @@ namespace Services.Expenses
             return mappedExpense;
         }
 
+        /// <inheritdoc />
         public async Task<RecurringExpenseReadDto> CreateRecurringExpenseAsync(RecurringExpenseCreateDto dto)
         {
             RecurringExpense recurringExpense = mapper.Map<RecurringExpense>(dto);
@@ -276,18 +286,20 @@ namespace Services.Expenses
             return mapper.Map<RecurringExpenseReadDto>(recurringExpense);
         }
 
+        /// <inheritdoc />
         public async Task<List<RecurringExpenseReadDto>> GetAllRecurringExpenses()
         {
             List<RecurringExpense> recurringExpenses = await recurringExpenseRepository.GetAllAsync(user.Id);
             return mapper.Map<List<RecurringExpenseReadDto>>(recurringExpenses);
         }
 
+        /// <inheritdoc />
         public async Task<ExportFileResultDto> ExportExpensesAsync(ExpenseQueryParams queryParams)
         {
             User loggedUser = await user.GetUserAsync();
             if (!loggedUser.IsPremium)
             {
-                throw new BadRequestException("Exporting data is a remium feature!");
+                throw new BadRequestException("Exporting data is a premium feature!");
             }
             var expenses = await expenseRepository.GetExpensesFromQueryAsync(user.Id, queryParams);
             var expensesToExport = mapper.Map<List<ExpenseExportImportDto>>(expenses);
@@ -313,6 +325,7 @@ namespace Services.Expenses
             };
         }
 
+        /// <inheritdoc />
         public async Task<bool> ImportExpensesAsync(IFormFile csvFile)
         {
             User loggedUser = await user.GetUserAsync();
@@ -411,6 +424,7 @@ namespace Services.Expenses
             return true;
         }
 
+        /// <inheritdoc />
         public async Task<RecurringExpenseReadDto> GetRecurringExpenseById(int id)
         {
             RecurringExpense recurringExpense = await recurringExpenseRepository.GetRecurringExpenseByIdAsync(id) ?? throw new NotFoundException("Recurring expense was not found!");
@@ -418,6 +432,7 @@ namespace Services.Expenses
             return mapper.Map<RecurringExpenseReadDto>(recurringExpense);
         }
 
+        /// <inheritdoc />
         public async Task<RecurringExpenseReadDto> DeleteRecurringExpenseAsync(int id)
         {
             RecurringExpense recurringExpense = await recurringExpenseRepository.GetRecurringExpenseByIdAsync(id) ?? throw new NotFoundException("Recurring expense was not found!");
@@ -430,6 +445,7 @@ namespace Services.Expenses
             return mapper.Map<RecurringExpenseReadDto>(recurringExpense);
         }
 
+        /// <inheritdoc />
         public async Task<RecurringExpenseReadDto> UpdateRecurringExpenseAsync(int id, RecurringExpenseUpdateDto dto)
         {
             RecurringExpense recurringExpenseToUpdate = await recurringExpenseRepository.GetRecurringExpenseByIdAsync(id) ?? throw new NotFoundException("Recurring expense was not found!");

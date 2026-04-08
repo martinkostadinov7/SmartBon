@@ -7,8 +7,10 @@ using Shared.DTOs.Goals.Contributions;
 
 namespace Services.Goals
 {
+    /// <inheritdoc />
     public class GoalContributionService(IGoalContributionRepository goalContributionRepository, IMapper mapper, IGoalService goalService) : IGoalContributionService
     {
+        /// <inheritdoc />
         public async Task<GoalContributionReadDto> CreateGoalContributionAsync(GoalContributionCreateDto goalContributionCreateDto)
         {
             GoalContribution goalContribution = mapper.Map<GoalContribution>(goalContributionCreateDto);
@@ -18,6 +20,7 @@ namespace Services.Goals
             return mapper.Map<GoalContributionReadDto>(goalContribution);
         }
 
+        /// <inheritdoc />
         public async Task<GoalContributionReadDto> DeleteGoalContributionAsync(int id)
         {
             GoalContribution goalContributionToDelete = await goalContributionRepository.GetByIdAsync(id) ?? throw new NotFoundException($"GoalContribution with id {id} was not found!");

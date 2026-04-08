@@ -4,11 +4,12 @@ using Shared.DTOs.Statistics;
 
 namespace Services.EmailSending
 {
+    /// <inheritdoc />
     public class EmailSendingService(IFluentEmail _mailer) : IEmailSendingService
     {
+        /// <inheritdoc />
         public async Task SendMonthlyReport(string userEmail, MonthlyReport report)
         {
-            // Определяме цвят според промяната (червено за ръст, зелено за спад в разходите)
             string trendColor = report.PercentageChange > 0 ? "#e74c3c" : "#2ecc71";
             string trendText = report.PercentageChange > 0 ? "повече" : "по-малко";
 
@@ -59,7 +60,7 @@ namespace Services.EmailSending
             await _mailer
                 .To(userEmail)
                 .Subject($"Твоят финансов отчет за {report.MonthName}")
-                .Body(emailHtml, isHtml: true) // ВАЖНО: isHtml: true
+                .Body(emailHtml, isHtml: true
                 .SendAsync();
         }
     }

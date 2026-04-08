@@ -6,8 +6,10 @@ using Shared.ApiExceptions;
 using Shared.DTOs.Categories;
 namespace Services.Categories
 {
+    /// <inheritdoc />
     public class CategoryService(IUserAccessor user, ICategoryRepository categoryRepository, IMapper mapper) : ICategoryService
     {
+        /// <inheritdoc />
         public async Task<CategoryReadDto> CreateCategoryAsync(CategoryCreateDto categoryCreateDto)
         {
             Category category = mapper.Map<Category>(categoryCreateDto);
@@ -17,6 +19,7 @@ namespace Services.Categories
             return mapper.Map<CategoryReadDto>(category);
         }
 
+        /// <inheritdoc />
         public async Task<List<CategoryReadDto>> GetCategoriesAsync()
         {
             List<Category> categoriesFromDb = await categoryRepository.GetAllAsync(user.Id);  
@@ -24,6 +27,7 @@ namespace Services.Categories
             return mapper.Map<List<CategoryReadDto>>(categoriesFromDb);
         }
 
+        /// <inheritdoc />
         public async Task<CategoryReadDto> GetCategoryByIdAsync(int id)
         {
             Category categoryFromDb = await categoryRepository.GetByIdAsync(id, [x => x.Subcategories]) ?? throw new NotFoundException($"Category with id {id} was not found");
@@ -34,6 +38,7 @@ namespace Services.Categories
             return mapper.Map<CategoryReadDto>(categoryFromDb);
         }
 
+        /// <inheritdoc />
         public async Task<CategoryReadDto> DeleteCategoryAsync(int id)
         {
             Category categoryFromDb = await categoryRepository.GetByIdAsync(id) ?? throw new NotFoundException($"Category with id {id} was not found");

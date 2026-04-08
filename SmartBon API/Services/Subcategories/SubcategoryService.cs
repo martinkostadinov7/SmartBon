@@ -7,8 +7,10 @@ using Shared.DTOs.Categories;
 
 namespace Services.Subcategories
 {
+    /// <inheritdoc />
     public class SubcategoryService(IUserAccessor user, ISubcategoryRepository subcategoryRepository, IMapper mapper, ICategoryRepository categoryRepository) : ISubcategoryService
     {
+        /// <inheritdoc />
         public async Task<SubcategoryReadDto> CreateSubcategoryAsync(int categoryId, SubcategoryCreateDto subcategoryCreateDto)
         {
             Subcategory subcategory = mapper.Map<Subcategory>(subcategoryCreateDto);
@@ -19,6 +21,7 @@ namespace Services.Subcategories
             return mapper.Map<SubcategoryReadDto>(subcategory);
         }
 
+        /// <inheritdoc />
         public async Task<List<SubcategoryReadDto>> GetSubcategoriesAsync(int categoryId)
         {
             List<Subcategory> subcategoriesFromDb = await subcategoryRepository.GetAllAsync(user.Id, categoryId);
@@ -26,6 +29,7 @@ namespace Services.Subcategories
             return mapper.Map<List<SubcategoryReadDto>>(subcategoriesFromDb);
         }
 
+        /// <inheritdoc />
         public async Task<SubcategoryReadDto> GetSubcategoryByIdAsync(int categoryId, int id)
         {
             Category category = await categoryRepository.GetByIdAsync(categoryId, [x => x.Subcategories]) ?? throw new NotFoundException($"Category with id {id} was not found");
@@ -37,6 +41,7 @@ namespace Services.Subcategories
             return mapper.Map<SubcategoryReadDto>(subcategoryFromDb);
         }
 
+        /// <inheritdoc />
         public async Task<SubcategoryReadDto> DeleteSubcategoryAsync(int id)
         {
             Subcategory? subcategoryFromDb = await subcategoryRepository.GetByIdAsync(id) ?? throw new NotFoundException($"Subcategory with id {id} was not found");

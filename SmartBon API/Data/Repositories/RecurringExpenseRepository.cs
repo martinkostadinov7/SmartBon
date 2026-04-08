@@ -4,8 +4,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Data.Repositories
 {
+    /// <inheritdoc />
     public class RecurringExpenseRepository(AppDbContext context) : EFRepository<RecurringExpense>(context), IRecurringExpenseRepository
     {
+        /// <inheritdoc />
         public async Task<bool> DeleteAllAsync(int userId)
         {
             int rowsAffected = await _dbSet
@@ -14,6 +16,8 @@ namespace Data.Repositories
 
             return rowsAffected >= 0;
         }
+
+        /// <inheritdoc />
         public async Task<List<RecurringExpense>> GetAllPendingAsync()
         {
             IQueryable<RecurringExpense> query = _dbSet.AsQueryable();
@@ -26,6 +30,7 @@ namespace Data.Repositories
             return expenses;
         }
 
+        /// <inheritdoc />
         public async Task<List<RecurringExpense>> GetAllAsync(int userId)
         {
             IQueryable<RecurringExpense> query = _dbSet.AsQueryable();
@@ -39,6 +44,8 @@ namespace Data.Repositories
 
             return expenses;
         }
+
+        /// <inheritdoc />
         public async Task<RecurringExpense?> GetRecurringExpenseByIdAsync(int id)
         {
             var query = _dbSet.AsQueryable().Include(c => c.Expenses);

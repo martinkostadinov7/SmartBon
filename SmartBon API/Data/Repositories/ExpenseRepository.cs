@@ -10,12 +10,14 @@ namespace Data.Repositories
 {
     public class ExpenseRepository(AppDbContext context) : EFRepository<Expense>(context), IExpenseRepository
     {
+        /// <inheritdoc />
         public async Task AddRangeAsync(List<Expense> expenses)
         {
             _dbSet.AddRange(expenses);
             _context.SaveChanges();
         }
 
+        /// <inheritdoc />
         public async Task<bool> DeleteAllAsync(int userId)
         {
             int rowsAffected = await _dbSet
@@ -25,6 +27,7 @@ namespace Data.Repositories
             return rowsAffected >= 0;
         }
 
+        /// <inheritdoc />
         public async Task<List<Expense>> GetAllAsync(int userId)
         {
             IQueryable<Expense> query = _dbSet.AsQueryable();
@@ -38,6 +41,7 @@ namespace Data.Repositories
             return expenses;
         }
 
+        /// <inheritdoc />
         public async Task<CostRangeDto> GetCostRangeAsync(int userId)
         {
             if (!_dbSet.Where(e => e.UserId == userId).Any())
@@ -59,6 +63,7 @@ namespace Data.Repositories
             return costRange;
         }
 
+        /// <inheritdoc />
         public async Task<DateRangeDto> GetDateRangeAsync(int userId)
         {
             if (!_dbSet.Where(e => e.UserId == userId).Any())
@@ -81,6 +86,7 @@ namespace Data.Repositories
         }
 
 
+        /// <inheritdoc />
         public async Task<List<Expense>> GetExpensesFromQueryAsync(int userId, ExpenseQueryParams queryParams)
         {
             IQueryable<Expense> query = _dbSet
@@ -193,6 +199,7 @@ namespace Data.Repositories
             return await query.ToListAsync();
         }
 
+        /// <inheritdoc />
         public async Task<List<Expense>> GetRecentExpensesAsync(int userId, int count)
         {
             IQueryable<Expense> query = _dbSet.AsQueryable();

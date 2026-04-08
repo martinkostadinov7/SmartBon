@@ -1,6 +1,8 @@
-﻿using Shared.Enums;
-namespace Data.Models
+﻿namespace Data.Models
 {
+    /// <summary>
+    /// Represents a secondary grouping for expenses, nested under a main Category.
+    /// </summary>
     public class Subcategory : IEntity
     {
         public int Id { get; set; }
@@ -12,7 +14,6 @@ namespace Data.Models
         public string ColorHex { get; set; }
 
         public int CategoryId { get; set; }
-
         public Category Category { get; set; }
 
         public int UserId { get; set; }

@@ -9,8 +9,10 @@ using Shared.Enums;
 
 namespace Services.Users
 {
+    /// <inheritdoc />
     public class UserService(IUserAccessor user, IUserRepository userRepo, IMapper mapper, IDataService dataService) : IUserService
     {
+        /// <inheritdoc />
         public async Task<UserInfoDto> EditProfileDataAsync(UserUpdateDto dto)
         {
             User userToUpdate = await userRepo.GetByIdAsync(user.Id) ?? throw new NotFoundException("The logged user does not exist anymore!");
@@ -34,6 +36,7 @@ namespace Services.Users
             return mapper.Map<UserInfoDto>(userToUpdate);
         }
 
+        /// <inheritdoc />
         public async Task<UserInfoDto> GetProfileDataAsync()
         {
             User userFromDb = await userRepo.GetByIdAsync(user.Id) ?? throw new NotFoundException($"User was not found");
@@ -42,6 +45,7 @@ namespace Services.Users
             return userInfo;
         }
 
+        /// <inheritdoc />
         public async Task<bool> ChangePassword(PasswordChangeDto dto)
         {
             string oldPassword = dto.OldPassword;
@@ -63,6 +67,7 @@ namespace Services.Users
             return true;
         }
 
+        /// <inheritdoc />
         public async Task<bool> ManagePlan(bool isPremium)
         {
             User userFromDb = await userRepo.GetByIdAsync(user.Id) ?? throw new NotFoundException($"User was not found");
@@ -75,12 +80,14 @@ namespace Services.Users
             return true;
         }
 
+        /// <inheritdoc />
         public async Task<List<User>> GetAllUsersForMonthlyReportAsync()
         {
             List<User> users = await userRepo.GetAllAsync();
             return users.Where(u => u.ReceiveMonthlyReportEmail == true && u.IsPremium == true).ToList();
         }
 
+        /// <inheritdoc />
         public async Task<bool> ToggleMonthlyReport(bool receiveMonthlyReportEmail)
         {
             User userFromDb = await userRepo.GetByIdAsync(user.Id) ?? throw new NotFoundException("User was not found");
@@ -89,6 +96,7 @@ namespace Services.Users
             return true;
         }
 
+        /// <inheritdoc />
         public async Task<bool> DeleteAccount()
         {
             await dataService.DeleteAllData();
@@ -96,6 +104,7 @@ namespace Services.Users
             return true;
         }
 
+        /// <inheritdoc />
         public async Task<bool> ChangeLanguage(string language)
         {
             User userFromDb = await userRepo.GetByIdAsync(user.Id) ?? throw new NotFoundException("user was not found");

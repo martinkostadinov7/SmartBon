@@ -416,7 +416,7 @@ loadCategories();
                                 onPress={() => {
                                 if (isLocked) {
                                     Alert.alert(
-                                    `${t('premium_feature')}`,
+                                    `${t('premium_feature_alert')}`,
                                     `${t('error_occured')}`,
                                     [
                                         { text: `${t('cancel')}`, style: "cancel" },
