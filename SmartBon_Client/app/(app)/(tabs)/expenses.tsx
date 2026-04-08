@@ -305,6 +305,10 @@ setIsLoadingNextPage(true);
   adjustsFontSizeToFit style={[styles.headerBtn, {}]}>{`${t('hide')} ▲`}</Text>
               </TouchableOpacity>
 
+<Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={[{fontSize: 20, fontWeight: "600"}]}>{t('filters')}</Text>
+
               <TouchableOpacity onPress={handleClearParams}>
                 <Text 
   numberOfLines={1} 

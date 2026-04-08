@@ -1,283 +1,201 @@
-import { Link, router, useNavigation } from "expo-router";
+import { Link, router } from "expo-router";
 import React, { useState } from "react";
-import { View, Text, TextInput, StyleSheet, Alert, Pressable, TouchableOpacity} from "react-native";
+import { 
+  View, Text, TextInput, StyleSheet, Alert, 
+  Pressable, TouchableOpacity, ScrollView, 
+  KeyboardAvoidingView, Platform 
+} from "react-native";
 import * as SecureStore from "expo-secure-store";
-import { jwtDecode } from "jwt-decode";
 import { apiFetch } from "../../services/api";
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
-const currencyMap: Record<string, number> = {
-  EUR: 0,
-  USD: 1
-};
+const currencyMap: Record<string, number> = { EUR: 0, USD: 1 };
 
-export default function LoginPage() {
+export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
-  const [selectedCurrency, setSelectedCurrency] = useState("");
+  const [selectedCurrency, setSelectedCurrency] = useState("EUR");
   const [selectedPlan, setSelectedPlan] = useState("Free");
-  
+  const [loading, setLoading] = useState(false);
+
   const handleRegister = async () => {
-  setError("");
-  if(!email || !password || !confirmPassword || !name || !selectedCurrency || !selectedPlan){
-    Alert.alert(
-      "Input error",
-      "Fill out all fields!",
-      [{ text: "OK" }]
-    );
-  }
-  else if(password != confirmPassword){
-    Alert.alert(
-      "Input error",
-      "Passwords must match!",
-      [{ text: "OK" }]
-    );
-  }
-  else{
-    const registerInfo = {
-      "Email": email,
-      "Password": password,
-      "IsPremium": selectedPlan == "Premium",
-      "Name": name,
-      "DefaultCurrency": currencyMap[selectedCurrency]
+    setError("");
+    if (!email || !password || !confirmPassword || !name) {
+      Alert.alert("Грешка", "Моля, попълнете всички полета!");
+      return;
     }
-    try{
-      console.log(registerInfo);
+    if (password !== confirmPassword) {
+      Alert.alert("Грешка", "Паролите не съвпадат!");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const registerInfo = {
+        "Email": email,
+        "Password": password,
+        "IsPremium": selectedPlan === "Premium",
+        "Name": name,
+        "DefaultCurrency": currencyMap[selectedCurrency]
+      };
+
       const response = await apiFetch("/Auth/register", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify(registerInfo)
-        });
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(registerInfo)
+      });
+
       const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.message || "Registration failed");
-      }
-      const token = data.value;
-      SecureStore.setItem("token", token);
-      router.replace("/home");
-    }
-    catch(ex: any){
+      if (!response.ok) throw new Error(data.message || "Грешка при регистрация");
+
+      await SecureStore.setItemAsync("token", data.value);
+      router.replace("/(app)/home");
+    } catch (ex: any) {
       setError(ex.message);
+    } finally {
+      setLoading(false);
     }
-  }   
-}
+  };
 
   return (
-      <View style = {[styles.container]}>
-        <Text 
-  numberOfLines={1} 
-  adjustsFontSizeToFit style= {styles.appTitle}>SmartBon</Text>  
-        <Text 
-  numberOfLines={1} 
-  adjustsFontSizeToFit style= {styles.title}>Sign Up</Text>
-        <Text 
-  numberOfLines={1} 
-  adjustsFontSizeToFit style = {error ? styles.error : {display: "none"}}>{error}</Text>
-      <View>
-
-            <Text 
-  numberOfLines={1} 
-  adjustsFontSizeToFit style = {styles.label}>Email</Text>
-                <TextInput
-                  style = {styles.input}
-                  onChangeText={newEmail => setEmail(newEmail)}
-                  placeholder="Email"
-                  value={email}>
-                </TextInput>
-            <Text 
-  numberOfLines={1} 
-  adjustsFontSizeToFit style = {styles.label}>Password</Text>
-                <TextInput
-                  style = {styles.input}
-                  onChangeText={newPassword => setPassword(newPassword)}
-                  placeholder="Password"
-                  secureTextEntry
-                  value={password}>
-                </TextInput> 
-            <Text 
-  numberOfLines={1} 
-  adjustsFontSizeToFit style = {styles.label}>Confirm Password</Text>
-            <TextInput
-              style = {styles.input}
-              onChangeText={newConfirmPassword => setConfirmPassword(newConfirmPassword)}
-              placeholder="Confirm Password"
-              secureTextEntry
-              value={confirmPassword}>
-            </TextInput>
-
-            <Text 
-  numberOfLines={1} 
-  adjustsFontSizeToFit style = {styles.label}>Name</Text>
-                <TextInput
-                  style = {styles.input}
-                  onChangeText={newName => setName(newName)}
-                  placeholder="Name"
-                  value={name}>
-              </TextInput>
-            <Text 
-  numberOfLines={1} 
-  adjustsFontSizeToFit style={styles.label}>Default currency</Text>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-              <TouchableOpacity
-                style={[
-                  styles.buttonPicker, 
-                  selectedCurrency === "EUR" && styles.activeButton
-                ]}
-                onPress={() => setSelectedCurrency("EUR")}
-              >
-                <Text 
-  numberOfLines={1} 
-  adjustsFontSizeToFit style={selectedCurrency === "EUR" ? styles.activeText : styles.textPicker}>
-                  EUR
-                </Text>
-              </TouchableOpacity>
-
-                <TouchableOpacity
-                style={[
-                  styles.buttonPicker, 
-                  selectedCurrency === "USD" && styles.activeButton
-                ]}
-                onPress={() => setSelectedCurrency("USD")}
-              >
-                <Text 
-  numberOfLines={1} 
-  adjustsFontSizeToFit style={selectedCurrency === "USD" ? styles.activeText : styles.textPicker}>
-                  USD
-                </Text>
-              </TouchableOpacity>
-            </View> 
-            
-            <Text 
-  numberOfLines={1} 
-  adjustsFontSizeToFit style={styles.label}>Select plan</Text>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-              <TouchableOpacity
-                style={[
-                  styles.buttonPicker, 
-                  selectedPlan === "Free" && styles.activeButton
-                ]}
-                onPress={() => setSelectedPlan("Free")}
-              >
-                <Text 
-  numberOfLines={1} 
-  adjustsFontSizeToFit style={selectedPlan === "Free" ? styles.activeText : styles.textPicker}>
-                  Free
-                </Text>
-              </TouchableOpacity>
-
-                <TouchableOpacity
-                style={[
-                  styles.buttonPicker, 
-                  selectedPlan === "Premium" && styles.activeButton
-                ]}
-                onPress={() => setSelectedPlan("Premium")}
-              >
-                <Text 
-  numberOfLines={1} 
-  adjustsFontSizeToFit style={selectedPlan === "Premium" ? styles.activeText : styles.textPicker}>
-                  Premium
-                </Text>
-              </TouchableOpacity>
-            </View> 
-          </View>
-          <Pressable style={({ pressed }) => [
-            styles.button,
-            pressed && styles.buttonPressed,
-          ]} 
-            onPress={handleRegister}>
-          <Text 
-  numberOfLines={1} 
-  adjustsFontSizeToFit style={styles.buttonText}>Register</Text>
-        </Pressable>
-          <Link style={styles.link} href="/">Have an account? Sign in</Link>
+    <KeyboardAvoidingView 
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={styles.container}
+    >
+      <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
+        
+        <View style={styles.header}>
+          <Text style={styles.appTitle}>SmartBon</Text>
+          <Text style={styles.subtitle}>Създай своя акаунт</Text>
         </View>
-        );
+
+        <View style={styles.card}>
+          {error ? (
+            <View style={styles.errorBanner}>
+              <Text style={styles.errorText}>{error}</Text>
+            </View>
+          ) : null}
+
+          {/* Input Fields */}
+          <InputField label="Име" icon="account-outline" value={name} onChangeText={setName} placeholder="Иван Иванов" />
+          <InputField label="Имейл" icon="email-outline" value={email} onChangeText={setEmail} placeholder="email@example.com" keyboardType="email-address" />
+          <InputField label="Парола" icon="lock-outline" value={password} onChangeText={setPassword} placeholder="********" secureTextEntry />
+          <InputField label="Потвърди парола" icon="lock-check-outline" value={confirmPassword} onChangeText={setConfirmPassword} placeholder="********" secureTextEntry />
+
+          {/* Currency Selector */}
+          <Text style={styles.sectionLabel}>Основна валута</Text>
+          <View style={styles.segmentedControl}>
+            {["EUR", "USD"].map((curr) => (
+              <TouchableOpacity 
+                key={curr}
+                style={[styles.segment, selectedCurrency === curr && styles.activeSegment]}
+                onPress={() => setSelectedCurrency(curr)}
+              >
+                <Text style={[styles.segmentText, selectedCurrency === curr && styles.activeSegmentText]}>{curr}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          {/* Plan Selector */}
+          <Text style={styles.sectionLabel}>Избери план</Text>
+          <View style={styles.segmentedControl}>
+            {["Free", "Premium"].map((plan) => (
+              <TouchableOpacity 
+                key={plan}
+                style={[styles.segment, selectedPlan === plan && styles.activeSegment]}
+                onPress={() => setSelectedPlan(plan)}
+              >
+                <Text style={[styles.segmentText, selectedPlan === plan && styles.activeSegmentText]}>{plan}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          <Pressable 
+            style={({ pressed }) => [styles.button, (pressed || loading) && styles.buttonPressed]} 
+            onPress={handleRegister}
+            disabled={loading}
+          >
+            <Text style={styles.buttonText}>{loading ? "Обработка..." : "Регистрирай се"}</Text>
+          </Pressable>
+        </View>
+
+        <Link style={styles.link} href="/">
+          <Text>Вече имаш акаунт? </Text>
+          <Text style={styles.linkBold}>Влез тук</Text>
+        </Link>
+        
+      </ScrollView>
+    </KeyboardAvoidingView>
+  );
+}
+
+// Помощен компонент за полетата
+function InputField({ label, icon, ...props }: any) {
+  return (
+    <View style={styles.inputGroup}>
+      <Text style={styles.label}>{label}</Text>
+      <View style={styles.inputWrapper}>
+        <MaterialCommunityIcons name={icon} size={20} color="#666" style={styles.inputIcon} />
+        <TextInput style={styles.input} placeholderTextColor="#999" {...props} />
+      </View>
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
-  buttonPicker: {
-    marginHorizontal: 15,
-    marginBottom: 10,
-    flex: 1, // Прави всички бутони с еднаква ширина
-    paddingVertical: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 8,
-  },
-  activeButton: {
-    backgroundColor: '#edf9ff', // Бял фон за активния елемент
-    // Сянка за дълбочина
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+  container: { flex: 1, backgroundColor: "#f0f4ff" },
+  scrollContainer: { flexGrow: 1, justifyContent: 'center', padding: 20, paddingVertical: 50 },
+  header: { alignItems: 'center', marginBottom: 30 },
+  appTitle: { fontSize: 38, color: "#3077ce", fontWeight: "900" },
+  subtitle: { fontSize: 16, color: "#666" },
+  card: {
+    backgroundColor: "white",
+    borderRadius: 24,
+    padding: 20,
+    shadowColor: "#000",
     shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3, // За Android
+    shadowRadius: 10,
+    elevation: 5,
   },
-  textPicker: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#8E8E93', // По-блед цвят за неактивните
-  },
-  activeText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#000000', // Черен цвят за активния
-  },
-  container: {
-    flex: 1,
-    justifyContent: 'center', 
-    alignItems: 'center' ,
-    backgroundColor: "#e1ebffff"    
-  },
-  title:{
-    fontSize: 25,
-    fontWeight: "bold",
-    marginBottom: 20
-  },
-  label:{
-    marginBottom: 10,
-    marginTop: 10
-  },
-  input:{
-    borderBlockColor: "black",
+  inputGroup: { marginBottom: 12 },
+  label: { fontSize: 13, color: "#555", marginBottom: 4, fontWeight: "600", marginLeft: 4 },
+  inputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: "#f9f9f9",
     borderWidth: 1,
-    borderRadius: 10,
-    padding: 10,
-    width: 250
+    borderColor: "#eee",
+    borderRadius: 12,
+    paddingHorizontal: 12,
   },
-  error:{
-    color: "red",
-    display: "flex"
+  inputIcon: { marginRight: 8 },
+  input: { flex: 1, paddingVertical: 10, fontSize: 15, color: "#333" },
+  sectionLabel: { fontSize: 13, color: "#555", marginTop: 10, marginBottom: 8, fontWeight: "600", textAlign: 'center' },
+  segmentedControl: {
+    flexDirection: 'row',
+    backgroundColor: '#f0f0f0',
+    borderRadius: 12,
+    padding: 4,
+    marginBottom: 15,
   },
-  button:{
-    borderRadius: 10,
+  segment: { flex: 1, paddingVertical: 8, alignItems: 'center', borderRadius: 10 },
+  activeSegment: { backgroundColor: 'white', shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 2, elevation: 2 },
+  segmentText: { fontSize: 14, color: '#888', fontWeight: '500' },
+  activeSegmentText: { color: '#3077ce', fontWeight: '700' },
+  button: {
+    backgroundColor: "#3077ce",
+    borderRadius: 12,
+    paddingVertical: 15,
+    alignItems: "center",
     marginTop: 10,
-    width: 150,
-    backgroundColor: "#3077ceff"
   },
-  buttonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: "bold",
-    padding: 10,
-    textAlign: "center"
-  },
-  buttonPressed: {
-  backgroundColor: '#2a64acff', // slightly darker
-},
-appTitle:{
-  marginBottom: 50,
-  fontSize: 50,
-  color: "#3077ceff",
-  fontWeight: "bold"
-},
-link:{
-  textDecorationLine: "underline",
-  color: "blue", 
-  margin: 10
-}
+  buttonText: { color: 'white', fontSize: 16, fontWeight: "bold" },
+  buttonPressed: { opacity: 0.8 },
+  errorBanner: { backgroundColor: "#fff2f2", padding: 10, borderRadius: 10, marginBottom: 15, borderWidth: 1, borderColor: "#ffcccc" },
+  errorText: { color: "#ff4d4d", textAlign: 'center', fontSize: 13 },
+  link: { marginTop: 20, textAlign: "center", color: "#666" },
+  linkBold: { color: "#3077ce", fontWeight: "bold" }
 });

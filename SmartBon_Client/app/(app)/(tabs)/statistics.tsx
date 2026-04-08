@@ -88,8 +88,8 @@ const [paymentTypeDateRange, setPaymentTypeDateRange] = useState<[Date, Date]>((
 });  
 const [expensesDateRange, setExpensesDateRange] = useState("Daily");
 
-  const [userDefaultCurrency, setUserDefaultCurrency] = useState("Unidentified");
-  const [isPremium, setIsPremium] = useState(false);
+const [userDefaultCurrency, setUserDefaultCurrency] = useState<string | null>(null);  
+const [isPremium, setIsPremium] = useState(false);
   
   useEffect(() => {
       loadCategoriesGraphData();
@@ -184,13 +184,16 @@ const query = new URLSearchParams({
       await monthlyReportResponse.json().then(setMonthlyReportData);
   }
 
-  const formatCost = (amount: number, currencyCode: string) => {
+  const formatCost = (amount: number, currencyCode: string | null) => {
+  // Проверка за валиден ISO код (3 големи букви)
+  const isValidCode = currencyCode && /^[A-Z]{3}$/.test(currencyCode);
+  
   return new Intl.NumberFormat(i18n.language, {
     style: 'currency',
-    currency: currencyCode || "EUR",
+    currency: isValidCode ? currencyCode : "EUR", // Пада на EUR, ако кодът е невалиден
   }).format(amount);
 };
-const getCurrencySymbol = (code: string) => {
+const getCurrencySymbol = (code: string | null) => {
   return new Intl.NumberFormat(i18n.language, {
     style: 'currency',
     currency: code || 'EUR',
@@ -400,7 +403,7 @@ const translatedLabels = daysBarChartData?.labels.map(label => t(label));
             backgroundColor: "#ffffff",
             backgroundGradientFrom: "#ffffff",
             backgroundGradientTo: "#ffffff",
-            decimalPlaces: 2,
+            decimalPlaces: 0,
             color: (opacity = 1) => `rgba(48, 119, 206, ${opacity})`,
             style: { borderRadius: 16 }
           }}

@@ -240,5 +240,6 @@
   "Oct_short": "Окт",
   "Nov_short": "Ное",
   "Dec_short": "Дек",
-  "delete_goal": "Изтрий цел"
+  "delete_goal": "Изтрий цел",
+  "add_goal": "Добави цел"
 }

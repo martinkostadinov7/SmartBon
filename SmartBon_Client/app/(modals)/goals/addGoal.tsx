@@ -124,6 +124,11 @@ export default function ViewGoalModal() {
   adjustsFontSizeToFit style={styles.headerBtn}>{t('cancel')}</Text>
               </TouchableOpacity>
 
+<Text 
+  numberOfLines={1} 
+  adjustsFontSizeToFit style={styles.title}>{t('add_goal')}</Text>
+
+
             <TouchableOpacity onPress={handleSaveGoal}>
                 <Text 
   numberOfLines={1} 
@@ -201,7 +206,7 @@ export default function ViewGoalModal() {
 
             <Text 
   numberOfLines={1} 
-  adjustsFontSizeToFit style={styles.label}>{t('error')}</Text>
+  adjustsFontSizeToFit style={styles.label}>{t('color')}</Text>
             <ScrollView  horizontal style={{ flexDirection: 'row'}}
             showsHorizontalScrollIndicator={false}
             >
