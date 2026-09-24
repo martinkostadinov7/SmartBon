@@ -1,76 +1,160 @@
-# SmartBon 
+# SmartBon 📱💳
 
-SmartBon is a modern mobile application designed to automate and simplify personal finance management. Its core innovation is AI-driven receipt scanning, which eliminates the tedious manual entry of transactions by extracting key data (total, date, and items) directly from photos.
+> **Intelligent Personal Finance Management Mobile Application with AI Receipt Scanning**
 
-Developed as a diploma project, this application features a robust backend architecture and a responsive cross-platform frontend, offering both Free and Premium tiers.
+SmartBon is a next-generation mobile application designed to automate and simplify personal finance management. Built to solve the tedious problem of manual expense tracking, SmartBon leverages Artificial Intelligence (OpenAI Vision) to instantly extract crucial data from receipt images. 
 
-## Key Features
+Developed as a diploma project by Martin Atanasov Kostadinov.
 
-### Core Functionality (Free Plan)
+---
 
-* **AI Receipt Scanning:** Snap a photo of a receipt, and the AI automatically extracts the transaction details (limited to 5 scans/month).
+## 📑 Table of Contents
+- [About the Project](#about-the-project)
+- [Key Features](#key-features)
+  - [Basic Plan (Free)](#basic-plan-free)
+  - [Premium Plan](#premium-plan)
+- [Screenshots & UI](#screenshots--ui)
+- [Technology Stack](#technology-stack)
+- [Architecture](#architecture)
+- [Getting Started](#getting-started)
+- [License & Copyright](#license--copyright)
 
-* **Expense Tracking:** Easily add, edit, and categorize your daily expenses.
+---
 
-* **Budgeting:** Set global monthly limits to keep your spending in check.
+## 💡 About the Project
+Managing personal finances is crucial for financial stability, yet many people give up on expense tracking because manual entry is slow, tedious, and prone to errors. 
 
-* **Savings Goals:** Track progress towards your financial targets (up to 2 active goals).
+**SmartBon** acts as your personal automated accountant. By simply taking a picture of a receipt, the integrated AI pipeline extracts the date, total amount, and individual items. The ecosystem offers robust tools for budgeting, savings goals, recurring subscriptions, and detailed visual statistics.
 
-* **Basic Analytics:** Visualize your spending habits with intuitive charts.
+---
 
-* **Multi-language Support:** Available in multiple languages for better accessibility.
+## ✨ Key Features
 
-### Advanced Tools (Premium Plan)
+### Basic Plan (Free)
+- **AI Receipt Scanning:** Up to 5 AI scans per month to automatically read and categorize your paper receipts.
+- **Expense Tracking:** Full CRUD operations for manual transaction entry.
+- **Budget Management:** Set general monthly budget limits and track your spending.
+- **Savings Goals:** Track up to 2 active savings goals (e.g., "New Laptop", "Vacation") and add contributions.
+- **Categorization:** Use predefined system categories or create basic custom ones.
+- **Statistics & Filtering:** View your spending habits with simple charts and filter transactions by date, amount, category, or payment method.
 
-* **Unlimited AI Scanning:** Digitize all your receipts without restrictions.
+### Premium Plan
+- **Unlimited AI Scanning:** Fully digitize all your receipts without monthly caps.
+- **Recurring Expenses:** Automate your subscriptions (Netflix, rent) with customizable intervals (weekly, monthly, yearly) using background workers.
+- **Advanced Customization:** Create custom subcategories and set specific budgets per category.
+- **Unlimited Goals:** Track as many parallel savings goals as you need.
+- **Advanced Analytics:** Detailed visual reports including pie charts for categories and payment types, and line charts for spending trends.
+- **Data Portability:** Export your financial history to a CSV file.
+- **Automated Email Reports:** Receive detailed financial summaries via email at the end of every month.
 
-* **Recurring Expenses:** Fully automate your subscriptions (e.g., Netflix, Rent).
+---
 
-* **Advanced Budgeting:** Set specific budgets for individual categories (e.g., "Groceries" or "Restaurants").
+## 📸 Screenshots & UI
 
-* **Deep Analytics:** Access detailed pie charts, line graphs, and bar charts to spot spending trends.
+*(Replace the dummy paths in this section with your actual image files)*
 
-* **CSV Data Export/Import:** Easily back up your data or move it to a spreadsheet.
+### App Interface
+![Фигура 9 - Екрани за вход и регистрирация](path/to/Фигура_9.png)
+*Authentication and User Registration*
 
-* **Automated Email Reports:** Receive detailed financial summaries in your inbox every month.
+![Фигура 10 - Екран за добавяне на разход](path/to/Фигура_10.png)
+*Adding a new expense*
 
-## Tech Stack
+![Фигура 11 - Екран за добавяне на бюджет](path/to/Фигура_11.png)
+*Budget creation screen*
 
-### Mobile Frontend
+![Фигура 12 - Екран за визуализация на разходи, филтрация и сортиране](path/to/Фигура_12.png)
+*Expense list, advanced filtering, and sorting*
 
-* **Framework:** React Native with Expo
+![Фигура 13 - Екран за статистики](path/to/Фигура_13.png)
+*Detailed graphical statistics and analytics*
 
-* **Language:** TypeScript
+![Фигура 14 - Екран за настройки, архив, експорт и импорт, и изтриване на данни](path/to/Фигура_14.png)
+*Settings, data management, and Danger Zone*
 
-* **Routing:** Expo Router (file-based navigation)
+---
 
-* **State Management:** Zustand
+## 🛠 Technology Stack
 
-* **UI/Charts:** `react-native-chart-kit`, `react-native-svg`
+### Mobile Client (Frontend)
+- **Framework:** React Native with Expo
+- **Language:** TypeScript
+- **Routing:** Expo Router (File-based routing)
+- **State Management & API:** Zustand
+- **UI & Graphics:** `react-native-chart-kit`, `react-native-svg`
+- **Localization:** `i18next`, `react-i18next`
+- **Security:** `expo-secure-store` (JWT Storage)
 
-### Backend API
+### Server (Backend API)
+- **Framework:** ASP.NET Core (.NET 9)
+- **Language:** C# 12
+- **Database ORM:** Entity Framework Core (Code-First)
+- **AI Integration:** OpenAI SDK (`gpt-4o` Vision model)
+- **Validation & Mapping:** FluentValidation, AutoMapper
+- **Utilities:** CsvHelper, FluentEmail, Serilog
 
-* **Framework:** ASP.NET Core (C#)
+### Database
+- Microsoft SQL Server 2022
 
-* **Architecture:** N-Tier (Clean Architecture)
+---
 
-* **Database:** Microsoft SQL Server with Entity Framework Core
+## 🏗 Architecture
 
-* **AI Integration:** OpenAI SDK (GPT-4o Vision model)
+SmartBon follows a strict Client-Server model.
 
-* **Validation & Mapping:** FluentValidation, AutoMapper
+**Backend N-Tier Architecture:**
+1. **API Layer:** Thin controllers handling HTTP requests and global Exception Middleware.
+2. **Services Layer:** Contains core business logic, validation rules, AutoMapper profiles, and Background Hosted Services (for recurring expenses and emails).
+3. **Data Layer:** Entity Framework DbContext, Models, Migrations, and Repositories.
+4. **Shared Layer:** DTOs (Data Transfer Objects), Enums, and Custom Exceptions.
 
-* **Background Jobs:** Hosted Services for recurring expenses and automated emails.
+**Database Schema:**
+![Фигура 1 - Диаграма на базата данни](path/to/Фигура_1.png)
 
-## Architecture Overview
+**Code Snippets Highlights:**
+- ![Фигура 5 - Endpoint за създаване на разход](path/to/Фигура_5.png) *(Thin Controllers example)*
+- ![Фигура 6 - Клас за валидация на обект за създаване на разход](path/to/Фигура_6.png) *(Fluent Validation rules)*
+- ![Фигура 7 - Метод за извличане на данни от касова бележка чрез AI](path/to/Фигура_7.png) *(OpenAI Prompt Engineering & Integration)*
+- ![Фигура 8 - Метод за експортиране на разходи в CSV формат](path/to/Фигура_8.png) *(CSV Generation with CsvHelper)*
 
-* **Client-Server Model:** The mobile app communicates securely with the backend via RESTful APIs using JWT authentication.
+---
 
-* **AI Pipeline:** Images are sent from the mobile device to the backend, where a strictly prompted OpenAI Vision model processes the Cyrillic text and returns structured JSON data.
+## 🚀 Getting Started
 
-* **Database:** A highly relational schema tracking Users, Expenses, Categories, Budgets, Goals, and Recurring tasks.
+### Prerequisites
+- Node.js & npm (for the Expo frontend)
+- .NET 9 SDK (for the ASP.NET Core backend)
+- SQL Server 2022
+- An OpenAI API Key
 
-## Author
+### Running the Backend (API)
+1. Navigate to the API directory.
+2. Update the `appsettings.json` with your SQL Server connection string and SMTP settings.
+3. Set your OpenAI API key in your environment variables (`OPENAI_API_KEY`).
+4. Apply database migrations:
+   ```bash
+   dotnet ef database update
+   ```
+5. Run the server:
+   ```bash
+   dotnet run
+   ```
 
-**Martin Atanasov Kostadinov**
-*Diploma Project - High School of Mathematics "Academician Kiril Popov", Plovdiv*
+### Running the Mobile App
+1. Navigate to the mobile app directory.
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Update the API base URL in your configuration to point to your local backend.
+4. Start the Expo development server:
+   ```bash
+   npx expo start
+   ```
+
+---
+
+## 📄 License & Copyright
+This software was developed as an educational diploma project by **Martin Atanasov Kostadinov**. All rights to the architecture, source code, and UI/UX design belong to the author.
+
+Built using open-source tools including React Native (MIT), ASP.NET Core (MIT), and OpenAI SDK (MIT).
