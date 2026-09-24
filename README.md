@@ -1,4 +1,4 @@
-# SmartBon 📱💳
+# SmartBon
 
 > **Intelligent Personal Finance Management Mobile Application with AI Receipt Scanning**
 
@@ -8,7 +8,7 @@ Developed as a diploma project by Martin Atanasov Kostadinov.
 
 ---
 
-## 📑 Table of Contents
+## Table of Contents
 - [About the Project](#about-the-project)
 - [Key Features](#key-features)
   - [Basic Plan (Free)](#basic-plan-free)
@@ -21,14 +21,14 @@ Developed as a diploma project by Martin Atanasov Kostadinov.
 
 ---
 
-## 💡 About the Project
+## About the Project
 Managing personal finances is crucial for financial stability, yet many people give up on expense tracking because manual entry is slow, tedious, and prone to errors. 
 
 **SmartBon** acts as your personal automated accountant. By simply taking a picture of a receipt, the integrated AI pipeline extracts the date, total amount, and individual items. The ecosystem offers robust tools for budgeting, savings goals, recurring subscriptions, and detailed visual statistics.
 
 ---
 
-## ✨ Key Features
+## Key Features
 
 ### Basic Plan (Free)
 - **AI Receipt Scanning:** Up to 5 AI scans per month to automatically read and categorize your paper receipts.
@@ -49,7 +49,7 @@ Managing personal finances is crucial for financial stability, yet many people g
 
 ---
 
-## 📸 Screenshots & UI
+## Screenshots & UI
 
 *(Replace the dummy paths in this section with your actual image files)*
 
@@ -74,7 +74,7 @@ Managing personal finances is crucial for financial stability, yet many people g
 
 ---
 
-## 🛠 Technology Stack
+## Technology Stack
 
 ### Mobile Client (Frontend)
 - **Framework:** React Native with Expo
@@ -98,7 +98,7 @@ Managing personal finances is crucial for financial stability, yet many people g
 
 ---
 
-## 🏗 Architecture
+## Architecture
 
 SmartBon follows a strict Client-Server model.
 
@@ -119,7 +119,7 @@ SmartBon follows a strict Client-Server model.
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 - Node.js & npm (for the Expo frontend)
