@@ -51,25 +51,23 @@ Managing personal finances is crucial for financial stability, yet many people g
 
 ## Screenshots & UI
 
-*(Replace the dummy paths in this section with your actual image files)*
-
 ### App Interface
-![Figure 9 - Screens for login and registration](images/login.png)
+!(images/login.png)
 *Authentication and User Registration*
 
-![Фигура 10 - Екран за добавяне на разход](path/to/Фигура_10.png)
+!(images/addExpense.png)
 *Adding a new expense*
 
-![Фигура 11 - Екран за добавяне на бюджет](path/to/Фигура_11.png)
+!(images/addExpense.png)
 *Budget creation screen*
 
-![Фигура 12 - Екран за визуализация на разходи, филтрация и сортиране](path/to/Фигура_12.png)
+!(images/expenses.png)
 *Expense list, advanced filtering, and sorting*
 
-![Фигура 13 - Екран за статистики](path/to/Фигура_13.png)
+!(images/statistics.png)
 *Detailed graphical statistics and analytics*
 
-![Фигура 14 - Екран за настройки, архив, експорт и импорт, и изтриване на данни](path/to/Фигура_14.png)
+!(images/settings.png)
 *Settings, data management, and Danger Zone*
 
 ---
@@ -109,13 +107,13 @@ SmartBon follows a strict Client-Server model.
 4. **Shared Layer:** DTOs (Data Transfer Objects), Enums, and Custom Exceptions.
 
 **Database Schema:**
-![Фигура 1 - Диаграма на базата данни](path/to/Фигура_1.png)
+!(images/database.png)
 
 **Code Snippets Highlights:**
-- ![Фигура 5 - Endpoint за създаване на разход](path/to/Фигура_5.png) *(Thin Controllers example)*
-- ![Фигура 6 - Клас за валидация на обект за създаване на разход](path/to/Фигура_6.png) *(Fluent Validation rules)*
-- ![Фигура 7 - Метод за извличане на данни от касова бележка чрез AI](path/to/Фигура_7.png) *(OpenAI Prompt Engineering & Integration)*
-- ![Фигура 8 - Метод за експортиране на разходи в CSV формат](path/to/Фигура_8.png) *(CSV Generation with CsvHelper)*
+- !(images/apicontrollers.png) *(Thin Controllers example)*
+- !(images/validation.png) *(Fluent Validation rules)*
+- !(images/aiintegration.png) *(OpenAI Prompt Engineering & Integration)*
+- !(images/export.png) *(CSV Generation with CsvHelper)*
 
 ---
 
