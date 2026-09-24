@@ -52,22 +52,22 @@ Managing personal finances is crucial for financial stability, yet many people g
 ## Screenshots & UI
 
 ### App Interface
-!(images/login.png)
+![Authentication and User Registration](images/login.png)
 *Authentication and User Registration*
 
-!(images/addExpense.png)
+![Adding a new expense](images/addExpense.png)
 *Adding a new expense*
 
-!(images/addExpense.png)
+![Budget creation screen](images/addBudget.png)
 *Budget creation screen*
 
-!(images/expenses.png)
+![Expense list, advanced filtering, and sorting](images/expenses.png)
 *Expense list, advanced filtering, and sorting*
 
-!(images/statistics.png)
+![Detailed graphical statistics and analytics](images/statistics.png)
 *Detailed graphical statistics and analytics*
 
-!(images/settings.png)
+![Settings, data management, and Danger Zone](images/settings.png)
 *Settings, data management, and Danger Zone*
 
 ---
@@ -107,13 +107,13 @@ SmartBon follows a strict Client-Server model.
 4. **Shared Layer:** DTOs (Data Transfer Objects), Enums, and Custom Exceptions.
 
 **Database Schema:**
-!(images/database.png)
+![Database Schema Diagram](images/database.png)
 
-**Code Snippets Highlights:**
-- !(images/apicontrollers.png) *(Thin Controllers example)*
-- !(images/validation.png) *(Fluent Validation rules)*
-- !(images/aiintegration.png) *(OpenAI Prompt Engineering & Integration)*
-- !(images/export.png) *(CSV Generation with CsvHelper)*
+### Code Snippets Highlights
+- ![Endpoint for creating an expense](images/apicontrollers.png) *(Thin Controllers example)*
+- ![Expense creation validation class](images/validation.png) *(Fluent Validation rules)*
+- ![AI receipt data extraction method](images/aiintegration.png) *(OpenAI Prompt Engineering & Integration)*
+- ![Method for exporting expenses in CSV format](images/export.png) *(CSV Generation with CsvHelper)*
 
 ---
 
