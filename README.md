@@ -54,7 +54,7 @@ Managing personal finances is crucial for financial stability, yet many people g
 *(Replace the dummy paths in this section with your actual image files)*
 
 ### App Interface
-![Фигура 9 - Екрани за вход и регистрирация](path/to/Фигура_9.png)
+![Figure 9 - Screens for login and registration](images/login.png)
 *Authentication and User Registration*
 
 ![Фигура 10 - Екран за добавяне на разход](path/to/Фигура_10.png)
